@@ -50,8 +50,8 @@
           </div>
           <div class="form-group">
             <button
-              class="text-white bg-primary w-full py-3 text-lg font-semibold rounded-md mt-1"
-              :class="{ 'bg-blue-400': isLogging }"
+              class="text-white w-full py-3 text-lg font-semibold rounded-md mt-1"
+              :class="isLogging ? 'bg-blue-400' : 'bg-primary'"
               :disabled="isLogging"
             >
               Đăng nhập
@@ -323,7 +323,7 @@ export default {
 
     onMounted(() => {
       if (loggedIn.value) {
-        router.push("/");
+        router.push({ name: "home", params: {} });
       }
     });
 

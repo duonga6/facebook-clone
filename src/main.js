@@ -4,11 +4,20 @@ import router from "./router";
 import store from "./store";
 import { registerGlobalComponents } from "./utilities/importComponent";
 import "@/assets/styles/index.css";
+import setupInterceptor from "@/services/setupInterceptor";
+import PrimeVue from "primevue/config";
+import lara from "./presets/lara";
+
+setupInterceptor(store);
 
 const app = createApp(App);
 registerGlobalComponents(app);
 app.use(store);
 app.use(router);
+app.use(PrimeVue, {
+  unstyled: true,
+  pt: lara,
+});
 app.mount("#app");
 
 // createApp(App).use(store).use(router).mount("#app");

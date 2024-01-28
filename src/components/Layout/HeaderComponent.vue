@@ -181,7 +181,7 @@
           </div>
         </li>
         <li>
-          <div class="relative">
+          <div class="relative" v-if="user">
             <div class="nav-header-right-avatar" @click="handleToggleUserMenu">
               <img
                 class="object-cover w-full h-full"
@@ -198,9 +198,11 @@
               <ul
                 class="rounded-lg bg-white border border-gray-200 shadow-lg w-90 px-4 py-3"
               >
-                <li class="rounded-lg border border-gray-200 shadow-lg p-1">
+                <li
+                  class="rounded-lg border border-gray-200 shadow-lg p-1 mb-4"
+                >
                   <div
-                    class="flex items-center p-2 cursor-pointer hover:bg-gray-100 rounded-lg"
+                    class="flex items-center p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-all"
                   >
                     <div
                       class="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center"
@@ -253,10 +255,10 @@ import { ref, watch } from "vue";
 import { useStore } from "vuex";
 export default {
   setup() {
-    const isShowUserMenu = ref(true);
+    const isShowUserMenu = ref(false);
 
     const store = useStore();
-    const user = ref(store.state.user.user);
+    const user = ref(store.state.auth.user);
 
     function handleToggleUserMenu() {
       isShowUserMenu.value = !isShowUserMenu.value;
@@ -267,7 +269,7 @@ export default {
     }
 
     watch(
-      () => store.state.user.user,
+      () => store.state.auth.user,
       (newValue) => {
         user.value = newValue;
         console.log(user.value);

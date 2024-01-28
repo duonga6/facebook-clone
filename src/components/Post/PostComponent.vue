@@ -3,15 +3,24 @@
     <div class="post-header">
       <div class="post-author">
         <div class="author-img">
-          <img
-            src="https://scontent.fhan5-3.fna.fbcdn.net/v/t39.30808-1/339646004_980825469941329_1148963941082873638_n.jpg?stp=cp0_dst-jpg_p40x40&_nc_cat=1&ccb=1-7&_nc_sid=596444&_nc_eui2=AeFkaTakByWhaityAQDtS71MGdYHCEMQnOoZ1gcIQxCc6mlkeMvB4avNHBow2oedWNDkpFgDDv_Pa3hpIqrSI4jL&_nc_ohc=6dTRyYRysIsAX-ItXe_&_nc_ht=scontent.fhan5-3.fna&oh=00_AfCILcLhHOJEP9CFqfZmi4GmxdJWRPyPkggrsLDh-nVYOA&oe=65B14A85"
-            alt=""
-          />
+          <img :src="postData.author.avatarUrl" alt="" />
         </div>
         <div class="author-info">
-          <p class="author-name">Fan Man Utd Việt Nam</p>
-          <p class="date-post">
-            18 tháng 1 lúc 09:15 .
+          <p class="author-name">{{ postData.author.fullName }}</p>
+          <div class="date-post">
+            <div class="post-time">
+              {{
+                postData.createdAt.getDate() +
+                " tháng " +
+                postData.createdAt.getMonth() +
+                1 +
+                " lúc " +
+                postData.createdAt.getHours() +
+                ":" +
+                postData.createdAt.getMinutes()
+              }}
+            </div>
+            <div class="">.</div>
             <svg
               viewBox="0 0 16 16"
               width="12"
@@ -40,18 +49,40 @@
                 </g>
               </g>
             </svg>
-          </p>
+          </div>
         </div>
       </div>
       <div class="post-more"></div>
     </div>
-    <div class="post-content"></div>
+    <div class="post-content">{{ postData.content }}</div>
+    <div class="post-img">
+      <div v-for="media in postData.postMedias" :key="media.id">
+        <img :src="media.url" alt="" />
+      </div>
+    </div>
     <div class="post-action">
       <div class="post-action-info"></div>
       <div class="post-action-list"></div>
     </div>
   </div>
 </template>
+
+<script>
+import { reactive } from "vue";
+export default {
+  props: {
+    post: {
+      type: Object,
+      required: true,
+    },
+  },
+  setup(props) {
+    const postData = reactive(props.post);
+
+    return { postData };
+  },
+};
+</script>
 
 <style lang="scss" scoped>
 .post-container {
@@ -71,7 +102,7 @@
           @apply text-15 font-semibold;
         }
         .date-post {
-          @apply text-13 text-gray-500 flex items-center;
+          @apply text-13 text-gray-500 flex items-center space-x-1;
         }
       }
     }
@@ -79,6 +110,10 @@
     }
   }
   .post-content {
+    @apply mt-2 text-15 leading-18;
+  }
+  .post-img {
+    @apply mt-4;
   }
   .post-action {
     .post-action-info {

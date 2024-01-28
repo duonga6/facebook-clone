@@ -11,9 +11,9 @@
 import NavigationComponent from "@/components/Home/NavigationComponent.vue";
 import ContactComponent from "@/components/Home/ContactComponent.vue";
 import NewsComponent from "@/components/Home/MainHomeComponent.vue";
-import { onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
+import { watch } from "vue";
 
 export default {
   name: "HomeView",
@@ -26,22 +26,14 @@ export default {
     const store = useStore();
     const router = useRouter();
 
-    async function getData() {
-      await store.dispatch("user/getDataUser");
-    }
-
     watch(
       () => store.state.auth.status.loggedIn,
       (newVal) => {
         if (!newVal) {
-          router.push("/login");
+          router.push({ name: "login", params: {} });
         }
       }
     );
-
-    onMounted(() => {
-      getData();
-    });
 
     return {};
   },

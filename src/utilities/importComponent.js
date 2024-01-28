@@ -1,4 +1,5 @@
 import { defineAsyncComponent } from "vue";
+import Dropdown from "primevue/dropdown";
 
 export function registerGlobalComponents(app) {
   app.component(
@@ -10,4 +11,6 @@ export function registerGlobalComponents(app) {
     "default-layout",
     defineAsyncComponent(() => import("@/layouts/DefaultLayout"))
   );
+
+  app.component("drop-down", Dropdown);
 }

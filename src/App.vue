@@ -5,12 +5,35 @@
 </template>
 
 <script>
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, onBeforeMount, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { DEFAULT_LAYOUT } from "@/constants";
+import { useStore } from "vuex";
+import EventBus from "@/common/EventBus";
+
 export default {
   setup() {
     const route = useRoute();
+    const router = useRouter();
+    const store = useStore();
+
+    store.dispatch("mediaType/getAll");
+
+    function logOut() {
+      store.dispatch("auth/logout");
+      router.push({ name: "login", params: {} });
+    }
+
+    onMounted(() => {
+      EventBus.on("logout", () => {
+        logOut();
+      });
+    });
+
+    onBeforeMount(() => {
+      EventBus.remove("logout");
+    });
+
     return {
       layout: computed(() => (route.meta.layout || DEFAULT_LAYOUT) + "-layout"),
     };

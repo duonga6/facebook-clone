@@ -1,45 +1,42 @@
-import axios from "axios";
-import { BASE_API_URL } from "@/config/api-config";
+import api from "./api";
+import tokenService from "./token.service";
 
 class AuthService {
   login(user) {
-    return axios
-      .post(BASE_API_URL + "/Users/Login", {
+    return api
+      .post("/Users/Login", {
         email: user.email,
         password: user.password,
       })
-      .then((response) => {
-        if (response.data.success) {
-          localStorage.setItem("token", JSON.stringify(response.data.data));
-          return response.data;
-        } else {
-          return Promise.reject(response.data);
+      .then(
+        (response) => {
+          if (response.data.success) {
+            tokenService.setUser(response.data.data);
+            return response.data;
+          } else {
+            return Promise.reject(response.data);
+          }
+        },
+        (err) => {
+          console.log(err);
+          return Promise.reject(err);
         }
-      });
+      );
   }
 
   logout() {
-    localStorage.removeItem("token");
+    tokenService.removeUser();
   }
 
   register(user) {
-    return axios
-      .post(BASE_API_URL + "/Users/Register", {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        password: user.password,
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-      })
-      .then((response) => {
-        if (response.data.success) {
-          localStorage.setItem("token", JSON.stringify(response.data.data));
-          return response.data;
-        } else {
-          return Promise.reject(response.data);
-        }
-      });
+    return api.post("/Users/Register", user).then((response) => {
+      if (response.data.success) {
+        tokenService.setUser(response.data.data);
+        return response.data;
+      } else {
+        return Promise.reject(response.data);
+      }
+    });
   }
 }
 

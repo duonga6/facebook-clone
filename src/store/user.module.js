@@ -7,10 +7,15 @@ export const user = {
   }),
   actions: {
     getDataUser({ commit }) {
-      return userService.getUserInfo().then((response) => {
-        commit("getDataSuccess", response.data);
-        return Promise.resolve(response.data);
-      });
+      return userService
+        .getUserInfo()
+        .then((response) => {
+          commit("getDataSuccess", response.data);
+          return Promise.resolve(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
   mutations: {

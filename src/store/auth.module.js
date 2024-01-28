@@ -1,9 +1,9 @@
 import AuthService from "@/services/auth.service";
 
-const token = JSON.parse(localStorage.getItem("token"));
-const initialState = token
-  ? { status: { loggedIn: true }, token }
-  : { status: { loggedIn: false }, token: null };
+const user = JSON.parse(localStorage.getItem("user"));
+const initialState = user
+  ? { status: { loggedIn: true }, user }
+  : { status: { loggedIn: false }, user: null };
 
 export const auth = {
   namespaced: true,
@@ -12,7 +12,7 @@ export const auth = {
     login({ commit }, user) {
       return AuthService.login(user).then(
         (response) => {
-          commit("loginSuccess", response);
+          commit("loginSuccess", response.data);
           return Promise.resolve(response);
         },
         (error) => {
@@ -28,7 +28,7 @@ export const auth = {
     register({ commit }, user) {
       return AuthService.register(user).then(
         (response) => {
-          commit("registerSuccess", response);
+          commit("registerSuccess", response.data);
           return Promise.resolve(response);
         },
         (error) => {
@@ -37,27 +37,33 @@ export const auth = {
         }
       );
     },
+    refreshToken({ commit }, token) {
+      commit("refreshToken", token);
+    },
   },
   mutations: {
-    loginSuccess(state, token) {
+    loginSuccess(state, user) {
       state.status.loggedIn = true;
-      state.token = token;
+      state.user = user;
     },
     loginFailure(state) {
       state.status.loggedIn = false;
-      state.token = null;
+      state.user = null;
     },
     logout(state) {
       state.status.loggedIn = false;
-      state.token = null;
+      state.user = null;
     },
-    registerSuccess(state, token) {
+    registerSuccess(state, user) {
       state.status.loggedIn = true;
-      state.token = token;
+      state.user = user;
     },
     registerFailure(state) {
       state.status.loggedIn = false;
-      state.token = null;
+      state.user = null;
+    },
+    refreshToken(state, token) {
+      state.user.token = token;
     },
   },
 };
