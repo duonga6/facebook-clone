@@ -55,21 +55,148 @@
       <div class="post-more"></div>
     </div>
     <div class="post-content">{{ postData.content }}</div>
-    <div class="post-img">
-      <div v-for="media in postData.postMedias" :key="media.id">
-        <img :src="media.url" alt="" />
+    <div class="post-media">
+      <template v-if="postData.postMedias.length >= 4">
+        <div class="grid grid-cols-2 gap-1">
+          <div class="h-1/2" v-for="index in 4" :key="index">
+            <img
+              class="w-full h-62 object-cover"
+              :src="postData.postMedias[index].url"
+              alt=""
+            />
+          </div>
+        </div>
+      </template>
+    </div>
+    <div
+      class="post-reaction-comment"
+      v-if="postData.reaction || postData.totalComment"
+    >
+      <div class="post-reaction" v-if="postData.reaction">
+        <ul class="post-reaction-list">
+          <li
+            class="post-reaction-item"
+            v-for="reaction in postData.reaction"
+            :key="reaction.id"
+          >
+            <img
+              class="x16dsc37"
+              height="18"
+              role="presentation"
+              :src="reaction.iconUrl"
+              width="18"
+            />
+          </li>
+        </ul>
+        <div class="post-reaction-count">
+          <template v-if="postData.userReacted">
+            Bạn và
+            {{ postData.reaction.reduce((sum, item) => sum + item.total, -1) }}
+            người khác
+          </template>
+          <template v-else>
+            {{ postData.reaction.reduce((sum, item) => sum + item.total, 0) }}
+          </template>
+        </div>
+      </div>
+      <div class="post-comment-count" v-if="postData.totalComment">
+        {{ postData.totalComment }} bình luận
       </div>
     </div>
     <div class="post-action">
-      <div class="post-action-info"></div>
-      <div class="post-action-list"></div>
+      <div
+        class="post-action-item action--reaction"
+        @mouseover="onHoverReaction"
+        @mouseleave="onCloseReaction"
+        @click="onHandleClickReaction"
+      >
+        <template v-if="!postData.userReacted">
+          <div class="post-action-icon">
+            <i
+              data-visualcompletion="css-img"
+              class="x1b0d499 x1d69dk1"
+              style="
+                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yM/r/hkTW1TGOL4u.png?_nc_eui2=AeGkMalMnnCuQjq8wSweaCGhK0oghgF2B60rSiCGAXYHrf3usIKQVB_Hb0JAAS9ieq067UAb5z7pJNRlrypKAvUe');
+                background-position: 0px -739px;
+                background-size: auto;
+                width: 20px;
+                height: 20px;
+                background-repeat: no-repeat;
+                display: inline-block;
+              "
+            ></i>
+          </div>
+          <div class="post-action-text">Thích</div>
+        </template>
+        <template v-else>
+          <div class="post-action-icon">
+            <img :src="postData.userReacted.iconUrl" alt="" />
+          </div>
+          <div
+            class="post-action-text"
+            :style="{ color: postData.userReacted.colorCode }"
+          >
+            {{ postData.userReacted.name }}
+          </div>
+        </template>
+        <div
+          class="post-reaction-create"
+          :class="
+            isShowReaction ? 'visible opacity-100' : 'invisible opacity-0'
+          "
+        >
+          <post-reaction-component
+            :isShowReaction="isShowReaction"
+            @onSelectReaction="handleSelectReaction"
+          ></post-reaction-component>
+        </div>
+      </div>
+      <div class="post-action-item action--comment">
+        <div class="post-action-icon">
+          <i
+            data-visualcompletion="css-img"
+            class="x1b0d499 x1d69dk1"
+            style="
+              background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yM/r/hkTW1TGOL4u.png?_nc_eui2=AeGkMalMnnCuQjq8wSweaCGhK0oghgF2B60rSiCGAXYHrf3usIKQVB_Hb0JAAS9ieq067UAb5z7pJNRlrypKAvUe');
+              background-position: 0px -550px;
+              background-size: auto;
+              width: 20px;
+              height: 20px;
+              background-repeat: no-repeat;
+              display: inline-block;
+            "
+          ></i>
+        </div>
+        <div class="post-action-text">Bình luận</div>
+      </div>
+      <div class="post-action-item action-share">
+        <div class="post-action-icon">
+          <i
+            data-visualcompletion="css-img"
+            class="x1b0d499 x1d69dk1"
+            style="
+              background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yM/r/hkTW1TGOL4u.png?_nc_eui2=AeGkMalMnnCuQjq8wSweaCGhK0oghgF2B60rSiCGAXYHrf3usIKQVB_Hb0JAAS9ieq067UAb5z7pJNRlrypKAvUe');
+              background-position: 0px -886px;
+              background-size: auto;
+              width: 20px;
+              height: 20px;
+              background-repeat: no-repeat;
+              display: inline-block;
+            "
+          ></i>
+        </div>
+        <div class="post-action-text">Chia sẻ</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
+import PostReactionComponent from "@/components/Post/PostReactionComponent.vue";
+import PostService from "@/services/post.service";
 export default {
+  components: { PostReactionComponent },
   props: {
     post: {
       type: Object,
@@ -77,17 +204,143 @@ export default {
     },
   },
   setup(props) {
+    const isLoaded = ref(false);
+    const isShowReaction = ref(false);
     const postData = reactive(props.post);
 
-    return { postData };
+    // Timer hover show reaction container
+    let hoverTimer;
+
+    function loadCommentCount() {
+      PostService.getCountComment(postData.id).then((response) => {
+        postData.totalComment = response.data;
+      });
+    }
+
+    function loadReaction() {
+      PostService.getReaction(postData.id).then((response) => {
+        postData.reaction = response.data;
+      });
+    }
+
+    function loadData() {
+      loadCommentCount();
+      loadReaction();
+      getReaction();
+    }
+
+    function onHandleClickReaction() {
+      isShowReaction.value = false;
+      clearTimeout(hoverTimer);
+
+      if (!postData.userReacted) {
+        createReaction();
+      } else {
+        deleteReaction();
+      }
+    }
+
+    function onHoverReaction() {
+      if (!isShowReaction.value) {
+        hoverTimer = setTimeout(() => {
+          isShowReaction.value = true;
+        }, 600);
+      }
+    }
+
+    function onCloseReaction() {
+      isShowReaction.value = false;
+      clearTimeout(hoverTimer);
+    }
+
+    function handleSelectReaction(id) {
+      isShowReaction.value = false;
+      clearTimeout(hoverTimer);
+
+      if (!postData.userReacted) {
+        createReaction(id);
+      } else {
+        if (id != postData.userReacted.id) {
+          updateReaction(id);
+        } else {
+          deleteReaction(postData.id);
+        }
+      }
+    }
+
+    // Reaction CRUD
+    function getReaction() {
+      PostService.getUserReaction(postData.id).then(
+        (res) => {
+          postData.userReacted = res.data;
+        },
+        (err) => {
+          console.error(err);
+        }
+      );
+    }
+
+    function createReaction(id = 1) {
+      PostService.createPostReaction({
+        postId: postData.id,
+        reactionId: id,
+      }).then(
+        (response) => {
+          postData.userReacted = response.data;
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+
+    function updateReaction(id) {
+      PostService.updatePostReaction({
+        postId: postData.id,
+        reactionId: id,
+      }).then(
+        (response) => {
+          postData.userReacted = response.data;
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+
+    function deleteReaction() {
+      PostService.deletePostReaction(postData.id).then(
+        () => {
+          postData.userReacted = null;
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+
+    onMounted(() => {
+      loadData();
+    });
+
+    return {
+      postData,
+      isLoaded,
+      isShowReaction,
+      onHoverReaction,
+      onCloseReaction,
+      handleSelectReaction,
+      onHandleClickReaction,
+    };
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .post-container {
-  @apply bg-white px-4 py-2.5 rounded-lg border border-gray-200 shadow-sm;
+  @apply bg-white py-2.5 pb-0 rounded-lg border border-gray-200 shadow-sm;
   .post-header {
+    @apply px-4;
     .post-author {
       @apply flex items-center;
       .author-img {
@@ -109,16 +362,55 @@ export default {
     .post-more {
     }
   }
+
   .post-content {
-    @apply mt-2 text-15 leading-18;
+    @apply mt-2 px-4 text-15 leading-18;
   }
-  .post-img {
+
+  .post-media {
     @apply mt-4;
   }
-  .post-action {
-    .post-action-info {
+
+  .post-reaction-comment {
+    @apply px-4 py-3 flex justify-between items-center;
+    .post-reaction {
+      @apply flex items-center;
+
+      .post-reaction-list {
+        @apply flex;
+
+        .post-reaction-item {
+          img {
+          }
+        }
+      }
+      .post-reaction-count {
+        @apply text-15 text-gray-500 ms-1;
+      }
     }
-    .post-action-list {
+    .post-comment-count {
+      @apply text-15 text-gray-500;
+    }
+  }
+
+  .post-action {
+    @apply border-t mx-4 py-1 border-gray-300;
+    @apply flex justify-around;
+    .post-action-item {
+      @apply flex-1 flex items-center justify-center py-1 rounded-lg  cursor-pointer text-gray-600 hover:bg-gray-100 transition-all relative;
+      .post-action-icon {
+        @apply mt-1;
+
+        img {
+          @apply w-6 h-6 -mt-1;
+        }
+      }
+      .post-action-text {
+        @apply ms-2 font-semibold;
+      }
+      .post-reaction-create {
+        @apply absolute bottom-full left-0;
+      }
     }
   }
 }

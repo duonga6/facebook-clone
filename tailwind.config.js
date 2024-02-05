@@ -43,6 +43,7 @@ module.exports = {
       height: {
         0.75: "3px",
         62: "248px",
+        500: "500px",
       },
       fontSize: {
         md: "15px",
@@ -57,6 +58,9 @@ module.exports = {
       },
       lineHeight: {
         18: "18px",
+      },
+      scale: {
+        120: "1.2",
       },
     },
   },

@@ -18,6 +18,7 @@ export default {
     const store = useStore();
 
     store.dispatch("mediaType/getAll");
+    store.dispatch("reaction/getDefaultReaction");
 
     function logOut() {
       store.dispatch("auth/logout");

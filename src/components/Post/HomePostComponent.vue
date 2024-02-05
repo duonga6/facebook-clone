@@ -18,9 +18,8 @@ export default {
 
     watch(
       () => store.state.post.homePosts.posts,
-      (newVal) => {
+      () => {
         state.posts = store.getters["post/getHomePosts"];
-        console.log(newVal);
       }
     );
 
