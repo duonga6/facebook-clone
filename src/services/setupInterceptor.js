@@ -1,4 +1,4 @@
-import { useRouter } from "vue-router";
+import eventBus from "@/common/EventBus";
 import axiosInstance from "./api";
 import tokenService from "./token.service";
 
@@ -52,8 +52,7 @@ const setup = (store) => {
             // Thực hiện lại request ban đầu
             return axiosInstance(originalConfig);
           } else {
-            const router = useRouter();
-            router.push({ name: "login", params: {} });
+            eventBus.dispatch("logout");
             return Promise.reject(rs.data);
           }
         }

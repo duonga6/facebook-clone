@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, useRouter } from "vue-router";
 
 const routes = [
   {
@@ -45,5 +45,10 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
+
+export function redirectToLogin() {
+  const router = useRouter();
+  router.push({ name: "login", params: {} });
+}
 
 export default router;
