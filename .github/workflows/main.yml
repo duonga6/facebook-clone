@@ -44,7 +44,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            docker container stop facebook-clone
+            if [ $(docker ps -q -f name=facebook-clone) ]; then
+                docker stop facebook-clone
+            fi
             docker container prune -f
             docker image pull duonga6/facebook-clone
             docker run -d -p 8080:80 -p 8081:443 --name facebook-clone duonga6/facebook-clone
