@@ -17,10 +17,21 @@ export const user = {
           console.log(error);
         });
     },
+    logout({ commit }) {
+      commit("resetUserData");
+    },
   },
   mutations: {
     getDataSuccess(state, user) {
       state.user = user;
+    },
+    resetUserData(state) {
+      state.user = null;
+    },
+  },
+  getters: {
+    getUser(state) {
+      return state.user;
     },
   },
 };

@@ -10,7 +10,7 @@
 
 <script>
 import StoryComponent from "@/components/Home/StoryComponent.vue";
-import AddPostComponent from "@/components/Post/AddPostComponent.vue";
+import AddPostComponent from "@/components/Post/CreatePostComponent.vue";
 import HomePostComponent from "../Post/HomePostComponent.vue";
 
 export default {

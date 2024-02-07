@@ -70,13 +70,13 @@
     </div>
     <div
       class="post-reaction-comment"
-      v-if="postData.reaction || postData.totalComment"
+      v-if="postData.reactions.length > 0 || postData.totalComment"
     >
-      <div class="post-reaction" v-if="postData.reaction">
+      <div class="post-reaction" v-if="postData.reactions.length > 0">
         <ul class="post-reaction-list">
           <li
             class="post-reaction-item"
-            v-for="reaction in postData.reaction"
+            v-for="reaction in postData.reactions"
             :key="reaction.id"
           >
             <img
@@ -90,12 +90,21 @@
         </ul>
         <div class="post-reaction-count">
           <template v-if="postData.userReacted">
-            Bạn và
-            {{ postData.reaction.reduce((sum, item) => sum + item.total, -1) }}
-            người khác
+            Bạn
+            <template
+              v-if="
+                postData.reactions.reduce((sum, item) => sum + item.total, -1) >
+                1
+              "
+              >và
+              {{
+                postData.reactions.reduce((sum, item) => sum + item.total, -1)
+              }}
+              người khác</template
+            >
           </template>
           <template v-else>
-            {{ postData.reaction.reduce((sum, item) => sum + item.total, 0) }}
+            {{ postData.reactions.reduce((sum, item) => sum + item.total, 0) }}
           </template>
         </div>
       </div>
@@ -192,9 +201,10 @@
 </template>
 
 <script>
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import PostReactionComponent from "@/components/Post/PostReactionComponent.vue";
 import PostService from "@/services/post.service";
+import { useStore } from "vuex";
 export default {
   components: { PostReactionComponent },
   props: {
@@ -204,9 +214,17 @@ export default {
     },
   },
   setup(props) {
+    const store = useStore();
+    const user = computed(() => store.getters["user/getUser"]);
+    const reactions = store.state.reaction.reactions;
+
     const isLoaded = ref(false);
     const isShowReaction = ref(false);
-    const postData = reactive(props.post);
+    const postData = reactive({
+      ...props.post,
+      reactions: [],
+      userReacted: null,
+    });
 
     // Timer hover show reaction container
     let hoverTimer;
@@ -219,14 +237,23 @@ export default {
 
     function loadReaction() {
       PostService.getReaction(postData.id).then((response) => {
-        postData.reaction = response.data;
+        postData.reactions = response.data.reactions;
+        const userReacted = response.data.reactions.find((item) => {
+          return item.users[0].id == user.value.id;
+        });
+
+        if (userReacted) {
+          postData.userReacted = reactions.find((item) => {
+            return item.id == userReacted.id;
+          });
+        }
+        // console.log(postData);
       });
     }
 
     function loadData() {
       loadCommentCount();
       loadReaction();
-      getReaction();
     }
 
     function onHandleClickReaction() {
@@ -263,30 +290,21 @@ export default {
         if (id != postData.userReacted.id) {
           updateReaction(id);
         } else {
-          deleteReaction(postData.id);
+          deleteReaction();
         }
       }
     }
 
     // Reaction CRUD
-    function getReaction() {
-      PostService.getUserReaction(postData.id).then(
-        (res) => {
-          postData.userReacted = res.data;
-        },
-        (err) => {
-          console.error(err);
-        }
-      );
-    }
 
     function createReaction(id = 1) {
       PostService.createPostReaction({
         postId: postData.id,
         reactionId: id,
       }).then(
-        (response) => {
-          postData.userReacted = response.data;
+        (res) => {
+          postData.userReacted = res.data;
+          updateUserReacted(res.data);
         },
         (error) => {
           console.error(error);
@@ -299,8 +317,8 @@ export default {
         postId: postData.id,
         reactionId: id,
       }).then(
-        (response) => {
-          postData.userReacted = response.data;
+        (res) => {
+          updateUserReacted(res.data);
         },
         (error) => {
           console.error(error);
@@ -310,13 +328,65 @@ export default {
 
     function deleteReaction() {
       PostService.deletePostReaction(postData.id).then(
-        () => {
-          postData.userReacted = null;
+        (response) => {
+          console.log(response);
+          updateUserReacted(postData.userReacted);
         },
         (error) => {
           console.error(error);
         }
       );
+    }
+
+    function updateUserReacted(reaction) {
+      // Find reaction in postData.reactions which is user added
+      const isExistUserReacted = postData.reactions.find((item) => {
+        return item.users[0].id == user.value.id;
+      });
+
+      // exist => delete or update
+      if (isExistUserReacted) {
+        console.log(isExistUserReacted);
+        // If reaction == reactionUserAdded => delete
+        if (isExistUserReacted.id == reaction.id) {
+          // If only user reacted, delete it
+          if (isExistUserReacted.total == 1) {
+            postData.reactions = postData.reactions.filter(
+              (item) => item.id != isExistUserReacted.id
+            );
+          } else {
+            isExistUserReacted.users.shift();
+            postData.userReacted = null;
+          }
+        }
+        // update
+        else {
+          // Check reaction will add, exits => add user to users list, total ++ | create new
+          const postReactionWillAdd = postData.reactions.find((item) => {
+            return item.id == reaction.id;
+          });
+
+          const userWillAdd = {
+            id: user.value.id,
+            fullName: `${user.value.firstName}} ${user.value.lastName}`,
+            avatarUrl: user.value.avatarUrl,
+          };
+
+          if (postReactionWillAdd) {
+            postReactionWillAdd.users.unshift(userWillAdd);
+            postReactionWillAdd.total++;
+          } else {
+            postData.reactions.push({
+              ...reaction,
+              total: 0,
+              users: [userWillAdd],
+            });
+          }
+          postData.userReacted = reaction;
+        }
+      }
+
+      console.log(postData.reactions);
     }
 
     onMounted(() => {

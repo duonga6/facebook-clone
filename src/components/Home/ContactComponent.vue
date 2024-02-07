@@ -63,7 +63,7 @@
         <div class="message-item">
           <div class="message-img">
             <img
-              src="https://scontent-hkg4-1.xx.fbcdn.net/v/t39.30808-1/400528748_2329401833926909_5567485107281694487_n.jpg?stp=c0.11.40.40a_cp0_dst-jpg_p40x40&_nc_cat=100&ccb=1-7&_nc_sid=5740b7&_nc_eui2=AeFi-8vOWqK4MTNCEzblJoQ4HwNFGHH3PHwfA0UYcfc8fBmj5gCRXH0Q3AlPp4YlVcerEfKQQEOEHjPuC7NQS_gp&_nc_ohc=W8KQ7-3Xgm4AX9sZf4x&_nc_ht=scontent-hkg4-1.xx&oh=00_AfBtxL8UG2u6nDg1mADE800Gn1gB93khJAkTtXGPm53XzQ&oe=65AFD2BD"
+              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
               alt=""
             />
           </div>
@@ -74,7 +74,7 @@
         <div class="message-item online">
           <div class="message-img">
             <img
-              src="https://scontent-hkg4-1.xx.fbcdn.net/v/t39.30808-1/400528748_2329401833926909_5567485107281694487_n.jpg?stp=c0.11.40.40a_cp0_dst-jpg_p40x40&_nc_cat=100&ccb=1-7&_nc_sid=5740b7&_nc_eui2=AeFi-8vOWqK4MTNCEzblJoQ4HwNFGHH3PHwfA0UYcfc8fBmj5gCRXH0Q3AlPp4YlVcerEfKQQEOEHjPuC7NQS_gp&_nc_ohc=W8KQ7-3Xgm4AX9sZf4x&_nc_ht=scontent-hkg4-1.xx&oh=00_AfBtxL8UG2u6nDg1mADE800Gn1gB93khJAkTtXGPm53XzQ&oe=65AFD2BD"
+              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
               alt=""
             />
           </div>
@@ -85,7 +85,7 @@
         <div class="message-item">
           <div class="message-img">
             <img
-              src="https://scontent-hkg4-1.xx.fbcdn.net/v/t39.30808-1/400528748_2329401833926909_5567485107281694487_n.jpg?stp=c0.11.40.40a_cp0_dst-jpg_p40x40&_nc_cat=100&ccb=1-7&_nc_sid=5740b7&_nc_eui2=AeFi-8vOWqK4MTNCEzblJoQ4HwNFGHH3PHwfA0UYcfc8fBmj5gCRXH0Q3AlPp4YlVcerEfKQQEOEHjPuC7NQS_gp&_nc_ohc=W8KQ7-3Xgm4AX9sZf4x&_nc_ht=scontent-hkg4-1.xx&oh=00_AfBtxL8UG2u6nDg1mADE800Gn1gB93khJAkTtXGPm53XzQ&oe=65AFD2BD"
+              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
               alt=""
             />
           </div>

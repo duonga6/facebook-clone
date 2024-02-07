@@ -82,11 +82,7 @@
       <hr />
       <div class="user-info-container">
         <div class="avatar-container">
-          <img
-            class="avatar-img"
-            src="https://scontent.fsgn5-3.fna.fbcdn.net/v/t39.30808-1/401634800_1758904131293128_3687854811635378589_n.jpg?stp=cp0_dst-jpg_p40x40&_nc_cat=104&ccb=1-7&_nc_sid=5740b7&_nc_eui2=AeFl4416Ba8z62EdpWdJ0enyoHnFwF-4ZECgecXAX7hkQLUvUffF8N3dyPcOqW_HipEgg-EKrh-tjV9wcQXcUZov&_nc_ohc=vvbf2CdV-jcAX-9gv7d&_nc_ht=scontent.fsgn5-3.fna&oh=00_AfB3ydP1N2eGvvoex77K66MVPT29bTzRthaaRuPVwSso_w&oe=65BAC359"
-            alt=""
-          />
+          <img class="avatar-img" :src="user.avatarUrl" alt="" />
         </div>
         <div class="user-info">
           <p class="user-info__name">Phạm Dương</p>
@@ -172,9 +168,12 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch } from "vue";
+import { useStore } from "vuex";
 export default {
   setup() {
+    const store = useStore();
+    const user = ref(store.state.user.user);
     const isShowAddPostForm = ref(false);
     const dataAccessRange = ref([
       {
@@ -208,6 +207,13 @@ export default {
       console.log(selectedAccessRange.value.value);
     }
 
+    watch(
+      () => store.state.user.user,
+      (newVal) => {
+        user.value = newVal;
+      }
+    );
+
     return {
       handleCloseAddPostForm,
       handleOpenAddPostForm,
@@ -215,6 +221,7 @@ export default {
       dataAccessRange,
       selectedAccessRange,
       isShowAddPostForm,
+      user,
     };
   },
 };

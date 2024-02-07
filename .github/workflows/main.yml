@@ -21,8 +21,7 @@ jobs:
 
       - name: Build
         run: |
-          docker build . -t duonga6/facebook-clone
-          docker run -d -p 8080:80 -p 8081:443 --name facebook-clone duonga6/facebook-clone
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/facebook-clone
 
       - name: Push images to Docker Hub
         run: |
@@ -46,7 +45,7 @@ jobs:
           script: |
             docker stop facebook-clone
             docker container prune -f
-            docker image pull duonga6/facebook-clone
-            docker run -d -p 8080:80 -p 8081:443 --name facebook-clone duonga6/facebook-clone
+            docker image pull ${{ secrets.DOCKER_USERNAME }}/facebook-clone
+            docker run -d --network nginx-network -p 8080:8080 --name facebook-clone ${{ secrets.DOCKER_USERNAME }}/facebook-clone
             docker image prune -f
-            ufw-docker allow facebook-clone
+            docker restart nginx

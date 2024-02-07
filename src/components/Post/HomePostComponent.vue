@@ -1,27 +1,17 @@
 <template>
   <div class="post-list mt-4">
-    <post-component v-for="post in state.posts" :key="post.id" :post="post" />
+    <post-component v-for="post in posts" :key="post.id" :post="post" />
   </div>
 </template>
 
 <script>
 import PostComponent from "@/components/Post/PostComponent.vue";
 import { useStore } from "vuex";
-import { reactive, watch } from "vue";
+import { computed } from "vue";
 export default {
   components: { PostComponent },
   setup() {
     const store = useStore();
-    const state = reactive({
-      posts: store.getters["post/getHomePosts"],
-    });
-
-    watch(
-      () => store.state.post.homePosts.posts,
-      () => {
-        state.posts = store.getters["post/getHomePosts"];
-      }
-    );
 
     store.dispatch("post/getHomePost", {
       pageSize: 20,
@@ -30,7 +20,7 @@ export default {
     });
 
     return {
-      state,
+      posts: computed(() => store.getters["post/getHomePosts"]),
     };
   },
 };

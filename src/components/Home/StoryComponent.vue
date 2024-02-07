@@ -4,10 +4,7 @@
       <li>
         <div class="story-item">
           <div class="story-img">
-            <img
-              src="https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png"
-              alt=""
-            />
+            <img :src="user.avatarUrl" alt="" />
           </div>
           <div class="add-story-container">
             <p class="add-story-text">Tạo tin</p>
@@ -47,7 +44,7 @@
           <div class="story-owner-img">
             <img
               class="w-full h-full object-contain"
-              src="https://scontent-hkg1-2.xx.fbcdn.net/v/t39.30808-1/401634800_1758904131293128_3687854811635378589_n.jpg?stp=dst-jpg_s160x160&_nc_cat=104&ccb=1-7&_nc_sid=5740b7&_nc_eui2=AeFl4416Ba8z62EdpWdJ0enyoHnFwF-4ZECgecXAX7hkQLUvUffF8N3dyPcOqW_HipEgg-EKrh-tjV9wcQXcUZov&_nc_ohc=RufgSnZbyvIAX88qtsv&_nc_ht=scontent-hkg1-2.xx&oh=00_AfDdDbx4OvxyC24iOyeJFZ5qUbJbgHWlKvOjsMHPEpCkcw&oe=65AEE5D9"
+              :src="user.avatarUrl"
               alt=""
             />
           </div>
@@ -57,6 +54,28 @@
     </ul>
   </div>
 </template>
+
+<script>
+import { ref, watch } from "vue";
+import { useStore } from "vuex";
+export default {
+  setup() {
+    const store = useStore();
+    const user = ref(store.state.user.user);
+
+    watch(
+      () => store.state.user.user,
+      (newVal) => {
+        user.value = newVal;
+      }
+    );
+
+    return {
+      user,
+    };
+  },
+};
+</script>
 
 <style lang="scss" scoped>
 .story-list {

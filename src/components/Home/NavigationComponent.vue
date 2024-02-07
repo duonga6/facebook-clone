@@ -191,39 +191,6 @@
             <div class="navigation-text">K15CNTT2_FIT-HaUI</div>
           </router-link>
         </li>
-        <li>
-          <router-link to="/" class="navigation-item">
-            <div class="navigation-img">
-              <img
-                src="https://scontent-hkg1-1.xx.fbcdn.net/v/t39.30808-6/411618776_698171142406309_3686587092606417502_n.png?stp=c8.0.50.50a_cp0_dst-png_p50x50&_nc_cat=105&ccb=1-7&_nc_sid=f22548&_nc_eui2=AeEuNmEWTAGFb8fNr--6UcSQfZlm0kUNTqV9mWbSRQ1OpTR2crskwaj7JYLZ_PMoQtahLrJinoaR-1F9On9Bd_YG&_nc_ohc=ZGuGdvjStm4AX-l_8o8&_nc_zt=23&_nc_ht=scontent-hkg1-1.xx&oh=00_AfAIzBnoq5TvGWmZwISbuN0V-HGP0K4t094xENJCKTrgeg&oe=65AEDB65"
-                alt=""
-              />
-            </div>
-            <div class="navigation-text">Lộ trình DevOps $1000</div>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/" class="navigation-item">
-            <div class="navigation-img">
-              <img
-                src="https://scontent-hkg1-1.xx.fbcdn.net/v/t39.2081-6/42630609_2166936443330818_3464735768197464064_n.png?stp=c6.6.31.31a_dst-png_p36x36&_nc_cat=1&ccb=1-7&_nc_sid=ed3f67&_nc_eui2=AeGy-3g-G3WO2TnOKtS7ucN9kGwkPrvJAp6QbCQ-u8kCnj-diNovdvqAexDLGWcrvN5rArqGCrQUCAh-23YIKMxC&_nc_ohc=IADXVFKK50QAX-E476G&_nc_ht=scontent-hkg1-1.xx&oh=00_AfBgmdY9nlQ1KamfFP2Wj18ApYVn5pZ2Lno3ntbFXCzVuQ&oe=65AFC96F"
-                alt=""
-              />
-            </div>
-            <div class="navigation-text">8 Ball Pool</div>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/" class="navigation-item">
-            <div class="navigation-img">
-              <img
-                src="https://scontent-hkg1-2.xx.fbcdn.net/v/t39.30808-1/272875164_326636889481145_4153457764686574298_n.jpg?stp=c22.0.40.40a_cp0_dst-jpg_p40x40&_nc_cat=104&ccb=1-7&_nc_sid=4da83f&_nc_eui2=AeF4vNGAEVvff0qlRec7dArQiEodLQfByZuISh0tB8HJm55qBUlVG8w-Ir93O_QsLgWKx8dAG--C_LZE7ELZsZvX&_nc_ohc=n-vsmeFUIbYAX__JHZ5&_nc_ht=scontent-hkg1-2.xx&oh=00_AfDv41NKdsHw8d6Wo57RIqXgnp4MobgWctKJ2hyPFRHafQ&oe=65B05ABF"
-                alt=""
-              />
-            </div>
-            <div class="navigation-text">World of Tanks Blitz - DP x TK</div>
-          </router-link>
-        </li>
       </ul>
     </div>
   </div>

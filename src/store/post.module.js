@@ -25,8 +25,8 @@ export const post = {
   },
   mutations: {
     getPostSuccess(state, response) {
-      state.homePosts.total = response.totalItems;
       state.homePosts.posts = response.data;
+      state.homePosts.total = response.totalItems;
     },
   },
   getters: {

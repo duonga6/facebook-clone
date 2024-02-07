@@ -251,14 +251,12 @@
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 export default {
   setup() {
     const isShowUserMenu = ref(false);
-
     const store = useStore();
-    const user = ref(store.state.auth.user);
 
     function handleToggleUserMenu() {
       isShowUserMenu.value = !isShowUserMenu.value;
@@ -268,15 +266,12 @@ export default {
       store.dispatch("auth/logout");
     }
 
-    watch(
-      () => store.state.auth.user,
-      (newValue) => {
-        user.value = newValue;
-        console.log(user.value);
-      }
-    );
-
-    return { user, isShowUserMenu, handleToggleUserMenu, handleLogout };
+    return {
+      user: computed(() => store.getters["user/getUser"]),
+      isShowUserMenu,
+      handleToggleUserMenu,
+      handleLogout,
+    };
   },
 };
 </script>
