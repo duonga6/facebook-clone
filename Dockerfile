@@ -6,5 +6,5 @@ COPY ./ .
 RUN npm run build
 RUN mkdir static
 RUN cp -r dist/* static/
-EXPOSE 3000
+EXPOSE 8080
 CMD ["npx", "http-server", "static", "-p", "3000"]
