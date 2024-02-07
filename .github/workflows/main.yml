@@ -47,6 +47,6 @@ jobs:
             docker image pull duonga6/facebook-clone
             docker container stop facebook-clone
             docker container prune -f
-            docker run -d -p 8080:80 --name facebook-clone duonga6/facebook-clone
+            docker run -d -p 8080:80 8081:443 --name facebook-clone duonga6/facebook-clone
             docker image prune -f
             ufw-docker allow facebook-clone
