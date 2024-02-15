@@ -1,11 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [],
-  purge: [
-    "./index.html",
-    "./public/index.html",
-    "./src/**/*.{vue,js,ts,jsx,tsx}",
-  ],
+  purge: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -51,6 +47,7 @@ module.exports = {
         13: "13px",
         15: "15px",
         11: "11px",
+        12: "12px",
       },
       maxWidth: {
         "news-width": "680px",
@@ -58,9 +55,14 @@ module.exports = {
       },
       lineHeight: {
         18: "18px",
+        15: "15px",
+        13: "13px",
       },
       scale: {
         120: "1.2",
+      },
+      spacing: {
+        92: "92%",
       },
     },
   },

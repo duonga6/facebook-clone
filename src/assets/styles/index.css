@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import 'primeicons/primeicons.css';
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -32,4 +33,3 @@ body {
   --surface-900: 15 23 42;
   --surface-950: 3 6 23;
 }
-

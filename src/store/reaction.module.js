@@ -27,4 +27,9 @@ export const reaction = {
       console.log(error);
     },
   },
+  getters: {
+    getReactions(state) {
+      return state.reactions;
+    },
+  },
 };

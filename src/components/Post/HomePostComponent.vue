@@ -7,16 +7,18 @@
 <script>
 import PostComponent from "@/components/Post/PostComponent.vue";
 import { useStore } from "vuex";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 export default {
   components: { PostComponent },
   setup() {
     const store = useStore();
 
-    store.dispatch("post/getHomePost", {
-      pageSize: 20,
-      pageNumber: 1,
-      searchString: null,
+    onMounted(() => {
+      store.dispatch("post/getHomePost", {
+        pageSize: 20,
+        pageNumber: 1,
+        searchString: null,
+      });
     });
 
     return {

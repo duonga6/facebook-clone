@@ -28,6 +28,10 @@ export const post = {
       state.homePosts.posts = response.data;
       state.homePosts.total = response.totalItems;
     },
+    reset(state) {
+      state.homePosts.total = 0;
+      state.homePosts.posts = [];
+    },
   },
   getters: {
     getHomePosts(state) {

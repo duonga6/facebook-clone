@@ -10,10 +10,7 @@
 // @ is an alias to /src
 import NavigationComponent from "@/components/Home/NavigationComponent.vue";
 import ContactComponent from "@/components/Home/ContactComponent.vue";
-import NewsComponent from "@/components/Home/MainHomeComponent.vue";
-import { useStore } from "vuex";
-import { useRouter } from "vue-router";
-import { watch } from "vue";
+import NewsComponent from "@/components/Home/NewsComponent.vue";
 
 export default {
   name: "HomeView",
@@ -22,20 +19,6 @@ export default {
     ContactComponent,
     NewsComponent,
   },
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-
-    watch(
-      () => store.state.auth.status.loggedIn,
-      (newVal) => {
-        if (!newVal) {
-          router.push({ name: "login", params: {} });
-        }
-      }
-    );
-
-    return {};
-  },
+  setup() {},
 };
 </script>

@@ -239,7 +239,7 @@ import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-import { days, months, years } from "@/utilities/dateSplit";
+import { days, months, years } from "@/utilities/dateUtils";
 
 export default {
   components: { Form, Field, ErrorMessage },

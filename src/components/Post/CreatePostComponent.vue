@@ -82,7 +82,7 @@
       <hr />
       <div class="user-info-container">
         <div class="avatar-container">
-          <img class="avatar-img" :src="user.avatarUrl" alt="" />
+          <img class="avatar-img" :src="user?.avatarUrl" alt="" />
         </div>
         <div class="user-info">
           <p class="user-info__name">Phạm Dương</p>
@@ -168,12 +168,11 @@
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 export default {
   setup() {
     const store = useStore();
-    const user = ref(store.state.user.user);
     const isShowAddPostForm = ref(false);
     const dataAccessRange = ref([
       {
@@ -207,13 +206,6 @@ export default {
       console.log(selectedAccessRange.value.value);
     }
 
-    watch(
-      () => store.state.user.user,
-      (newVal) => {
-        user.value = newVal;
-      }
-    );
-
     return {
       handleCloseAddPostForm,
       handleOpenAddPostForm,
@@ -221,7 +213,7 @@ export default {
       dataAccessRange,
       selectedAccessRange,
       isShowAddPostForm,
-      user,
+      user: computed(() => store.getters["user/getUser"]),
     };
   },
 };

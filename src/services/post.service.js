@@ -113,6 +113,28 @@ class PostService {
         return Promise.reject(error);
       });
   }
+
+  createComment(postId, body) {
+    return api
+      .post(`/Posts/${postId}/Comments`, body)
+      .then((res) => {
+        if (res.data.success) {
+          return res.data;
+        } else {
+          return Promise.reject(res.data);
+        }
+      })
+      .catch((err) => {
+        return Promise.reject(err);
+      });
+  }
+
+  getComment(postId) {
+    return api
+      .get("/PostComments/GetOverview/" + postId)
+      .then((res) => console.log(res.data))
+      .catch((err) => console.log(err));
+  }
 }
 
 export default new PostService();

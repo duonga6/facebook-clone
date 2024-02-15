@@ -21,10 +21,6 @@ export const auth = {
         }
       );
     },
-    logout({ commit }) {
-      AuthService.logout();
-      commit("logout");
-    },
     register({ commit }, user) {
       return AuthService.register(user).then(
         (response) => {
@@ -52,6 +48,7 @@ export const auth = {
     },
     logout(state) {
       state.status.loggedIn = false;
+      AuthService.logout();
       state.user = null;
     },
     registerSuccess(state, user) {

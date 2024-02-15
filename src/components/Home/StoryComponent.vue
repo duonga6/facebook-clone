@@ -4,7 +4,7 @@
       <li>
         <div class="story-item">
           <div class="story-img">
-            <img :src="user.avatarUrl" alt="" />
+            <img :src="user?.avatarUrl" alt="" />
           </div>
           <div class="add-story-container">
             <p class="add-story-text">Tạo tin</p>
@@ -44,7 +44,7 @@
           <div class="story-owner-img">
             <img
               class="w-full h-full object-contain"
-              :src="user.avatarUrl"
+              :src="user?.avatarUrl"
               alt=""
             />
           </div>
@@ -56,22 +56,14 @@
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { computed } from "vue";
 import { useStore } from "vuex";
 export default {
   setup() {
     const store = useStore();
-    const user = ref(store.state.user.user);
-
-    watch(
-      () => store.state.user.user,
-      (newVal) => {
-        user.value = newVal;
-      }
-    );
 
     return {
-      user,
+      user: computed(() => store.getters["user/getUser"]),
     };
   },
 };

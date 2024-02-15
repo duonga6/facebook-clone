@@ -12,13 +12,12 @@
               {{
                 postData.createdAt.getDate() +
                 " tháng " +
-                (postData.createdAt.getMonth() + 1) +
+                postData.createdAt.getMonth() +
+                1 +
                 " lúc " +
                 postData.createdAt.getHours() +
                 ":" +
-                (postData.createdAt.getMinutes() < 10
-                  ? "0" + postData.createdAt.getMinutes()
-                  : postData.createdAt.getMinutes())
+                postData.createdAt.getMinutes()
               }}
             </div>
             <div class="">.</div>
@@ -71,13 +70,13 @@
     </div>
     <div
       class="post-reaction-comment"
-      v-if="postData.reaction.reactions.length > 0 || postData.totalComment"
+      v-if="postData.reactions.length > 0 || postData.totalComment"
     >
-      <div class="post-reaction" v-if="postData.reaction.reactions.length > 0">
+      <div class="post-reaction" v-if="postData.reactions.length > 0">
         <ul class="post-reaction-list">
           <li
             class="post-reaction-item"
-            v-for="reaction in postData.reaction.reactions"
+            v-for="reaction in postData.reactions"
             :key="reaction.id"
           >
             <img
@@ -90,21 +89,38 @@
           </li>
         </ul>
         <div class="post-reaction-count">
-          {{ postData.reaction.total }}
+          <template v-if="postData.userReacted">
+            Bạn
+            <template
+              v-if="
+                postData.reactions.reduce((sum, item) => sum + item.total, 0) >
+                1
+              "
+              >và
+              {{
+                postData.reactions.reduce((sum, item) => sum + item.total, 0) -
+                1
+              }}
+              người khác</template
+            >
+          </template>
+          <template v-else>
+            {{ postData.reactions.reduce((sum, item) => sum + item.total, 0) }}
+          </template>
         </div>
       </div>
-      <div class="post-comment-count" v-if="postData.comment.total > 0">
-        {{ postData.comment.total }} bình luận
+      <div class="post-comment-count" v-if="postData.totalComment">
+        {{ postData.totalComment }} bình luận
       </div>
     </div>
     <div class="post-action">
       <div
         class="post-action-item action--reaction"
-        @mouseenter="onHoverReaction"
+        @mouseover="onHoverReaction"
         @mouseleave="onCloseReaction"
         @click="onHandleClickReaction"
       >
-        <template v-if="!postData.reaction.userReacted">
+        <template v-if="!postData.userReacted">
           <div class="post-action-icon">
             <i
               data-visualcompletion="css-img"
@@ -124,28 +140,25 @@
         </template>
         <template v-else>
           <div class="post-action-icon">
-            <img :src="postData.reaction.userReacted.iconUrl" alt="" />
+            <img :src="postData.userReacted.iconUrl" alt="" />
           </div>
           <div
             class="post-action-text"
-            :style="{ color: postData.reaction.userReacted.colorCode }"
+            :style="{ color: postData.userReacted.colorCode }"
           >
-            {{ postData.reaction.userReacted.name }}
+            {{ postData.userReacted.name }}
           </div>
         </template>
-        <!-- Hover hiện chọn reaction -->
         <div
-          class="post-reaction-create transition-all duration-200"
+          class="post-reaction-create"
           :class="
-            isShowReaction
-              ? 'visible opacity-100 translate-y-0'
-              : 'invisible opacity-0 translate-y-3'
+            isShowReaction ? 'visible opacity-100' : 'invisible opacity-0'
           "
         >
-          <reaction-component
+          <post-reaction-component
             :isShowReaction="isShowReaction"
             @onSelectReaction="handleSelectReaction"
-          ></reaction-component>
+          ></post-reaction-component>
         </div>
       </div>
       <div class="post-action-item action--comment">
@@ -185,28 +198,28 @@
         <div class="post-action-text">Chia sẻ</div>
       </div>
     </div>
-    <div class="post-comment">
-      <button class="font-semibold text-gray-500 text-15 my-2 hover:underline">
-        Xem thêm bình luận
-      </button>
-      <post-comment-component :data="overviewComment"></post-comment-component>
-      <div class="create-comment-container mt-2">
-        <div class="user-avatar">
-          <img class="" :src="user.avatarUrl" alt="" />
+    <div class="post-comment mx-4 py-2 border-t border-gray-300">
+      <div class="create-comment-container flex items-center">
+        <div class="user-avatar w-8 h-8 rounded-full overflow-hidden">
+          <img
+            class="w-full h-full object-cover"
+            :src="user.avatarUrl"
+            alt=""
+          />
         </div>
-        <div class="post-comment-input">
+        <div class="post-comment-input relative ms-2 flex-1">
           <div class="flex">
             <textarea
               @input="onCommentChange"
               rows="1"
               placeholder="Viết bình luận công khai..."
-              class="comment-input"
+              class="comment-input outline-none bg-gray-100 placeholder:text-gray-600 text-15 ps-4 pe-12 py-1.5 rounded-2xl w-full resize-none overflow-hidden"
               v-model="commentInput"
             />
           </div>
-          <div class="post-send-btn">
+          <div class="post-send-btn absolute right-2 top-1/2 -translate-y-1/2">
             <button
-              class="button-send"
+              class="button-send flex items-center p-1.5"
               :disabled="!commentInput"
               @click="createComment"
             >
@@ -224,14 +237,11 @@
 
 <script>
 import { computed, onMounted, reactive, ref } from "vue";
-import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
+import PostReactionComponent from "@/components/Reaction/PostReactionComponent.vue";
 import PostService from "@/services/post.service";
-import PostReactionService from "@/services/post-reaction.service";
-import PostCommentService from "@/services/post-comment.service";
 import { useStore } from "vuex";
-import PostCommentComponent from "./PostCommentComponent.vue";
 export default {
-  components: { ReactionComponent, PostCommentComponent },
+  components: { PostReactionComponent },
   props: {
     post: {
       type: Object,
@@ -241,89 +251,83 @@ export default {
   setup(props) {
     const store = useStore();
     const user = computed(() => store.getters["user/getUser"]);
+    const reactions = computed(() => store.getters["reaction/getReactions"]);
     const commentInput = ref(null);
-    const overviewComment = reactive([]);
 
     const isLoaded = ref(false);
     const isShowReaction = ref(false);
     const postData = reactive({
       ...props.post,
-      reaction: {
-        reactions: [],
-        total: 0,
-        userReacted: null,
-      },
-      comment: {
-        comments: reactive([]),
-        total: 0,
-      },
+      reactions: [],
+      userReacted: null,
     });
 
-    function loadOverviewComment() {
-      PostCommentService.getOverview(postData.id).then(
-        (res) => {
-          postData.comment = res.data;
-          overviewComment.push(res.data.comments[0]);
-          console.log(res.data);
-        },
-        (err) => {
-          console.log(err);
-        }
-      );
+    // Timer hover show reaction container
+    let hoverTimer;
+
+    function loadCommentCount() {
+      PostService.getCountComment(postData.id).then((response) => {
+        postData.totalComment = response.data;
+      });
     }
 
-    function loadOverviewReaction() {
-      PostReactionService.getOverviewReaction(postData.id).then(
-        (res) => {
-          postData.reaction = res.data;
-        },
-        (err) => {
-          console.log(err);
+    function loadComment() {
+      PostService.getComment(postData.id);
+    }
+
+    function loadReaction() {
+      PostService.getReaction(postData.id).then((response) => {
+        postData.reactions = response.data.reactions;
+        const userReacted = response.data.reactions.find((item) => {
+          return item.users[0].id == user.value.id;
+        });
+
+        if (userReacted) {
+          postData.userReacted = reactions.value.find((item) => {
+            return item.id == userReacted.id;
+          });
         }
-      );
+      });
     }
 
     // Click nút like, User đã thả reaction ? xóa : thêm
     function onHandleClickReaction() {
-      onCloseReaction();
+      isShowReaction.value = false;
+      clearTimeout(hoverTimer);
 
-      if (!postData.reaction.userReacted) {
+      if (!postData.userReacted) {
         createReaction();
       } else {
         deleteReaction();
       }
     }
 
-    let timerHover;
-
     // Hiện chọn reaction khi hover nút like
     function onHoverReaction() {
       if (!isShowReaction.value) {
-        timerHover = setTimeout(() => {
+        hoverTimer = setTimeout(() => {
           isShowReaction.value = true;
-        }, 500);
+        }, 600);
       }
     }
 
     // Đóng show chọn reaction
     function onCloseReaction() {
-      clearTimeout(timerHover);
-      setTimeout(() => {
-        isShowReaction.value = false;
-      }, 200);
+      isShowReaction.value = false;
+      clearTimeout(hoverTimer);
     }
 
     // User chọn reaction
     function handleSelectReaction(id) {
-      clearTimeout(timerHover);
       isShowReaction.value = false;
+      clearTimeout(hoverTimer);
 
       // User chưa reaction ? thêm : cập nhật | xóa
-      if (!postData.reaction.userReacted) {
+      if (!postData.userReacted) {
         createReaction(id);
       } else {
         // Reaction được chọn = reaction đã thêm ? xóa : update
-        if (id != postData.reaction.userReacted.id) {
+        if (id != postData.userReacted.id) {
           updateReaction(id);
         } else {
           deleteReaction();
@@ -345,8 +349,29 @@ export default {
         postId: postData.id,
         reactionId: id,
       }).then(
-        () => {
-          loadOverviewReaction();
+        (res) => {
+          postData.userReacted = res.data;
+
+          const isExistReation = postData.reactions.find((item) => {
+            return item.id == res.data.id;
+          });
+
+          const userWillAddReaction = {
+            id: user.value.id,
+            fullName: `${user.value.firstName} ${user.value.lastName}`,
+            avatarUrl: user.value.avatarUrl,
+          };
+
+          if (isExistReation) {
+            isExistReation.users.unshift(userWillAddReaction);
+            isExistReation.total++;
+          } else {
+            postData.reactions.push({
+              ...res.data,
+              total: 1,
+              users: [userWillAddReaction],
+            });
+          }
         },
         (error) => {
           console.error(error);
@@ -359,8 +384,43 @@ export default {
         postId: postData.id,
         reactionId: id,
       }).then(
-        () => {
-          loadOverviewReaction();
+        (res) => {
+          const currentUser = {
+            id: user.value.id,
+            fullName: `${user.value.firstName} ${user.value.lastName}`,
+            avatarUrl: user.value.avatarUrl,
+          };
+          const currentUserReacted = postData.userReacted;
+          const currentReacted = postData.reactions.find(
+            (item) => item.id == currentUserReacted.id
+          );
+
+          if (currentReacted) {
+            if (currentReacted.total == 1) {
+              postData.reactions = postData.reactions.filter(
+                (item) => item.id != currentReacted.id
+              );
+            } else {
+              currentReacted.total--;
+              currentReacted.user.shift();
+            }
+          }
+
+          const newReacted = postData.reactions.find(
+            (item) => item.id == res.data.id
+          );
+          if (newReacted) {
+            newReacted.total++;
+            newReacted.users.unshift(currentUser);
+          } else {
+            postData.reactions.push({
+              ...res.data,
+              users: [currentUser],
+              total: 1,
+            });
+          }
+
+          postData.userReacted = res.data;
         },
         (error) => {
           console.error(error);
@@ -371,7 +431,22 @@ export default {
     function deleteReaction() {
       PostService.deletePostReaction(postData.id).then(
         () => {
-          loadOverviewReaction();
+          const isExistUserReacted = postData.reactions.find((item) => {
+            return item.users[0].id == user.value.id;
+          });
+
+          if (isExistUserReacted) {
+            if (isExistUserReacted.total == 1) {
+              postData.reactions = postData.reactions.filter(
+                (item) => item.id != isExistUserReacted.id
+              );
+            } else {
+              isExistUserReacted.users.shift();
+              isExistUserReacted.total--;
+            }
+            postData.userReacted = null;
+          }
+          console.log(postData.reactions);
         },
         (error) => {
           console.error(error);
@@ -393,8 +468,9 @@ export default {
     }
 
     onMounted(() => {
-      loadOverviewComment();
-      loadOverviewReaction();
+      loadReaction();
+      loadCommentCount();
+      loadComment();
     });
 
     return {
@@ -403,7 +479,6 @@ export default {
       isShowReaction,
       user,
       commentInput,
-      overviewComment,
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
@@ -494,26 +569,16 @@ export default {
   }
 
   .post-comment {
-    @apply mx-4 py-2 pt-0 border-t border-gray-300;
     .create-comment-container {
-      @apply flex items-center;
       .user-avatar {
-        @apply w-8 h-8 rounded-full overflow-hidden;
-        img {
-          @apply w-full h-full object-cover;
-        }
       }
 
       .post-comment-input {
-        @apply relative ms-2 flex-1;
         .comment-input {
-          @apply outline-none bg-gray-100 placeholder:text-gray-600 text-15 ps-4 pe-12 py-1.5 rounded-2xl w-full resize-none overflow-hidden;
         }
       }
       .post-send-btn {
-        @apply absolute right-2 top-1/2 -translate-y-1/2;
         .button-send {
-          @apply flex items-center p-1.5;
         }
       }
     }

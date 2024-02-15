@@ -1,10 +1,12 @@
 import userService from "@/services/user.service";
 
+const initialState = {
+  user: null,
+};
+
 export const user = {
   namespaced: true,
-  state: () => ({
-    user: {},
-  }),
+  state: initialState,
   actions: {
     getDataUser({ commit }) {
       return userService
@@ -17,15 +19,12 @@ export const user = {
           console.log(error);
         });
     },
-    logout({ commit }) {
-      commit("resetUserData");
-    },
   },
   mutations: {
     getDataSuccess(state, user) {
       state.user = user;
     },
-    resetUserData(state) {
+    reset(state) {
       state.user = null;
     },
   },

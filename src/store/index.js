@@ -9,6 +9,12 @@ export default createStore({
   state: {},
   getters: {},
   mutations: {},
-  actions: {},
+  actions: {
+    logout({ commit }) {
+      commit("auth/logout");
+      commit("user/reset");
+      commit("post/reset");
+    },
+  },
   modules: { auth, user, mediaType, post, reaction },
 });

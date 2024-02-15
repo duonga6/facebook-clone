@@ -253,6 +253,7 @@
 <script>
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
+import eventBus from "@/common/EventBus";
 export default {
   setup() {
     const isShowUserMenu = ref(false);
@@ -263,7 +264,7 @@ export default {
     }
 
     function handleLogout() {
-      store.dispatch("auth/logout");
+      eventBus.dispatch("logout");
     }
 
     return {

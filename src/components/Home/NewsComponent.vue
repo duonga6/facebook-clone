@@ -11,7 +11,7 @@
 <script>
 import StoryComponent from "@/components/Home/StoryComponent.vue";
 import AddPostComponent from "@/components/Post/CreatePostComponent.vue";
-import HomePostComponent from "../Post/HomePostComponent.vue";
+import HomePostComponent from "@/components/Post/HomePostComponent.vue";
 
 export default {
   components: { StoryComponent, AddPostComponent, HomePostComponent },

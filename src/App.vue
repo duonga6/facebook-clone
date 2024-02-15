@@ -21,8 +21,7 @@ export default {
     store.dispatch("reaction/getDefaultReaction");
 
     function logOut() {
-      store.dispatch("user/logout");
-      store.dispatch("auth/logout");
+      store.dispatch("logout");
       router.push({ name: "login", params: {} });
     }
 
