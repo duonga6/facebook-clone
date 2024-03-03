@@ -110,7 +110,10 @@
         v-if="comment.childComment && comment.childComment.total > 0"
       >
         <div
-          v-if="!isShowChildComment"
+          v-if="
+            !isShowChildComment &&
+            comment.childComment.total > comment.childComment.comments.length
+          "
           class="btn-show-child-comment"
           @click="showChildComment"
         >
@@ -125,24 +128,6 @@
           }}
           phản hồi
         </div>
-        <!-- <button
-          class="font-semibold text-15 text-gray-500 cursor-pointer hover:underline"
-          @click="showChildComment"
-          v-if="
-            comment.childComment.total > comment.childComment.comments.length &&
-            isShowChildComment
-          "
-        >
-          <i
-            class="pi pi-reply text-12 font-semibold"
-            style="transform: rotateX(180deg)"
-          />
-          Xem thêm
-          {{
-            comment.childComment.total - comment.childComment.comments.length
-          }}
-          phản hồi
-        </button> -->
         <loading-component
           :classCss="'ms-10 w-6 h-6'"
           v-if="isLoadingChildComment"

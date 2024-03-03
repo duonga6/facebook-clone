@@ -1,5 +1,5 @@
 <template>
-  <div class="post-list mt-4">
+  <div class="post-list flex flex-col space-y-2 mt-4">
     <post-component v-for="post in posts" :key="post.id" :post="post" />
   </div>
   <div class="relavite">

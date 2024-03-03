@@ -8,7 +8,7 @@
         />
       </div>
       <div class="top-section__input" @click="handleOpenAddPostForm">
-        Dương ơi, bạn đang nghĩ gì thể?
+        {{ user?.lastName }} ơi, bạn đang nghĩ gì thể?
       </div>
     </div>
     <hr class="mt-3" />
@@ -85,7 +85,9 @@
           <img class="avatar-img" :src="user?.avatarUrl" alt="" />
         </div>
         <div class="user-info">
-          <p class="user-info__name">Phạm Dương</p>
+          <p class="user-info__name">
+            {{ user?.firstName + " " + user?.lastName }}
+          </p>
           <drop-down
             v-model="selectedAccessRange"
             :options="dataAccessRange"
@@ -103,7 +105,8 @@
       <div class="post-content">
         <textarea
           class="post-content__text"
-          placeholder="Dương ơi, bạn đang nghĩ gì thế?"
+          :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
+          v-model="postData.content"
         />
       </div>
       <div class="additional-container">
@@ -158,7 +161,11 @@
       </div>
       <div class="p-4">
         <button
-          class="w-full bg-primary rounded-lg text-white p-2 font-semibold"
+          class="w-full rounded-lg p-2 font-semibold transition-all"
+          :class="
+            isCanPost ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
+          "
+          :disabled="!isCanPost"
         >
           Đăng
         </button>
@@ -168,12 +175,22 @@
 </template>
 
 <script>
-import { computed, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useStore } from "vuex";
+import { postService } from "@/services/post.service";
 export default {
   setup() {
     const store = useStore();
     const isShowAddPostForm = ref(false);
+    const isCanPost = computed(() => {
+      if (!postData.content && postData.postMedias.length == 0) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const user = computed(() => store.getters["user/getUser"]);
     const dataAccessRange = ref([
       {
         name: "Công khai",
@@ -191,8 +208,12 @@ export default {
         icon: "",
       },
     ]);
-
     const selectedAccessRange = ref(dataAccessRange.value[0]);
+
+    const postData = reactive({
+      content: "",
+      postMedias: [],
+    });
 
     function handleCloseAddPostForm() {
       isShowAddPostForm.value = false;
@@ -203,7 +224,14 @@ export default {
     }
 
     function handleSubmitAddForm() {
-      console.log(selectedAccessRange.value.value);
+      postService
+        .create(postData)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
 
     return {
@@ -213,7 +241,9 @@ export default {
       dataAccessRange,
       selectedAccessRange,
       isShowAddPostForm,
-      user: computed(() => store.getters["user/getUser"]),
+      user,
+      postData,
+      isCanPost,
     };
   },
 };

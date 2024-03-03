@@ -142,7 +142,7 @@ export const homePost = {
           });
         }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
       }
     },
     async updateCommentReaction({ commit }, payLoad) {
@@ -261,6 +261,13 @@ export const homePost = {
       const post = state.posts.find((x) => x.id == payLoad.data.postId);
       if (post) {
         const path = payLoad.path;
+        payLoad.data.childComment = {
+          comments: [],
+          pageSize: 5,
+          endCursor: null,
+          total: 0,
+          hasNextPage: false,
+        };
         if (path) {
           let comment = post.comment.comments.find((x) => x.id == path[0]);
           for (let i = 1; i < path.length; i++) {
@@ -278,6 +285,7 @@ export const homePost = {
           comment.childComment.total++;
           comment.childComment.endCursor = payLoad.data.createdAt;
         } else {
+          payLoad.data.path = [payLoad.data.id];
           post.comment.comments = [...post.comment.comments, payLoad.data];
           post.comment.total++;
           post.comment.endCursor = payLoad.data.createdAt;
