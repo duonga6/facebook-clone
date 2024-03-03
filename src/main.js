@@ -8,10 +8,9 @@ import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import lara from "./presets/lara";
 
-setupInterceptor(store);
-
 const app = createApp(App);
 registerGlobalComponents(app);
+setupInterceptor(store);
 app.use(store);
 app.use(router);
 app.use(PrimeVue, {

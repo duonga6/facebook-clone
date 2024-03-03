@@ -1,15 +1,21 @@
 import api from "./api";
+const BASE_URL = "/Users";
 
-class UserService {
+export const userService = {
   getUserInfo() {
-    return api.get("/Users/Info").then((response) => {
-      if (response.data.success) {
-        return response.data;
-      } else {
-        return Promise.reject(response.data);
-      }
-    });
-  }
-}
+    return api
+      .get(`${BASE_URL}/Info`)
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return Promise.reject(err);
+      });
+  },
 
-export default new UserService();
+  getById(id) {
+    return api.get(`${BASE_URL}/${id}`).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+};

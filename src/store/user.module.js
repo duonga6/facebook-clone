@@ -1,4 +1,4 @@
-import userService from "@/services/user.service";
+import { userService } from "@/services/user.service";
 
 const initialState = {
   user: null,
@@ -9,14 +9,13 @@ export const user = {
   state: initialState,
   actions: {
     getDataUser({ commit }) {
-      return userService
+      userService
         .getUserInfo()
-        .then((response) => {
-          commit("getDataSuccess", response.data);
-          return Promise.resolve(response.data);
+        .then((res) => {
+          commit("getDataSuccess", res.data);
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.message);
         });
     },
   },

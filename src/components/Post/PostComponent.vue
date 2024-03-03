@@ -1,24 +1,29 @@
 <template>
-  <div class="post-container">
+  <div
+    class="post-container"
+    :class="{ 'rounded-lg border border-gray-200 shadow-sm': !isOverlay }"
+  >
     <div class="post-header">
       <div class="post-author">
         <div class="author-img">
-          <img :src="postData.author.avatarUrl" alt="" />
+          <img :src="post.user.avatarUrl" alt="" />
         </div>
         <div class="author-info">
-          <p class="author-name">{{ postData.author.fullName }}</p>
+          <p class="author-name">
+            {{ post.user.firstName + " " + post.user.lastName }}
+          </p>
           <div class="date-post">
             <div class="post-time">
               {{
-                postData.createdAt.getDate() +
+                post.createdAt.getDate() +
                 " tháng " +
-                (postData.createdAt.getMonth() + 1) +
+                (post.createdAt.getMonth() + 1) +
                 " lúc " +
-                postData.createdAt.getHours() +
+                post.createdAt.getHours() +
                 ":" +
-                (postData.createdAt.getMinutes() < 10
-                  ? "0" + postData.createdAt.getMinutes()
-                  : postData.createdAt.getMinutes())
+                (post.createdAt.getMinutes() < 10
+                  ? "0" + post.createdAt.getMinutes()
+                  : post.createdAt.getMinutes())
               }}
             </div>
             <div class="">.</div>
@@ -55,14 +60,14 @@
       </div>
       <div class="post-more"></div>
     </div>
-    <div class="post-content">{{ postData.content }}</div>
+    <div class="post-content">{{ post.content }}</div>
     <div class="post-media">
-      <template v-if="postData.postMedias.length >= 4">
+      <template v-if="post.postMedias.length >= 4">
         <div class="grid grid-cols-2 gap-1">
           <div class="h-1/2" v-for="index in 4" :key="index">
             <img
               class="w-full h-62 object-cover"
-              :src="postData.postMedias[index].url"
+              :src="post.postMedias[index].url"
               alt=""
             />
           </div>
@@ -71,13 +76,13 @@
     </div>
     <div
       class="post-reaction-comment"
-      v-if="postData.reaction.reactions.length > 0 || postData.totalComment"
+      v-if="postReactions.reactions.length > 0 || post.totalComment"
     >
-      <div class="post-reaction" v-if="postData.reaction.reactions.length > 0">
+      <div class="post-reaction" v-if="postReactions.reactions.length > 0">
         <ul class="post-reaction-list">
           <li
             class="post-reaction-item"
-            v-for="reaction in postData.reaction.reactions"
+            v-for="reaction in postReactions.reactions"
             :key="reaction.id"
           >
             <img
@@ -90,11 +95,11 @@
           </li>
         </ul>
         <div class="post-reaction-count">
-          {{ postData.reaction.total }}
+          {{ postReactions.total }}
         </div>
       </div>
-      <div class="post-comment-count" v-if="postData.comment.total > 0">
-        {{ postData.comment.total }} bình luận
+      <div class="post-comment-count" v-if="post.comment.totalComment > 0">
+        {{ post.comment.totalComment }} bình luận
       </div>
     </div>
     <div class="post-action">
@@ -104,7 +109,18 @@
         @mouseleave="onCloseReaction"
         @click="onHandleClickReaction"
       >
-        <template v-if="!postData.reaction.userReacted">
+        <template v-if="userReacted.reaction">
+          <div class="post-action-icon">
+            <img :src="userReacted.reaction.iconUrl" alt="" />
+          </div>
+          <div
+            class="post-action-text"
+            :style="{ color: userReacted.reaction.colorCode }"
+          >
+            {{ userReacted.reaction.name }}
+          </div>
+        </template>
+        <template v-else>
           <div class="post-action-icon">
             <i
               data-visualcompletion="css-img"
@@ -121,17 +137,6 @@
             ></i>
           </div>
           <div class="post-action-text">Thích</div>
-        </template>
-        <template v-else>
-          <div class="post-action-icon">
-            <img :src="postData.reaction.userReacted.iconUrl" alt="" />
-          </div>
-          <div
-            class="post-action-text"
-            :style="{ color: postData.reaction.userReacted.colorCode }"
-          >
-            {{ postData.reaction.userReacted.name }}
-          </div>
         </template>
         <!-- Hover hiện chọn reaction -->
         <div
@@ -186,13 +191,28 @@
       </div>
     </div>
     <div class="post-comment">
-      <button class="font-semibold text-gray-500 text-15 my-2 hover:underline">
+      <button
+        v-if="post.comment.hasNextPage && !isLoadingComment"
+        class="font-semibold text-gray-500 text-15 mt-2 hover:underline"
+        @click="handleClickShowMoreComment"
+      >
         Xem thêm bình luận
       </button>
-      <post-comment-component :data="overviewComment"></post-comment-component>
-      <div class="create-comment-container mt-2">
+      <loading-component
+        :classCss="'ms-10 w-6 h-6 mt-2'"
+        v-if="isLoadingComment"
+      ></loading-component>
+      <div v-if="post.comment" class="comment-list space-y-1 mt-2">
+        <comment-component
+          v-for="comment in commentShowBelow"
+          :key="comment.id"
+          :comment="comment"
+        >
+        </comment-component>
+      </div>
+      <div v-if="!isOverlay" class="create-comment-container mt-2">
         <div class="user-avatar">
-          <img class="" :src="user.avatarUrl" alt="" />
+          <img class="" :src="user?.avatarUrl" alt="" />
         </div>
         <div class="post-comment-input">
           <div class="flex">
@@ -201,6 +221,7 @@
               rows="1"
               placeholder="Viết bình luận công khai..."
               class="comment-input"
+              id="create-comment-input"
               v-model="commentInput"
             />
           </div>
@@ -223,76 +244,64 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
-import PostService from "@/services/post.service";
-import PostReactionService from "@/services/post-reaction.service";
-import PostCommentService from "@/services/post-comment.service";
 import { useStore } from "vuex";
-import PostCommentComponent from "./PostCommentComponent.vue";
+import CommentComponent from "@/components/Comment/CommentComponent.vue";
+import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
+
 export default {
-  components: { ReactionComponent, PostCommentComponent },
+  components: { ReactionComponent, CommentComponent, LoadingComponent },
   props: {
     post: {
       type: Object,
       required: true,
     },
+    isOverlay: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props) {
     const store = useStore();
-    const user = computed(() => store.getters["user/getUser"]);
-    const commentInput = ref(null);
-    const overviewComment = reactive([]);
 
+    const isLoadingComment = ref(false);
     const isLoaded = ref(false);
     const isShowReaction = ref(false);
-    const postData = reactive({
-      ...props.post,
-      reaction: {
-        reactions: [],
-        total: 0,
-        userReacted: null,
-      },
-      comment: {
-        comments: reactive([]),
-        total: 0,
-      },
+
+    const commentInput = ref(null);
+    const createCommentInput = ref(null);
+    const commentShowOverviewCount = ref(0);
+    const user = computed(() => store.getters["user/getUser"]);
+    const reactions = computed(() => store.getters["reaction/getReactions"]);
+    const userReacted = computed(() => {
+      const userReactedId = props.post.reaction.userReacted
+        ? props.post.reaction.userReacted.reactionId
+        : null;
+
+      return {
+        reaction: reactions.value.find((x) => x.id == userReactedId),
+        id: props.post.reaction.userReacted?.id,
+      };
     });
 
-    function loadOverviewComment() {
-      PostCommentService.getOverview(postData.id).then(
-        (res) => {
-          postData.comment = res.data;
-          overviewComment.push(res.data.comments[0]);
-          console.log(res.data);
-        },
-        (err) => {
-          console.log(err);
-        }
-      );
-    }
+    const postReactions = computed(() => {
+      const postReactionIds = props.post.reaction.reactionTypes
+        ? props.post.reaction.reactionTypes
+        : [];
 
-    function loadOverviewReaction() {
-      PostReactionService.getOverviewReaction(postData.id).then(
-        (res) => {
-          postData.reaction = res.data;
-        },
-        (err) => {
-          console.log(err);
-        }
-      );
-    }
+      return {
+        reactions: reactions.value.filter((x) =>
+          postReactionIds.includes(x.id)
+        ),
+        total: props.post.reaction.total,
+      };
+    });
 
-    // Click nút like, User đã thả reaction ? xóa : thêm
-    function onHandleClickReaction() {
-      onCloseReaction();
-
-      if (!postData.reaction.userReacted) {
-        createReaction();
-      } else {
-        deleteReaction();
-      }
-    }
+    const commentShowBelow = computed(() => {
+      return props.post.comment.comments;
+      // return props.post.comment.comments.slice(-1);
+    });
 
     let timerHover;
 
@@ -305,7 +314,7 @@ export default {
       }
     }
 
-    // Đóng show chọn reaction
+    // Ẩn chọn reaction
     function onCloseReaction() {
       clearTimeout(timerHover);
       setTimeout(() => {
@@ -313,17 +322,28 @@ export default {
       }, 200);
     }
 
-    // User chọn reaction
+    // Click nút like, User đã thả reaction ? xóa : thêm
+    function onHandleClickReaction() {
+      onCloseReaction();
+
+      if (!userReacted.value.reaction) {
+        createReaction();
+      } else {
+        deleteReaction();
+      }
+    }
+
+    // User chọn reaction khi hover nút like
     function handleSelectReaction(id) {
       clearTimeout(timerHover);
       isShowReaction.value = false;
 
       // User chưa reaction ? thêm : cập nhật | xóa
-      if (!postData.reaction.userReacted) {
+      if (!userReacted.value.reaction) {
         createReaction(id);
       } else {
         // Reaction được chọn = reaction đã thêm ? xóa : update
-        if (id != postData.reaction.userReacted.id) {
+        if (id != userReacted.value.reaction.id) {
           updateReaction(id);
         } else {
           deleteReaction();
@@ -338,77 +358,89 @@ export default {
       textareaElement.style.height = textareaElement.scrollHeight + "px";
     }
 
-    // Reaction CRUD
+    // ---- Reaction CRUD
 
     function createReaction(id = 1) {
-      PostService.createPostReaction({
-        postId: postData.id,
+      store.dispatch("homePost/createUserReaction", {
+        postId: props.post.id,
         reactionId: id,
-      }).then(
-        () => {
-          loadOverviewReaction();
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+      });
     }
 
     function updateReaction(id) {
-      PostService.updatePostReaction({
-        postId: postData.id,
-        reactionId: id,
-      }).then(
-        () => {
-          loadOverviewReaction();
+      store.dispatch("homePost/updateUserReaction", {
+        postReactionId: userReacted.value.id,
+        data: {
+          reactionId: id,
         },
-        (error) => {
-          console.error(error);
-        }
-      );
+      });
     }
 
     function deleteReaction() {
-      PostService.deletePostReaction(postData.id).then(
-        () => {
-          loadOverviewReaction();
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+      if (userReacted.value) {
+        store.dispatch("homePost/deleteUserReacted", {
+          postReactionId: userReacted.value.id,
+          postId: props.post.id,
+        });
+      } else {
+        console.log("Lỗi: Không tìm thấy user reacted");
+      }
     }
 
+    // Create comment
     function createComment() {
-      PostService.createComment(postData.id, {
-        content: commentInput.value,
-      }).then(
-        (res) => {
-          console.log(res);
-        },
-        (err) => {
-          console.log(err);
+      if (commentInput.value) {
+        if (
+          store.dispatch("homePost/createComment", {
+            data: {
+              content: commentInput.value,
+              postId: props.post.id,
+            },
+            path: null,
+          })
+        ) {
+          commentInput.value = null;
         }
-      );
+      }
+    }
+
+    function handleClickShowMoreComment() {
+      isLoadingComment.value = true;
+      store
+        .dispatch("homePost/getComment", {
+          postId: props.post.id,
+          pageSize: props.post.comment.pageSize,
+          parent: null,
+          endCursor: props.post.comment.endCursor,
+        })
+        .then(() => {
+          isLoadingComment.value = false;
+        });
     }
 
     onMounted(() => {
-      loadOverviewComment();
-      loadOverviewReaction();
+      createCommentInput.value = document.querySelector(
+        "#create-comment-input"
+      );
     });
 
     return {
-      postData,
+      userReacted,
+      postReactions,
       isLoaded,
       isShowReaction,
+      isLoadingComment,
       user,
       commentInput,
-      overviewComment,
+      createCommentInput,
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
       onHandleClickReaction,
       onCommentChange,
+      commentShowBelow,
+      commentShowOverviewCount,
+      handleClickShowMoreComment,
       createComment,
     };
   },
@@ -417,13 +449,13 @@ export default {
 
 <style lang="scss" scoped>
 .post-container {
-  @apply bg-white py-2.5 pb-0 rounded-lg border border-gray-200 shadow-sm;
+  @apply bg-white py-2.5 pb-0;
   .post-header {
     @apply px-4;
     .post-author {
       @apply flex items-center;
       .author-img {
-        @apply rounded-full w-10 h-10;
+        @apply rounded-full w-10 h-10 border border-gray-200;
         img {
           @apply w-full h-full object-cover rounded-full;
         }
@@ -498,7 +530,7 @@ export default {
     .create-comment-container {
       @apply flex items-center;
       .user-avatar {
-        @apply w-8 h-8 rounded-full overflow-hidden;
+        @apply w-8 h-8 rounded-full overflow-hidden border border-gray-200;
         img {
           @apply w-full h-full object-cover;
         }

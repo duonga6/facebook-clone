@@ -8,6 +8,14 @@ body {
   @apply h-screen;
 }
 
+.arrow-top-white {
+  width: 0; 
+  height: 0; 
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid black;
+}
+
 :root {
   --primary-50: 236 253 245;
   --primary-100: 209 250 229;

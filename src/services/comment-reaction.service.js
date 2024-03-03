@@ -1,65 +1,27 @@
 import api from "./api";
 
-class CommentReactionService {
-  createPostCommentReaction(data) {
-    return api
-      .post("CommentReactions", data)
-      .then((res) => {
-        if (res.data.success) {
-          return res.data;
-        } else {
-          return Promise.reject(res.data);
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  }
+export const commentReactionService = {
+  create(data) {
+    return api.post("CommentReactions", data).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
 
-  deletePostCommentReaction(id) {
-    return api
-      .delete("CommentReactions/" + id)
-      .then((res) => {
-        if (res.data.success) {
-          return res.data;
-        } else {
-          return Promise.reject(res.data);
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  }
+  delete(id) {
+    return api.delete("CommentReactions/" + id).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
 
-  updatePostCommentReaction(id, data) {
-    return api
-      .put("CommentReactions/" + id, data)
-      .then((res) => {
-        if (res.data.success) {
-          return res.data;
-        } else {
-          return Promise.reject(res.data);
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  }
+  update(id, data) {
+    return api.put("CommentReactions/" + id, data).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
 
-  getOverviewPostCommentReaction(id) {
-    return api
-      .get(`CommentReactions/${id}/GetOverview`)
-      .then((res) => {
-        if (res.data.success) {
-          return res.data;
-        } else {
-          return Promise.reject(res.data);
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  }
-}
-
-export default new CommentReactionService();
+  getOverview(id) {
+    return api.get(`CommentReactions/${id}/GetOverview`).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+};

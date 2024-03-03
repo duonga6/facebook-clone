@@ -4,12 +4,8 @@ class ReactionService {
   getDefaultDataReaction() {
     return api
       .get("/Reactions")
-      .then((response) => {
-        if (response.data.status) {
-          return response.data;
-        } else {
-          return Promise.reject(response.data);
-        }
+      .then((res) => {
+        return res;
       })
       .catch((error) => {
         return Promise.reject(error);

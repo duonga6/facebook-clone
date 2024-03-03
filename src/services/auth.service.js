@@ -9,16 +9,11 @@ class AuthService {
         password: user.password,
       })
       .then(
-        (response) => {
-          if (response.data.success) {
-            tokenService.setUser(response.data.data);
-            return response.data;
-          } else {
-            return Promise.reject(response.data);
-          }
+        (res) => {
+          tokenService.setUser(res.data);
+          return res;
         },
         (err) => {
-          console.log(err);
           return Promise.reject(err);
         }
       );
@@ -29,13 +24,9 @@ class AuthService {
   }
 
   register(user) {
-    return api.post("/Users/Register", user).then((response) => {
-      if (response.data.success) {
-        tokenService.setUser(response.data.data);
-        return response.data;
-      } else {
-        return Promise.reject(response.data);
-      }
+    return api.post("/Users/Register", user).then((res) => {
+      tokenService.setUser(res.data);
+      return res.data;
     });
   }
 }

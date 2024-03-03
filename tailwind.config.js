@@ -35,6 +35,7 @@ module.exports = {
       width: {
         90: "360px",
         "500px": "500px",
+        "700px": "700px",
       },
       height: {
         0.75: "3px",
@@ -62,7 +63,10 @@ module.exports = {
         120: "1.2",
       },
       spacing: {
-        92: "92%",
+        85: "85%",
+      },
+      boxShadow: {
+        "custom-sm": "0 2px 15px -2px rgba(0, 0, 0, 0.3)",
       },
     },
   },

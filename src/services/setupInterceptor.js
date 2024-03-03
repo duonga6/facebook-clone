@@ -25,39 +25,52 @@ const setup = (store) => {
   axiosInstance.interceptors.response.use(
     // response không lỗi => response
     (res) => {
-      return res;
+      if (res.data.success) {
+        return res.data;
+      } else {
+        return Promise.reject(res.data);
+      }
     },
     // response có lỗi
     async (err) => {
       // Lưu lại config ban đầu
       const originalConfig = err.config;
       // Nếu request không phải login
-      if (originalConfig.url !== "/login" && err.response) {
+      if (originalConfig.url !== "/Users/Login" && err.response) {
         // Xử lý trường hợp Unauthorize
-        if (err.response.status === 401 && !originalConfig._retry) {
-          // Đánh dấu đã retry để chỉ lặp 1 lần
-          originalConfig._retry = true;
-          // Gọi API tạo mới token
-          const rs = await axiosInstance.post(
-            "/Users/RenewToken",
-            tokenService.getLocalToken()
-          );
+        if (err.response.status === 401) {
+          if (!originalConfig._retry) {
+            // Đánh dấu đã retry để chỉ lặp 1 lần
+            originalConfig._retry = true;
 
-          if (rs.data.success) {
-            const newToken = rs.data.data;
-            // Lưu token mới vào store
-            store.dispatch("auth/refreshToken", newToken);
-            // Lưu token mới vào local storage
-            tokenService.updateLocalToken(newToken);
-            // Thực hiện lại request ban đầu
-            return axiosInstance(originalConfig);
+            // Nếu có token thì làm mới token rồi request lại
+            if (tokenService.getLocalToken()) {
+              // Gọi API tạo mới token
+              const rs = await axiosInstance.post(
+                "/Users/RenewToken",
+                tokenService.getLocalToken()
+              );
+
+              if (rs.success) {
+                const newToken = rs.data;
+                // Lưu token mới vào store
+                store.dispatch("auth/refreshToken", newToken);
+                // Lưu token mới vào local storage
+                tokenService.updateLocalToken(newToken);
+                // Thực hiện lại request ban đầu
+                return axiosInstance(originalConfig);
+              } else {
+                eventBus.dispatch("logout");
+                return Promise.reject(rs);
+              }
+            }
           } else {
-            eventBus.dispatch("logout");
-            return Promise.reject(rs.data);
+            return Promise.reject(err);
           }
         }
       }
-      // Các lỗi khác thì reject về promise báo lỗi
+
+      // Các lỗi khác
       return Promise.reject(err);
     }
   );

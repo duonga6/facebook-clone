@@ -16,7 +16,7 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 export default {
   emits: ["onSelectReaction"],
-  setup(props, { emit }) {
+  setup(_, { emit }) {
     const store = useStore();
 
     function onSelectReaction(id) {

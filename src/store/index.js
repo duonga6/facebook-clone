@@ -2,7 +2,7 @@ import { createStore } from "vuex";
 import { auth } from "./auth.module";
 import { user } from "./user.module";
 import { mediaType } from "./mediaType.module";
-import { post } from "./post.module";
+import { homePost } from "./homePost.module";
 import { reaction } from "./reaction.module";
 
 export default createStore({
@@ -11,10 +11,10 @@ export default createStore({
   mutations: {},
   actions: {
     logout({ commit }) {
-      commit("auth/logout");
+      commit("homePost/reset");
       commit("user/reset");
-      commit("post/reset");
+      commit("auth/logout");
     },
   },
-  modules: { auth, user, mediaType, post, reaction },
+  modules: { auth, user, mediaType, homePost, reaction },
 });

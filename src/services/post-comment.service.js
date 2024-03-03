@@ -1,20 +1,50 @@
+/* eslint-disable */
+import { convertUTCtoSystemDate } from "@/utilities/dateUtils";
 import api from "./api";
+import { commentReactionService } from "./comment-reaction.service";
 
-class PostCommentService {
-  getOverview(postId) {
+const BASE_URL = "/PostComments";
+
+export const postCommentService = {
+  get(postId, pageSize, pageNumber, searchString) {
     return api
-      .get("/PostComments/GetOverview/" + postId)
-      .then((res) => {
-        if (res.data.success) {
-          return res.data;
-        } else {
-          return Promise.reject(res.data);
-        }
-      })
+      .get(
+        `${BASE_URL}?postId=${postId}&pageSize=${pageSize}&pageNumber=${pageNumber}&searchString=${searchString ?? ""}`
+      )
       .catch((err) => {
-        return Promise.reject(err);
+        throw new Error(`Error post comment service ${err}`);
       });
-  }
-}
-
-export default new PostCommentService();
+  },
+  getCursor(postId, pageSize, endCursor, desc, parentId) {
+    return api.get(`${BASE_URL}/GetCursor?postId=${postId}&pageSize=${pageSize}&desc=${desc}&endCursor=${endCursor ?? ""}&parentId=${parentId ?? ""}`)
+      .catch((err) => {
+        throw new Error(`Error post comment service ${err}`);
+      });
+  },
+  getCount(postId) {
+    return api.get(`${BASE_URL}/GetCount/${postId}`).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+  getChildCount(commetId) {
+    return api.get(`${BASE_URL}/${commetId}/GetChildCount`).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+  getChildComment(commentId, pageSize, pageNumber, searchString) {
+    return api.get(`${BASE_URL}/${commentId}/GetChild?pageSize=${pageSize}&pageNumber=${pageNumber}&searchString=${searchString ?? ""}`)
+      .catch((err) => {
+        throw new Error(`Error post comment service ${err}`);
+      });
+  },
+  create(data) {
+    return api.post(`${BASE_URL}`, data).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+  delete(commetId) {
+    return api.delete(`${BASE_URL}/${commetId}`).catch((err) => {
+      throw new Error(`Error post comment service ${err}`);
+    });
+  },
+};
