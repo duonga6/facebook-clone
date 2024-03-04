@@ -109,6 +109,31 @@
           v-model="postData.content"
         />
       </div>
+      <div class="post-media-container" v-if="postData.postMedias.length > 0">
+        <ul
+          class="post-media-list grid gap-1"
+          :class="generateClassMedias(postData.postMedias.length)"
+        >
+          <li
+            v-for="(image, index) in postData.postMedias"
+            :key="index"
+            class="post-media-item"
+            :class="generateClassMedias(postData.postMedias.length, index)"
+          >
+            <div class="w-full h-full">
+              <img
+                class="object-cover w-full h-full rounded-md"
+                :src="image.url"
+                alt=""
+              />
+            </div>
+          </li>
+        </ul>
+        <!-- <button class="post-media-close">
+          <i class="pi pi-times close-icon"></i>
+        </button> -->
+      </div>
+      <drag-file></drag-file>
       <div class="additional-container">
         <p class="additional-text">Thêm vào bài viết của bạn</p>
         <ul class="additional-list">
@@ -159,7 +184,7 @@
           </li>
         </ul>
       </div>
-      <div class="p-4">
+      <div class="add-post-btn p-4">
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
           :class="
@@ -178,10 +203,12 @@
 import { computed, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { postService } from "@/services/post.service";
+import DragFile from "@/components/Utils/DragFileComponent.vue";
 export default {
+  components: { DragFile },
   setup() {
     const store = useStore();
-    const isShowAddPostForm = ref(false);
+    const isShowAddPostForm = ref(true);
     const isCanPost = computed(() => {
       if (!postData.content && postData.postMedias.length == 0) {
         return false;
@@ -212,7 +239,17 @@ export default {
 
     const postData = reactive({
       content: "",
-      postMedias: [],
+      postMedias: [
+        // {
+        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        // },
+        // {
+        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        // },
+        // {
+        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        // },
+      ],
     });
 
     function handleCloseAddPostForm() {
@@ -234,10 +271,23 @@ export default {
         });
     }
 
+    function generateClassMedias(totalItems, index = null) {
+      if (index == null) {
+        return `grid-cols-2`;
+      }
+
+      if (totalItems % 2 == 1 && index == 0) {
+        return "col-span-2";
+      }
+
+      return "col-span-1";
+    }
+
     return {
       handleCloseAddPostForm,
       handleOpenAddPostForm,
       handleSubmitAddForm,
+      generateClassMedias,
       dataAccessRange,
       selectedAccessRange,
       isShowAddPostForm,
@@ -336,6 +386,21 @@ export default {
 
       .post-content__text {
         @apply text-2xl placeholder:text-gray-600 outline-none w-full;
+      }
+    }
+
+    .post-media-container {
+      @apply m-4 border border-gray-200 rounded-lg p-2 relative;
+      .post-media-list {
+        .post-media-item {
+        }
+      }
+
+      .post-media-close {
+        @apply w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 absolute -top-2 -right-2;
+        .close-icon {
+          @apply text-gray-500 font-semibold;
+        }
       }
     }
 
