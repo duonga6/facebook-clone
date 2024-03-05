@@ -120,12 +120,23 @@
             class="post-media-item"
             :class="generateClassMedias(postData.postMedias.length, index)"
           >
-            <div class="w-full h-full">
-              <img
-                class="object-cover w-full h-full rounded-md"
-                :src="image.url"
-                alt=""
-              />
+            <div class="post-media-image">
+              <img :src="image.showUrl" alt="" />
+              <div class="upload-image uploading" v-if="image.uploading">
+                <loading-component :classCss="'w-10 h-10'"></loading-component>
+              </div>
+              <div
+                class="upload-image upload-fail"
+                v-if="!image.uploading && !image.uploaded"
+              >
+                <i class="upload-fail-icon pi pi-exclamation-triangle"></i>
+              </div>
+              <button
+                class="remove-uploaded-image"
+                @click="deleteUploadedImage(image.id)"
+              >
+                <i class="pi pi-times remove-icon"></i>
+              </button>
             </div>
           </li>
         </ul>
@@ -133,8 +144,11 @@
           <i class="pi pi-times close-icon"></i>
         </button> -->
       </div>
-      <drag-file></drag-file>
-      <div class="additional-container">
+      <drag-file @DragedFile="onDragedFile"></drag-file>
+
+      <!-- Additional for post -->
+
+      <!-- <div class="additional-container">
         <p class="additional-text">Thêm vào bài viết của bạn</p>
         <ul class="additional-list">
           <li>
@@ -183,7 +197,7 @@
             </div>
           </li>
         </ul>
-      </div>
+      </div> -->
       <div class="add-post-btn p-4">
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
@@ -203,14 +217,21 @@
 import { computed, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { postService } from "@/services/post.service";
-import DragFile from "@/components/Utils/DragFileComponent.vue";
+import DragFile from "../Utils/DragFileComponent.vue";
+import LoadingComponent from "../Utils/LoadingComponent.vue";
+import { uploadFileService } from "@/services/upload-file.service";
+import { getFileUrl, generateUUID } from "@/utilities";
 export default {
-  components: { DragFile },
+  components: { DragFile, LoadingComponent },
   setup() {
     const store = useStore();
     const isShowAddPostForm = ref(true);
     const isCanPost = computed(() => {
       if (!postData.content && postData.postMedias.length == 0) {
+        return false;
+      }
+
+      if (postData.postMedias.some((x) => x.uploading)) {
         return false;
       }
 
@@ -241,13 +262,25 @@ export default {
       content: "",
       postMedias: [
         // {
-        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   id: "124124",
+        //   showUrl:
+        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   uploaded: true,
+        //   uploading: false,
         // },
         // {
-        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   id: "1241241242",
+        //   showUrl:
+        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   uploaded: true,
+        //   uploading: false,
         // },
         // {
-        //   url: "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   id: "124124x",
+        //   showUrl:
+        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
+        //   uploaded: true,
+        //   uploading: false,
         // },
       ],
     });
@@ -261,8 +294,15 @@ export default {
     }
 
     function handleSubmitAddForm() {
+      console.log(postData);
+
+      if (postData) return;
+
       postService
-        .create(postData)
+        .create({
+          content: postData.content,
+          postMedias: postData.postMedias.filter((x) => x.uploaded),
+        })
         .then((res) => {
           console.log(res);
         })
@@ -283,11 +323,52 @@ export default {
       return "col-span-1";
     }
 
+    async function onDragedFile(files) {
+      const fileDatas = await Promise.all(
+        files.map(async (item) => {
+          const url = await getFileUrl(item);
+          return {
+            id: generateUUID(),
+            showUrl: url,
+            uploading: true,
+            uploaded: false,
+            file: item,
+          };
+        })
+      );
+
+      postData.postMedias = [...postData.postMedias, ...fileDatas];
+
+      for (const file of fileDatas) {
+        const fileRef = postData.postMedias.find((x) => x.id == file.id);
+        uploadFileService
+          .upload(file.file, "upload")
+          .then((res) => {
+            console.log(res);
+            fileRef.uploaded = true;
+            fileRef.url = res.data.url;
+            fileRef.title = res.data.name;
+          })
+          .catch(() => {
+            fileRef.uploaded = false;
+          })
+          .finally(() => {
+            fileRef.uploading = false;
+          });
+      }
+    }
+
+    function deleteUploadedImage(id) {
+      postData.postMedias = postData.postMedias.filter((x) => x.id != id);
+    }
+
     return {
+      deleteUploadedImage,
       handleCloseAddPostForm,
       handleOpenAddPostForm,
       handleSubmitAddForm,
       generateClassMedias,
+      onDragedFile,
       dataAccessRange,
       selectedAccessRange,
       isShowAddPostForm,
@@ -339,7 +420,15 @@ export default {
   @apply fixed top-0 left-0 bottom-0 right-0 bg-gray-100 bg-opacity-80 z-10 flex justify-center items-center transition-all;
 
   .form-container {
-    @apply bg-white w-500px rounded-lg shadow-lg;
+    @apply bg-white w-500px rounded-lg shadow-lg row-end-auto relative overflow-hidden;
+
+    .bg-overlay-drag-file {
+      @apply absolute top-0 left-0 right-0 bottom-0 bg-gray-100 bg-opacity-75 z-50 flex items-center justify-center;
+
+      .overlay-drag-text {
+        @apply text-xl;
+      }
+    }
 
     .form-heading {
       @apply relative;
@@ -382,7 +471,7 @@ export default {
     }
 
     .post-content {
-      @apply p-4 pb-10;
+      @apply p-4;
 
       .post-content__text {
         @apply text-2xl placeholder:text-gray-600 outline-none w-full;
@@ -392,7 +481,46 @@ export default {
     .post-media-container {
       @apply m-4 border border-gray-200 rounded-lg p-2 relative;
       .post-media-list {
+        @apply max-h-96 overflow-y-auto;
         .post-media-item {
+          @apply max-h-60 min-h-44;
+          .post-media-image {
+            @apply w-full h-full rounded-md overflow-hidden relative;
+            img {
+              @apply object-cover w-full h-full;
+            }
+
+            .upload-image {
+              @apply absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-gray-200 bg-opacity-70;
+            }
+
+            .upload-image.upload-fail {
+              .upload-fail-icon {
+                @apply text-red-600 text-2xl;
+              }
+            }
+
+            .remove-uploaded-image {
+              @apply hidden absolute top-1 right-1 w-7 h-7 items-center justify-center rounded-full bg-gray-100 hover:bg-red-500 hover:text-white transition-all;
+              .remove-icon {
+                @apply text-12;
+              }
+            }
+
+            &:hover {
+              .remove-uploaded-image {
+                @apply flex;
+              }
+            }
+          }
+        }
+
+        &::-webkit-scrollbar {
+          @apply w-1;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          @apply bg-gray-300 rounded-md;
         }
       }
 
@@ -405,7 +533,8 @@ export default {
     }
 
     .additional-container {
-      @apply m-4 mb-0 px-4 py-2 flex items-center justify-between border border-gray-300 rounded-lg;
+      @apply m-4 mb-0 px-4 py-2 flex items-center justify-between
+        border border-gray-300 rounded-lg;
 
       .additional-text {
         @apply mb-0 font-semibold text-15;

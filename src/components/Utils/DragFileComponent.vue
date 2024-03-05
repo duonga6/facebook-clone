@@ -1,9 +1,17 @@
 <template>
   <div
     ref="dragElement"
-    class="drag-zone w-full h-52"
-    @dragover="onDropFile"
-  ></div>
+    class="drag-zone mx-4 p-4 flex items-center justify-center border rounded-lg transition-all hover:cursor-pointer"
+    :class="isDragedFile ? 'border-primary' : 'border-gray-200'"
+    @dragover="onDrawOver"
+    @dragleave="onDragLeave"
+    @drop="onDropFile"
+    @mouseover="isDragedFile = true"
+    @mouseleave="isDragedFile = false"
+    @click="handleOpenSelectFile"
+  >
+    <span class="">Thêm ảnh hoặc video</span>
+  </div>
 </template>
 
 <script>
@@ -12,34 +20,62 @@ export default {
   props: {
     extension: {
       type: Array,
-      default: new Array("image/jpg", "image/png", "image/jpeg"),
+      default: () => ["image/jpg", "image/png", "image/jpeg"],
     },
   },
-  setup(props) {
+  emits: ["DragedFile"],
+  setup(props, { emit }) {
     const dragElement = ref(null);
+    const isDragedFile = ref(false);
 
-    function onDropFile(e) {
+    function onDrawOver(e) {
       e.preventDefault();
-      e.stopPropagation();
-      e.dataTransfer.dropEffect = "copy";
+      isDragedFile.value = true;
+    }
 
-      const fileList = e.originalEvent.dataTransfer.files;
+    function onDragLeave() {
+      isDragedFile.value = false;
+    }
 
-      console.log(fileList[0]);
-      const invalidFile = Array.from(fileList).some(
-        (x) => !props.extension.includes(x.type)
+    async function onDropFile(e) {
+      e.preventDefault();
+
+      const fileList = e.dataTransfer.files;
+
+      const acceptedFile = Array.from(fileList).filter((x) =>
+        props.extension.includes(x.type)
       );
 
-      if (invalidFile) {
-        console.log("file not support");
-        dragElement.value.classList.add("cursor-not-allowed");
-        return;
+      if (acceptedFile.length == 0 && fileList.length > 0) {
+        alert("Vui lòng chọn file ảnh hoặc video");
+      } else {
+        emit("DragedFile", acceptedFile);
       }
+
+      isDragedFile.value = false;
+    }
+
+    function handleOpenSelectFile() {
+      const fileUpload = document.createElement("input");
+      fileUpload.type = "file";
+      fileUpload.multiple = true;
+      fileUpload.accept = props.extension.join(",");
+
+      fileUpload.addEventListener("change", function (e) {
+        const files = e.target.files;
+        emit("DragedFile", Array.from(files));
+      });
+
+      fileUpload.click();
     }
 
     return {
       dragElement,
+      isDragedFile,
+      onDrawOver,
+      onDragLeave,
       onDropFile,
+      handleOpenSelectFile,
     };
   },
 };

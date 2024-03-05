@@ -96,7 +96,7 @@ export default {
       @apply flex-1 relative overflow-y-scroll;
 
       &::-webkit-scrollbar {
-        @apply w-1 absolute left-0;
+        @apply w-1 left-0;
       }
 
       &::-webkit-scrollbar-thumb {
