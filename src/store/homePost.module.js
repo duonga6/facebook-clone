@@ -3,7 +3,6 @@ import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { userService } from "@/services/user.service";
-import { convertUTCtoSystemDate } from "@/utilities/dateUtils";
 import { homePostUtils } from "./homePost.utils";
 
 export const homePost = {
@@ -40,7 +39,6 @@ export const homePost = {
 
           post.reaction = reactionsRes.data;
           post.user = postAuthorRes.data;
-          post.createdAt = convertUTCtoSystemDate(post.createdAt);
 
           return post;
         });
@@ -51,6 +49,35 @@ export const homePost = {
         return Promise.resolve();
       } catch (error) {
         console.log(error);
+      }
+    },
+    async createPost({ commit }, payLoad) {
+      try {
+        const createPostRes = await postService.create(payLoad);
+        if (createPostRes.success) {
+          const postData = createPostRes.data;
+          postData.comment = {
+            comments: [],
+            pageSize: 5,
+            endCursor: null,
+            total: 0,
+            hasNextPage: false,
+          };
+
+          postData.reaction = {
+            reactionTypes: [],
+            total: 0,
+            userReacted: null,
+          };
+
+          const postAuthorRes = await userService.getById(postData.authorId);
+          postData.user = postAuthorRes.data;
+
+          commit("addPostSuccess", postData);
+          return Promise.resolve();
+        }
+      } catch (err) {
+        console.log(err);
       }
     },
     // User Reaction
@@ -142,7 +169,7 @@ export const homePost = {
           });
         }
       } catch (error) {
-        // console.log(error);
+        console.log(error);
       }
     },
     async updateCommentReaction({ commit }, payLoad) {
@@ -318,7 +345,7 @@ export const homePost = {
         post.comment.totalComment--;
       }
     },
-    // Path == null ? add comment for post : add comment for comment (child);
+    //      =====    Path == null ? add comment for post : add comment for comment (child);
     getCommentSuccess(state, payLoad) {
       const post = state.posts.find((x) => x.id == payLoad.postId);
       if (post) {
@@ -347,6 +374,10 @@ export const homePost = {
         targetComment.endCursor = payLoad.response.endCursor;
         targetComment.hasNextPage = payLoad.response.hasNextPage;
       }
+    },
+    addPostSuccess(state, payLoad) {
+      state.posts = [payLoad, ...state.posts];
+      state.total++;
     },
   },
   getters: {

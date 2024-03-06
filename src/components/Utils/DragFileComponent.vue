@@ -20,7 +20,7 @@ export default {
   props: {
     extension: {
       type: Array,
-      default: () => ["image/jpg", "image/png", "image/jpeg"],
+      default: () => ["image/jpg", "image/png", "image/jpeg", "video/mp4"],
     },
   },
   emits: ["DragedFile"],

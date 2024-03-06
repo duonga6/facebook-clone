@@ -15,15 +15,15 @@
           <div class="date-post">
             <div class="post-time">
               {{
-                post.createdAt.getDate() +
+                postDate.getDate() +
                 " tháng " +
-                (post.createdAt.getMonth() + 1) +
+                (postDate.getMonth() + 1) +
                 " lúc " +
-                post.createdAt.getHours() +
+                postDate.getHours() +
                 ":" +
-                (post.createdAt.getMinutes() < 10
-                  ? "0" + post.createdAt.getMinutes()
-                  : post.createdAt.getMinutes())
+                (postDate.getMinutes() < 10
+                  ? "0" + postDate.getMinutes()
+                  : postDate.getMinutes())
               }}
             </div>
             <div class="">.</div>
@@ -64,13 +64,49 @@
     <div class="post-media">
       <template v-if="post.postMedias.length >= 4">
         <div class="grid grid-cols-2 gap-1">
-          <div class="h-1/2" v-for="index in 4" :key="index">
+          <div
+            class="h-1/2"
+            v-for="media in post.postMedias.slice(0, 4)"
+            :key="media.id"
+          >
+            <template v-if="media.mediaTypeId == 2">
+              <img class="w-full h-62 object-cover" :src="media.url" alt="" />
+            </template>
+            <template v-else-if="media.mediaTypeId == 3">
+              <video :src="media.url"></video>
+            </template>
+          </div>
+        </div>
+      </template>
+      <template v-else-if="post.postMedias.length == 3">
+        <div class="grid grid-cols-2 gap-1">
+          <div class="h-1/2" v-for="index in 3" :key="index">
             <img
               class="w-full h-62 object-cover"
-              :src="post.postMedias[index].url"
+              :src="post.postMedias[index - 1].url"
               alt=""
             />
           </div>
+        </div>
+      </template>
+      <template v-else-if="post.postMedias.length == 2">
+        <div class="grid grid-cols-2 gap-1">
+          <div class="h-1/2" v-for="index in 2" :key="index">
+            <img
+              class="w-full h-62 object-cover"
+              :src="post.postMedias[index - 1].url"
+              alt=""
+            />
+          </div>
+        </div>
+      </template>
+      <template v-else-if="post.postMedias.length == 1">
+        <div class="h-1/2">
+          <img
+            class="w-full h-62 object-cover"
+            :src="post.postMedias[0].url"
+            alt=""
+          />
         </div>
       </template>
     </div>
@@ -102,6 +138,7 @@
         {{ post.comment.totalComment }} bình luận
       </div>
     </div>
+    <div v-else class="mt-2"></div>
     <div class="post-action">
       <div
         class="post-action-item action--reaction"
@@ -249,6 +286,7 @@ import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
 import { useStore } from "vuex";
 import CommentComponent from "@/components/Comment/CommentComponent.vue";
 import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
+// import { convertUTCtoSystemDate } from "@/utilities/dateUtils";
 
 export default {
   components: { ReactionComponent, CommentComponent, LoadingComponent },
@@ -302,6 +340,8 @@ export default {
       return props.post.comment.comments;
       // return props.post.comment.comments.slice(-1);
     });
+
+    const postDate = new Date(props.post.createdAt);
 
     let timerHover;
 
@@ -442,6 +482,7 @@ export default {
       commentShowOverviewCount,
       handleClickShowMoreComment,
       createComment,
+      postDate,
     };
   },
 };

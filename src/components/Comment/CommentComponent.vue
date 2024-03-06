@@ -69,7 +69,7 @@
       </div>
       <div class="comment-info">
         <div class="day-ago">
-          {{ convertDateDisplay(comment.createdAt) }}
+          {{ convertDateDisplay(new Date(comment.createdAt)) }}
         </div>
         <div
           class="reaction font-bold cursor-pointer relative"

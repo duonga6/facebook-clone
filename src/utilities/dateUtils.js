@@ -51,14 +51,9 @@ export const months = [
 ];
 export const years = Array.from({ length: 100 }, (_, i) => i + 1925).reverse();
 
-export function convertUTCtoSystemDate(date) {
-  const utcDate = new Date(date);
-  return new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
-}
-
 export function convertDateDisplay(date) {
   const now = new Date();
-  const targetDate = convertUTCtoSystemDate(date);
+  const targetDate = date;
 
   const miliseconds = now - targetDate;
 

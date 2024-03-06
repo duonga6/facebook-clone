@@ -14,7 +14,7 @@
     <hr class="mt-3" />
     <div class="add-post__bottom-section">
       <div class="bottom-section__type-post-list">
-        <div class="type-post-item">
+        <div class="type-post-item" @click="handleOpenAddPostForm">
           <div class="type-post__img">
             <img
               height="24"
@@ -27,7 +27,7 @@
           </div>
           <div class="type-post__text">Video trực tiếp</div>
         </div>
-        <div class="type-post-item">
+        <div class="type-post-item" @click="handleOpenAddPostForm">
           <div class="type-post__img">
             <img
               height="24"
@@ -40,7 +40,7 @@
           </div>
           <div class="type-post__text">Ảnh/video</div>
         </div>
-        <div class="type-post-item">
+        <div class="type-post-item" @click="handleOpenAddPostForm">
           <div class="type-post__img">
             <img
               height="24"
@@ -120,8 +120,13 @@
             class="post-media-item"
             :class="generateClassMedias(postData.postMedias.length, index)"
           >
-            <div class="post-media-image">
-              <img :src="image.showUrl" alt="" />
+            <div class="post-media-type">
+              <template v-if="image.type == 'image'">
+                <img class="image" :src="image.showUrl" alt="" />
+              </template>
+              <template v-else>
+                <video class="video" :src="image.showUrl" controls></video>
+              </template>
               <div class="upload-image uploading" v-if="image.uploading">
                 <loading-component :classCss="'w-10 h-10'"></loading-component>
               </div>
@@ -214,18 +219,19 @@
 </template>
 
 <script>
+/* eslint-disable */
 import { computed, reactive, ref } from "vue";
 import { useStore } from "vuex";
 import { postService } from "@/services/post.service";
 import DragFile from "../Utils/DragFileComponent.vue";
 import LoadingComponent from "../Utils/LoadingComponent.vue";
 import { uploadFileService } from "@/services/upload-file.service";
-import { getFileUrl, generateUUID } from "@/utilities";
+import { generateUUID } from "@/utilities";
 export default {
   components: { DragFile, LoadingComponent },
   setup() {
     const store = useStore();
-    const isShowAddPostForm = ref(true);
+    const isShowAddPostForm = ref(false);
     const isCanPost = computed(() => {
       if (!postData.content && postData.postMedias.length == 0) {
         return false;
@@ -294,21 +300,20 @@ export default {
     }
 
     function handleSubmitAddForm() {
-      console.log(postData);
+      const postMediaFilter = [...postData.postMedias].filter(x => x.uploaded).map(x => {
+        return {
+          title: x.title,
+          mediaTypeId: x.mediaTypeId,
+          url: x.url,
+        }
+      });
 
-      if (postData) return;
-
-      postService
-        .create({
-          content: postData.content,
-          postMedias: postData.postMedias.filter((x) => x.uploaded),
-        })
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      store.dispatch("homePost/createPost", {
+        content: postData.content,
+        postMedias: postMediaFilter
+      }).then(() => {
+        isShowAddPostForm.value = false;
+      })
     }
 
     function generateClassMedias(totalItems, index = null) {
@@ -324,14 +329,15 @@ export default {
     }
 
     async function onDragedFile(files) {
+
       const fileDatas = await Promise.all(
         files.map(async (item) => {
-          const url = await getFileUrl(item);
           return {
             id: generateUUID(),
-            showUrl: url,
+            showUrl: URL.createObjectURL(item),
             uploading: true,
             uploaded: false,
+            type: item.type.split("/")[0],
             file: item,
           };
         })
@@ -348,6 +354,7 @@ export default {
             fileRef.uploaded = true;
             fileRef.url = res.data.url;
             fileRef.title = res.data.name;
+            fileRef.mediaTypeId = fileRef.type == "image" ? 2 : 3;
           })
           .catch(() => {
             fileRef.uploaded = false;
@@ -483,11 +490,11 @@ export default {
       .post-media-list {
         @apply max-h-96 overflow-y-auto;
         .post-media-item {
-          @apply max-h-60 min-h-44;
-          .post-media-image {
+          @apply w-auto;
+          .post-media-type {
             @apply w-full h-full rounded-md overflow-hidden relative;
-            img {
-              @apply object-cover w-full h-full;
+            .image {
+              @apply object-cover w-full h-full max-h-56 min-h-32;
             }
 
             .upload-image {
