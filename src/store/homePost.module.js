@@ -20,32 +20,39 @@ export const homePost = {
         const res = await postService.get(state.pageSize, state.pageNumber + 1);
 
         // Map post => get comment, reaction, author
-        const promiseAll = res.data.map(async (post) => {
-          const postAuthorRes = await userService.getById(post.authorId);
-          const reactionsRes = await postReactionService.getOverview(post.id);
+        const postData = await Promise.all(
+          res.data.map(async (post) => {
+            const postAuthorRes = await userService.getById(post.authorId);
+            const reactionsRes = await postReactionService.getOverview(post.id);
+            const commentsRes = await homePostUtils.getCommentWithData(
+              post.id,
+              5
+            );
+            const totalCommentCount = await postCommentService.getCount(
+              post.id
+            );
 
-          const commentsRes = await homePostUtils.getCommentWithData(
-            post.id,
-            5
-          );
+            post.comment = {
+              comments: commentsRes.data.reverse(),
+              pageSize: 5,
+              endCursor: commentsRes.endCursor,
+              total: commentsRes.totalItems,
+              hasNextPage: commentsRes.hasNextPage,
+              totalComment: totalCommentCount.data,
+            };
 
-          post.comment = {
-            comments: commentsRes.data.reverse(),
-            pageSize: 5,
-            endCursor: commentsRes.endCursor,
-            total: commentsRes.totalItems,
-            hasNextPage: commentsRes.hasNextPage,
-          };
+            post.reaction = reactionsRes.data;
+            post.user = postAuthorRes.data;
 
-          post.reaction = reactionsRes.data;
-          post.user = postAuthorRes.data;
+            return post;
+          })
+        );
 
-          return post;
+        commit("getPostSuccess", {
+          data: postData,
+          total: res.totalItems,
         });
 
-        await Promise.all(promiseAll);
-
-        commit("getPostSuccess", res);
         return Promise.resolve();
       } catch (error) {
         console.log(error);
@@ -62,6 +69,7 @@ export const homePost = {
             endCursor: null,
             total: 0,
             hasNextPage: false,
+            totalComment: 0,
           };
 
           postData.reaction = {
@@ -78,6 +86,13 @@ export const homePost = {
         }
       } catch (err) {
         console.log(err);
+      }
+    },
+    async updatePost({ commit }, payLoad) {
+      const updatePostRes = await postService.update(payLoad.id, payLoad.data);
+      if (updatePostRes.success) {
+        commit("updatePostSuccess", updatePostRes.data);
+        return Promise.resolve();
       }
     },
     // User Reaction
@@ -251,15 +266,23 @@ export const homePost = {
     },
   },
   mutations: {
-    getPostSuccess(state, res) {
-      state.posts = [...state.posts, ...res.data];
-      state.total = res.totalItems;
-      state.pageNumber++;
-    },
     reset(state) {
       state.posts = [];
       state.total = 0;
       state.pageNumber = 0;
+    },
+    // ===== POST
+    getPostSuccess(state, payLoad) {
+      state.posts = [...state.posts, ...payLoad.data];
+      state.total = payLoad.total;
+      state.pageNumber++;
+    },
+    updatePostSuccess(state, payLoad) {
+      const post = state.posts.find((x) => x.id == payLoad.id);
+      if (post) {
+        post.content = payLoad.content;
+        post.postMedias = payLoad.postMedias;
+      }
     },
     // ==== Post reaction       =========
     updatePostReaction(state, payLoad) {

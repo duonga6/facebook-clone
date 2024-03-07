@@ -20,4 +20,9 @@ export const postService = {
       throw new Error(`Error post service ${err}`);
     });
   },
+  update(id, data) {
+    return api.put(`${BASE_URL}/${id}`, data).catch((err) => {
+      throw new Error(`Error post service ${err}`);
+    });
+  },
 };

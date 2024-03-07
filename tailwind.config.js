@@ -66,7 +66,7 @@ module.exports = {
         85: "85%",
       },
       boxShadow: {
-        "custom-sm": "0 2px 15px -2px rgba(0, 0, 0, 0.3)",
+        "custom-sm": "0 5px 15px 0px rgba(0, 0, 0, 0.2)",
       },
     },
   },

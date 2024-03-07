@@ -58,57 +58,48 @@
           </div>
         </div>
       </div>
-      <div class="post-more"></div>
+      <div class="post-more">
+        <button
+          class="post-more-btn"
+          :class="isShowPostMore ? 'bg-gray-100' : ''"
+          @click="handleClickShowPostMore"
+        >
+          <i class="post-more-icon pi pi-ellipsis-h"></i>
+        </button>
+        <ul class="post-more-list" v-show="isShowPostMore">
+          <svg
+            class="absolute top-0 right-0 -mt-5"
+            fill="#fff"
+            width="32px"
+            height="32px"
+            viewBox="0 0 32 32"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M8 20.695l7.997-11.39L24 20.695z" />
+          </svg>
+          <li class="post-more-item" @click="handleShowEditPost">
+            <i class="post-more-icon pi pi-pencil"></i>
+            <p class="post-more-text">Chỉnh sửa bài viết</p>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="post-content">{{ post.content }}</div>
     <div class="post-media">
-      <template v-if="post.postMedias.length >= 4">
-        <div class="grid grid-cols-2 gap-1">
-          <div
-            class="h-1/2"
-            v-for="media in post.postMedias.slice(0, 4)"
-            :key="media.id"
-          >
-            <template v-if="media.mediaTypeId == 2">
-              <img class="w-full h-62 object-cover" :src="media.url" alt="" />
-            </template>
-            <template v-else-if="media.mediaTypeId == 3">
-              <video :src="media.url"></video>
-            </template>
-          </div>
+      <div class="grid grid-cols-2 gap-1">
+        <div v-for="media in post.postMedias.slice(0, 4)" :key="media.id">
+          <template v-if="media.mediaTypeId == 2">
+            <img class="w-full h-62 object-cover" :src="media.url" alt="" />
+          </template>
+          <template v-else-if="media.mediaTypeId == 3">
+            <video
+              class="w-full h-full object-cover"
+              :src="media.url"
+              controls
+            ></video>
+          </template>
         </div>
-      </template>
-      <template v-else-if="post.postMedias.length == 3">
-        <div class="grid grid-cols-2 gap-1">
-          <div class="h-1/2" v-for="index in 3" :key="index">
-            <img
-              class="w-full h-62 object-cover"
-              :src="post.postMedias[index - 1].url"
-              alt=""
-            />
-          </div>
-        </div>
-      </template>
-      <template v-else-if="post.postMedias.length == 2">
-        <div class="grid grid-cols-2 gap-1">
-          <div class="h-1/2" v-for="index in 2" :key="index">
-            <img
-              class="w-full h-62 object-cover"
-              :src="post.postMedias[index - 1].url"
-              alt=""
-            />
-          </div>
-        </div>
-      </template>
-      <template v-else-if="post.postMedias.length == 1">
-        <div class="h-1/2">
-          <img
-            class="w-full h-62 object-cover"
-            :src="post.postMedias[0].url"
-            alt=""
-          />
-        </div>
-      </template>
+      </div>
     </div>
     <div
       class="post-reaction-comment"
@@ -138,7 +129,6 @@
         {{ post.comment.totalComment }} bình luận
       </div>
     </div>
-    <div v-else class="mt-2"></div>
     <div class="post-action">
       <div
         class="post-action-item action--reaction"
@@ -278,6 +268,13 @@
       </div>
     </div>
   </div>
+  <post-editor
+    v-if="isShowEditPost"
+    :data="post"
+    @closePostEditor="onClosePostEditor"
+    :action="'Update'"
+    @submittedForm="onSubmittedForm"
+  ></post-editor>
 </template>
 
 <script>
@@ -286,10 +283,15 @@ import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
 import { useStore } from "vuex";
 import CommentComponent from "@/components/Comment/CommentComponent.vue";
 import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
-// import { convertUTCtoSystemDate } from "@/utilities/dateUtils";
+import PostEditor from "./PostEditorComponent.vue";
 
 export default {
-  components: { ReactionComponent, CommentComponent, LoadingComponent },
+  components: {
+    ReactionComponent,
+    CommentComponent,
+    LoadingComponent,
+    PostEditor,
+  },
   props: {
     post: {
       type: Object,
@@ -303,10 +305,14 @@ export default {
   setup(props) {
     const store = useStore();
 
+    // Status variables
     const isLoadingComment = ref(false);
     const isLoaded = ref(false);
     const isShowReaction = ref(false);
+    const isShowPostMore = ref(false);
+    const isShowEditPost = ref(false);
 
+    // Data variables
     const commentInput = ref(null);
     const createCommentInput = ref(null);
     const commentShowOverviewCount = ref(0);
@@ -343,6 +349,11 @@ export default {
 
     const postDate = new Date(props.post.createdAt);
 
+    function handleClickShowPostMore() {
+      isShowPostMore.value = !isShowPostMore.value;
+    }
+
+    // Timer show reaction
     let timerHover;
 
     // Hiện chọn reaction khi hover nút like
@@ -458,6 +469,54 @@ export default {
         });
     }
 
+    // Edit post
+
+    function handleShowEditPost() {
+      isShowEditPost.value = true;
+      isShowPostMore.value = false;
+    }
+
+    function onClosePostEditor() {
+      isShowEditPost.value = false;
+    }
+
+    function onSubmittedForm(data) {
+      const postMediasFilter = data.postMedias.map((item) => {
+        return {
+          id: item.id,
+          title: item.title,
+          mediaTypeId: item.mediaTypeId,
+          url: item.url,
+        };
+      });
+
+      const currentPostMediasId = props.post.postMedias.map((x) => x.id);
+      const newPostMediasId = postMediasFilter.map((x) => x.id);
+
+      const postMediasRemove = currentPostMediasId.filter(
+        (x) => !newPostMediasId.includes(x)
+      );
+
+      const postMediasAdd = postMediasFilter.filter(
+        (x) => !currentPostMediasId.includes(x.id)
+      );
+
+      const updatePostData = {
+        content: data.content,
+        mediasDelete: postMediasRemove,
+        mediasAdd: postMediasAdd,
+      };
+
+      store
+        .dispatch("homePost/updatePost", {
+          id: props.post.id,
+          data: updatePostData,
+        })
+        .finally(() => {
+          isShowEditPost.value = false;
+        });
+    }
+
     onMounted(() => {
       createCommentInput.value = document.querySelector(
         "#create-comment-input"
@@ -465,24 +524,30 @@ export default {
     });
 
     return {
-      userReacted,
-      postReactions,
       isLoaded,
       isShowReaction,
       isLoadingComment,
+      isShowPostMore,
+      isShowEditPost,
+      postDate,
+      userReacted,
+      postReactions,
       user,
       commentInput,
       createCommentInput,
+      commentShowOverviewCount,
+      commentShowBelow,
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
       onHandleClickReaction,
       onCommentChange,
-      commentShowBelow,
-      commentShowOverviewCount,
       handleClickShowMoreComment,
       createComment,
-      postDate,
+      handleClickShowPostMore,
+      handleShowEditPost,
+      onClosePostEditor,
+      onSubmittedForm,
     };
   },
 };
@@ -492,7 +557,7 @@ export default {
 .post-container {
   @apply bg-white py-2.5 pb-0;
   .post-header {
-    @apply px-4;
+    @apply px-4 flex justify-between;
     .post-author {
       @apply flex items-center;
       .author-img {
@@ -512,15 +577,34 @@ export default {
       }
     }
     .post-more {
+      @apply relative;
+      .post-more-btn {
+        @apply w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-all;
+        .post-more-icon {
+          @apply font-semibold text-17 text-gray-500;
+        }
+      }
+
+      .post-more-list {
+        @apply absolute top-10 right-0 bg-white shadow-custom-sm p-2 w-80 z-50 rounded-md;
+        .post-more-item {
+          @apply flex items-center space-x-4 px-3 p-2 hover:cursor-pointer hover:bg-gray-100 transition-all rounded-md;
+          .post-more-icon {
+            @apply font-semibold;
+          }
+          .post-more-text {
+            @apply font-semibold text-15;
+          }
+        }
+      }
     }
   }
 
   .post-content {
-    @apply mt-2 px-4 text-15 leading-18;
+    @apply mt-2 px-4 text-15 leading-18 mb-2;
   }
 
   .post-media {
-    @apply mt-4;
   }
 
   .post-reaction-comment {

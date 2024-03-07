@@ -7,7 +7,7 @@
           alt=""
         />
       </div>
-      <div class="top-section__input" @click="handleOpenAddPostForm">
+      <div class="top-section__input" @click="handleOpenCreatePost">
         {{ user?.lastName }} ơi, bạn đang nghĩ gì thể?
       </div>
     </div>
@@ -56,9 +56,9 @@
       </div>
     </div>
   </div>
-  <div
+  <!-- <div
     class="add-post__form"
-    :class="isShowAddPostForm ? 'visible opacity-100' : 'invisible opacity-0'"
+    :class="isShowCreatePost ? 'visible opacity-100' : 'invisible opacity-0'"
   >
     <form class="form-container" @submit.prevent="handleSubmitAddForm">
       <div class="form-heading">
@@ -145,15 +145,12 @@
             </div>
           </li>
         </ul>
-        <!-- <button class="post-media-close">
-          <i class="pi pi-times close-icon"></i>
-        </button> -->
       </div>
       <drag-file @DragedFile="onDragedFile"></drag-file>
 
-      <!-- Additional for post -->
+      Additional for post
 
-      <!-- <div class="additional-container">
+      <div class="additional-container">
         <p class="additional-text">Thêm vào bài viết của bạn</p>
         <ul class="additional-list">
           <li>
@@ -202,7 +199,7 @@
             </div>
           </li>
         </ul>
-      </div> -->
+      </div>
       <div class="add-post-btn p-4">
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
@@ -215,173 +212,71 @@
         </button>
       </div>
     </form>
-  </div>
+  </div> -->
+  <!-- <post-editor></post-editor> -->
+  <post-editor
+    v-if="isShowCreatePost"
+    @closePostEditor="onCloseCreatePost"
+    @submittedForm="onSubmittedForm"
+  ></post-editor>
 </template>
 
 <script>
 /* eslint-disable */
-import { computed, reactive, ref } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
-import { postService } from "@/services/post.service";
 import DragFile from "../Utils/DragFileComponent.vue";
 import LoadingComponent from "../Utils/LoadingComponent.vue";
-import { uploadFileService } from "@/services/upload-file.service";
-import { generateUUID } from "@/utilities";
+import PostEditor from "@/components/Post/PostEditorComponent.vue";
+
 export default {
-  components: { DragFile, LoadingComponent },
+  components: { DragFile, LoadingComponent, PostEditor },
+  props: {
+    type: {
+      type: String,
+      default: "Create",
+    },
+  },
   setup() {
     const store = useStore();
-    const isShowAddPostForm = ref(false);
-    const isCanPost = computed(() => {
-      if (!postData.content && postData.postMedias.length == 0) {
-        return false;
-      }
 
-      if (postData.postMedias.some((x) => x.uploading)) {
-        return false;
-      }
+    const isShowCreatePost = ref(false);
 
-      return true;
-    });
-
-    const user = computed(() => store.getters["user/getUser"]);
-    const dataAccessRange = ref([
-      {
-        name: "Công khai",
-        value: 1,
-        icon: "",
-      },
-      {
-        name: "Bạn bè",
-        value: 2,
-        icon: "",
-      },
-      {
-        name: "Chỉ mình tôi",
-        value: 3,
-        icon: "",
-      },
-    ]);
-    const selectedAccessRange = ref(dataAccessRange.value[0]);
-
-    const postData = reactive({
-      content: "",
-      postMedias: [
-        // {
-        //   id: "124124",
-        //   showUrl:
-        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
-        //   uploaded: true,
-        //   uploading: false,
-        // },
-        // {
-        //   id: "1241241242",
-        //   showUrl:
-        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
-        //   uploaded: true,
-        //   uploading: false,
-        // },
-        // {
-        //   id: "124124x",
-        //   showUrl:
-        //     "https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png",
-        //   uploaded: true,
-        //   uploading: false,
-        // },
-      ],
-    });
-
-    function handleCloseAddPostForm() {
-      isShowAddPostForm.value = false;
+    function handleOpenCreatePost() {
+      isShowCreatePost.value = true;
     }
 
-    function handleOpenAddPostForm() {
-      isShowAddPostForm.value = true;
+    function onCloseCreatePost() {
+      isShowCreatePost.value = false;
     }
 
-    function handleSubmitAddForm() {
-      const postMediaFilter = [...postData.postMedias].filter(x => x.uploaded).map(x => {
-        return {
-          title: x.title,
-          mediaTypeId: x.mediaTypeId,
-          url: x.url,
-        }
-      });
-
-      store.dispatch("homePost/createPost", {
-        content: postData.content,
-        postMedias: postMediaFilter
-      }).then(() => {
-        isShowAddPostForm.value = false;
-      })
-    }
-
-    function generateClassMedias(totalItems, index = null) {
-      if (index == null) {
-        return `grid-cols-2`;
-      }
-
-      if (totalItems % 2 == 1 && index == 0) {
-        return "col-span-2";
-      }
-
-      return "col-span-1";
-    }
-
-    async function onDragedFile(files) {
-
-      const fileDatas = await Promise.all(
-        files.map(async (item) => {
+    function onSubmittedForm(postData) {
+      const postMediaFilter = [...postData.postMedias]
+        .filter((x) => x.uploaded)
+        .map((x) => {
           return {
-            id: generateUUID(),
-            showUrl: URL.createObjectURL(item),
-            uploading: true,
-            uploaded: false,
-            type: item.type.split("/")[0],
-            file: item,
+            title: x.title,
+            mediaTypeId: x.mediaTypeId,
+            url: x.url,
           };
+        });
+
+      store
+        .dispatch("homePost/createPost", {
+          content: postData.content,
+          postMedias: postMediaFilter,
         })
-      );
-
-      postData.postMedias = [...postData.postMedias, ...fileDatas];
-
-      for (const file of fileDatas) {
-        const fileRef = postData.postMedias.find((x) => x.id == file.id);
-        uploadFileService
-          .upload(file.file, "upload")
-          .then((res) => {
-            console.log(res);
-            fileRef.uploaded = true;
-            fileRef.url = res.data.url;
-            fileRef.title = res.data.name;
-            fileRef.mediaTypeId = fileRef.type == "image" ? 2 : 3;
-          })
-          .catch(() => {
-            fileRef.uploaded = false;
-          })
-          .finally(() => {
-            fileRef.uploading = false;
-          });
-      }
-    }
-
-    function deleteUploadedImage(id) {
-      postData.postMedias = postData.postMedias.filter((x) => x.id != id);
+        .then(() => {
+          isShowCreatePost.value = false;
+        });
     }
 
     return {
-      deleteUploadedImage,
-      handleCloseAddPostForm,
-      handleOpenAddPostForm,
-      handleSubmitAddForm,
-      generateClassMedias,
-      onDragedFile,
-      dataAccessRange,
-      selectedAccessRange,
-      isShowAddPostForm,
-      user,
-      postData,
-      isCanPost,
+      user: computed(() => store.getters["user/getUser"]),
+      isShowCreatePost,
+      handleOpenCreatePost,
+      onCloseCreatePost,
+      onSubmittedForm,
     };
   },
 };
@@ -417,148 +312,6 @@ export default {
         }
         .type-post__text {
           @apply font-semibold text-gray-500 text-15;
-        }
-      }
-    }
-  }
-}
-
-.add-post__form {
-  @apply fixed top-0 left-0 bottom-0 right-0 bg-gray-100 bg-opacity-80 z-10 flex justify-center items-center transition-all;
-
-  .form-container {
-    @apply bg-white w-500px rounded-lg shadow-lg row-end-auto relative overflow-hidden;
-
-    .bg-overlay-drag-file {
-      @apply absolute top-0 left-0 right-0 bottom-0 bg-gray-100 bg-opacity-75 z-50 flex items-center justify-center;
-
-      .overlay-drag-text {
-        @apply text-xl;
-      }
-    }
-
-    .form-heading {
-      @apply relative;
-
-      .form-heading__title {
-        @apply mb-0 text-xl font-bold text-center p-4;
-      }
-
-      .form-heading__icon-container {
-        @apply absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full overflow-hidden bg-gray-200 cursor-pointer transition-all;
-
-        &:hover {
-          @apply bg-gray-300;
-        }
-
-        .form-heading__icon {
-          @apply w-5 h-5 inline-block;
-        }
-      }
-    }
-
-    .user-info-container {
-      @apply flex p-4 pb-0;
-
-      .avatar-container {
-        @apply w-10 h-10 rounded-full flex items-center justify-center overflow-hidden;
-
-        .avatar-img {
-          @apply object-cover w-full h-full;
-        }
-      }
-
-      .user-info {
-        @apply ms-3;
-
-        .user-info__name {
-          @apply font-semibold text-15;
-        }
-      }
-    }
-
-    .post-content {
-      @apply p-4;
-
-      .post-content__text {
-        @apply text-2xl placeholder:text-gray-600 outline-none w-full;
-      }
-    }
-
-    .post-media-container {
-      @apply m-4 border border-gray-200 rounded-lg p-2 relative;
-      .post-media-list {
-        @apply max-h-96 overflow-y-auto;
-        .post-media-item {
-          @apply w-auto;
-          .post-media-type {
-            @apply w-full h-full rounded-md overflow-hidden relative;
-            .image {
-              @apply object-cover w-full h-full max-h-56 min-h-32;
-            }
-
-            .upload-image {
-              @apply absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-gray-200 bg-opacity-70;
-            }
-
-            .upload-image.upload-fail {
-              .upload-fail-icon {
-                @apply text-red-600 text-2xl;
-              }
-            }
-
-            .remove-uploaded-image {
-              @apply hidden absolute top-1 right-1 w-7 h-7 items-center justify-center rounded-full bg-gray-100 hover:bg-red-500 hover:text-white transition-all;
-              .remove-icon {
-                @apply text-12;
-              }
-            }
-
-            &:hover {
-              .remove-uploaded-image {
-                @apply flex;
-              }
-            }
-          }
-        }
-
-        &::-webkit-scrollbar {
-          @apply w-1;
-        }
-
-        &::-webkit-scrollbar-thumb {
-          @apply bg-gray-300 rounded-md;
-        }
-      }
-
-      .post-media-close {
-        @apply w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 absolute -top-2 -right-2;
-        .close-icon {
-          @apply text-gray-500 font-semibold;
-        }
-      }
-    }
-
-    .additional-container {
-      @apply m-4 mb-0 px-4 py-2 flex items-center justify-between
-        border border-gray-300 rounded-lg;
-
-      .additional-text {
-        @apply mb-0 font-semibold text-15;
-      }
-
-      .additional-list {
-        @apply flex space-x-1;
-
-        .additional-item {
-          @apply w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all;
-
-          &:hover {
-            @apply bg-gray-100;
-          }
-          .additional-item__img {
-            @apply w-6 h-6 object-cover;
-          }
         }
       }
     }

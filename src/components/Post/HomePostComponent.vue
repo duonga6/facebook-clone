@@ -9,7 +9,6 @@
 
 <script>
 import PostComponent from "@/components/Post/PostComponent.vue";
-// import PostOverlayComponent from "./PostOverlayComponent.vue";
 import { useStore } from "vuex";
 import { computed, onBeforeUnmount, onMounted } from "vue";
 export default {
