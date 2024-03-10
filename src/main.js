@@ -7,6 +7,7 @@ import "@/assets/styles/index.css";
 import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import lara from "./presets/lara";
+import ToastService from "primevue/toastservice";
 
 const app = createApp(App);
 registerGlobalComponents(app);
@@ -17,6 +18,7 @@ app.use(PrimeVue, {
   unstyled: true,
   pt: lara,
 });
+app.use(ToastService);
 app.mount("#app");
 
 // createApp(App).use(store).use(router).mount("#app");

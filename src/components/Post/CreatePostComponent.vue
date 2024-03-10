@@ -14,7 +14,7 @@
     <hr class="mt-3" />
     <div class="add-post__bottom-section">
       <div class="bottom-section__type-post-list">
-        <div class="type-post-item" @click="handleOpenAddPostForm">
+        <div class="type-post-item" @click="handleOpenCreatePost">
           <div class="type-post__img">
             <img
               height="24"
@@ -27,7 +27,7 @@
           </div>
           <div class="type-post__text">Video trực tiếp</div>
         </div>
-        <div class="type-post-item" @click="handleOpenAddPostForm">
+        <div class="type-post-item" @click="handleOpenCreatePost">
           <div class="type-post__img">
             <img
               height="24"
@@ -40,7 +40,7 @@
           </div>
           <div class="type-post__text">Ảnh/video</div>
         </div>
-        <div class="type-post-item" @click="handleOpenAddPostForm">
+        <div class="type-post-item" @click="handleOpenCreatePost">
           <div class="type-post__img">
             <img
               height="24"
@@ -262,7 +262,7 @@ export default {
         });
 
       store
-        .dispatch("homePost/createPost", {
+        .dispatch("post/createPost", {
           content: postData.content,
           postMedias: postMediaFilter,
         })

@@ -2,27 +2,26 @@
   <div class="post-list flex flex-col space-y-2 mt-4">
     <post-component v-for="post in posts" :key="post.id" :post="post" />
   </div>
-  <div class="relavite">
-    <!-- <post-overlay-component :postData="posts[0]"></post-overlay-component> -->
-  </div>
 </template>
 
 <script>
 import PostComponent from "@/components/Post/PostComponent.vue";
 import { useStore } from "vuex";
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onUnmounted } from "vue";
+import { POST_TYPE } from "@/constants";
+
 export default {
   components: { PostComponent },
   setup() {
     const store = useStore();
-    const posts = computed(() => store.getters["homePost/getHomePosts"]);
+    const posts = computed(() => store.getters["post/getPosts"]);
 
-    onMounted(() => {
-      store.dispatch("homePost/getHomePost");
+    store.dispatch("post/getPost", {
+      postType: POST_TYPE.HOME_POST,
     });
 
-    onBeforeUnmount(() => {
-      posts.value.length = 0;
+    onUnmounted(() => {
+      store.dispatch("post/reset");
     });
 
     return {

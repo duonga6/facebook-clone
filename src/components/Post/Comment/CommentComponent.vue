@@ -140,7 +140,7 @@
         ></comment-component>
       </div>
       <div
-        v-if="isShowReplyComment"
+        v-show="isShowReplyComment"
         class="reply-comment-container flex items-center my-1"
       >
         <div class="user-avatar w-7 h-7 rounded-full overflow-hidden">
@@ -159,6 +159,7 @@
                 placeholder="Viết phản hồi"
                 class="comment-input outline-none bg-gray-100 placeholder:text-gray-600 text-15 ps-4 pe-12 py-1.5 rounded-2xl w-full resize-none overflow-hidden"
                 v-model="commentInput"
+                ref="commentInputEl"
               />
             </div>
             <div
@@ -184,10 +185,10 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { convertDateDisplay } from "@/utilities/dateUtils";
-import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
-import LoadingComponent from "../Utils/LoadingComponent.vue";
+import ReactionComponent from "@/components/Post/Reaction/ReactionComponent.vue";
+import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
 import { useStore } from "vuex";
 export default {
   components: { ReactionComponent, LoadingComponent },
@@ -215,6 +216,7 @@ export default {
     // Data variables
     const user = computed(() => store.getters["user/getUser"]);
     const commentInput = ref(null);
+    const commentInputEl = ref(null);
     const commentsData = reactive({
       ...props.comment,
       childComment: {
@@ -254,7 +256,7 @@ export default {
       isShowChildComment.value = true;
       isLoadingChildComment.value = true;
       store
-        .dispatch("homePost/getComment", {
+        .dispatch("post/getComment", {
           postId: props.comment.postId,
           pageSize: props.comment.childComment.pageSize,
           parentId: props.comment.id,
@@ -325,7 +327,7 @@ export default {
 
     // CRUD reaction
     function deleteReaction() {
-      store.dispatch("homePost/deleteCommentReaction", {
+      store.dispatch("post/deleteCommentReaction", {
         path: props.comment.path,
         commentReactionId: userReacted.value.id,
         postId: props.comment.postId,
@@ -333,7 +335,7 @@ export default {
     }
 
     function createReaction(id) {
-      store.dispatch("homePost/createCommentReaction", {
+      store.dispatch("post/createCommentReaction", {
         path: props.comment.path,
         data: {
           commentId: props.comment.id,
@@ -344,7 +346,7 @@ export default {
     }
 
     function updateReaction(id) {
-      store.dispatch("homePost/updateCommentReaction", {
+      store.dispatch("post/updateCommentReaction", {
         path: props.comment.path,
         data: {
           reactionId: id,
@@ -357,12 +359,15 @@ export default {
     // CRUD comment
     function handleShowReplyComment() {
       isShowReplyComment.value = true;
+      setTimeout(() => {
+        commentInputEl.value.focus();
+      }, 1);
     }
 
     function handleCreateReplyComment() {
       if (commentInput.value) {
         if (
-          store.dispatch("homePost/createComment", {
+          store.dispatch("post/createComment", {
             data: {
               content: commentInput.value,
               postId: props.comment.postId,
@@ -384,7 +389,7 @@ export default {
     }
 
     function handleDeleteComment() {
-      store.dispatch("homePost/deleteComment", {
+      store.dispatch("post/deleteComment", {
         commentId: props.comment.id,
         postId: props.comment.postId,
         path: props.comment.path,
@@ -398,10 +403,6 @@ export default {
         );
       commentsData.childComment.total--;
     }
-
-    onMounted(() => {
-      // loadOverviewReaction();
-    });
 
     return {
       commentsData,
@@ -421,6 +422,7 @@ export default {
       onLeaveComment,
       onHoverComment,
       commentInput,
+      commentInputEl,
       handleShowReplyComment,
       handleCreateReplyComment,
       onDeleteComment,

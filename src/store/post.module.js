@@ -3,9 +3,10 @@ import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { userService } from "@/services/user.service";
-import { homePostUtils } from "./homePost.utils";
+import { homePostUtils } from "./postUtils";
+import { POST_TYPE } from "@/constants";
 
-export const homePost = {
+export const post = {
   namespaced: true,
   state: {
     total: 0,
@@ -15,18 +16,29 @@ export const homePost = {
   },
   actions: {
     // Post
-    async getHomePost({ commit, state }) {
+    async getPost({ commit, state }, payLoad) {
       try {
-        const res = await postService.get(state.pageSize, state.pageNumber + 1);
+        let postResponse;
+        if (payLoad.postType == POST_TYPE.HOME_POST) {
+          postResponse = await postService.get(
+            state.pageSize,
+            state.pageNumber + 1
+          );
+        } else if (payLoad.postType == POST_TYPE.PROFILE_POST) {
+          postResponse = await userService.getPost(payLoad.userId, {
+            pageSize: state.pageSize,
+            pageNumber: state.pageNumber + 1,
+          });
+        }
 
         // Map post => get comment, reaction, author
-        const postData = await Promise.all(
-          res.data.map(async (post) => {
+        const postMapped = await Promise.all(
+          postResponse.data.map(async (post) => {
             const postAuthorRes = await userService.getById(post.authorId);
             const reactionsRes = await postReactionService.getOverview(post.id);
             const commentsRes = await homePostUtils.getCommentWithData(
               post.id,
-              5
+              Math.floor(Math.random() * 2) + 1
             );
             const totalCommentCount = await postCommentService.getCount(
               post.id
@@ -49,8 +61,8 @@ export const homePost = {
         );
 
         commit("getPostSuccess", {
-          data: postData,
-          total: res.totalItems,
+          data: postMapped,
+          total: postResponse.totalItems,
         });
 
         return Promise.resolve();
@@ -264,6 +276,10 @@ export const homePost = {
         console.log(err);
       }
     },
+    // Reset
+    reset({ commit }) {
+      commit("reset");
+    },
   },
   mutations: {
     reset(state) {
@@ -404,7 +420,10 @@ export const homePost = {
     },
   },
   getters: {
-    getHomePosts(state) {
+    getState(state) {
+      return state;
+    },
+    getPosts(state) {
       return state.posts;
     },
   },

@@ -18,4 +18,19 @@ export const userService = {
       throw new Error(`Error post comment service ${err}`);
     });
   },
+  getPost(id, params) {
+    return api.get(`${BASE_URL}/${id}/Posts`, {
+      params: params,
+    });
+  },
+  getPhoto(id, params) {
+    return api.get(`${BASE_URL}/${id}/GetPhotos`, {
+      params: params,
+    });
+  },
+  getFriend(id, params) {
+    return api.get(`${BASE_URL}/${id}/Friendship`, {
+      params: params,
+    });
+  },
 };

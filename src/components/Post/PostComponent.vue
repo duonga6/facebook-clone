@@ -77,7 +77,11 @@
           >
             <path d="M8 20.695l7.997-11.39L24 20.695z" />
           </svg>
-          <li class="post-more-item" @click="handleShowEditPost">
+          <li
+            v-show="user.id == post.authorId"
+            class="post-more-item"
+            @click="handleShowEditPost"
+          >
             <i class="post-more-icon pi pi-pencil"></i>
             <p class="post-more-text">Chỉnh sửa bài viết</p>
           </li>
@@ -196,7 +200,9 @@
             "
           ></i>
         </div>
-        <div class="post-action-text">Bình luận</div>
+        <div class="post-action-text" @click="handleClickCreateComment">
+          Bình luận
+        </div>
       </div>
       <div class="post-action-item action-share">
         <div class="post-action-icon">
@@ -250,6 +256,7 @@
               class="comment-input"
               id="create-comment-input"
               v-model="commentInput"
+              ref="commentInputEl"
             />
           </div>
           <div class="post-send-btn">
@@ -273,17 +280,18 @@
     :data="post"
     @closePostEditor="onClosePostEditor"
     :action="'Update'"
-    @submittedForm="onSubmittedForm"
+    @submittedForm="onSubmitUpdatePost"
   ></post-editor>
 </template>
 
 <script>
-import { computed, onMounted, ref } from "vue";
-import ReactionComponent from "@/components/Reaction/ReactionComponent.vue";
+import { computed, ref } from "vue";
+import ReactionComponent from "@/components/Post/Reaction/ReactionComponent.vue";
 import { useStore } from "vuex";
-import CommentComponent from "@/components/Comment/CommentComponent.vue";
+import CommentComponent from "@/components/Post/Comment/CommentComponent.vue";
 import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
 import PostEditor from "./PostEditorComponent.vue";
+import tokenService from "@/services/token.service";
 
 export default {
   components: {
@@ -313,11 +321,12 @@ export default {
     const isShowEditPost = ref(false);
 
     // Data variables
+    const commentInputEl = ref(null);
     const commentInput = ref(null);
-    const createCommentInput = ref(null);
     const commentShowOverviewCount = ref(0);
-    const user = computed(() => store.getters["user/getUser"]);
+    const user = tokenService.getUser();
     const reactions = computed(() => store.getters["reaction/getReactions"]);
+
     const userReacted = computed(() => {
       const userReactedId = props.post.reaction.userReacted
         ? props.post.reaction.userReacted.reactionId
@@ -344,7 +353,6 @@ export default {
 
     const commentShowBelow = computed(() => {
       return props.post.comment.comments;
-      // return props.post.comment.comments.slice(-1);
     });
 
     const postDate = new Date(props.post.createdAt);
@@ -402,24 +410,17 @@ export default {
       }
     }
 
-    // Set tự động height cho comment input
-    function onCommentChange(e) {
-      const textareaElement = e.target;
-      textareaElement.style.height = 0;
-      textareaElement.style.height = textareaElement.scrollHeight + "px";
-    }
-
     // ---- Reaction CRUD
 
     function createReaction(id = 1) {
-      store.dispatch("homePost/createUserReaction", {
+      store.dispatch("post/createUserReaction", {
         postId: props.post.id,
         reactionId: id,
       });
     }
 
     function updateReaction(id) {
-      store.dispatch("homePost/updateUserReaction", {
+      store.dispatch("post/updateUserReaction", {
         postReactionId: userReacted.value.id,
         data: {
           reactionId: id,
@@ -429,7 +430,7 @@ export default {
 
     function deleteReaction() {
       if (userReacted.value) {
-        store.dispatch("homePost/deleteUserReacted", {
+        store.dispatch("post/deleteUserReacted", {
           postReactionId: userReacted.value.id,
           postId: props.post.id,
         });
@@ -442,7 +443,7 @@ export default {
     function createComment() {
       if (commentInput.value) {
         if (
-          store.dispatch("homePost/createComment", {
+          store.dispatch("post/createComment", {
             data: {
               content: commentInput.value,
               postId: props.post.id,
@@ -455,10 +456,14 @@ export default {
       }
     }
 
+    function handleClickCreateComment() {
+      commentInputEl.value.focus();
+    }
+
     function handleClickShowMoreComment() {
       isLoadingComment.value = true;
       store
-        .dispatch("homePost/getComment", {
+        .dispatch("post/getComment", {
           postId: props.post.id,
           pageSize: props.post.comment.pageSize,
           parent: null,
@@ -469,7 +474,14 @@ export default {
         });
     }
 
-    // Edit post
+    // Set tự động height cho comment input
+    function onCommentChange(e) {
+      const textareaElement = e.target;
+      textareaElement.style.height = 0;
+      textareaElement.style.height = textareaElement.scrollHeight + "px";
+    }
+
+    // POST  Edit post
 
     function handleShowEditPost() {
       isShowEditPost.value = true;
@@ -480,7 +492,7 @@ export default {
       isShowEditPost.value = false;
     }
 
-    function onSubmittedForm(data) {
+    function onSubmitUpdatePost(data) {
       const postMediasFilter = data.postMedias.map((item) => {
         return {
           id: item.id,
@@ -508,20 +520,17 @@ export default {
       };
 
       store
-        .dispatch("homePost/updatePost", {
+        .dispatch("post/updatePost", {
           id: props.post.id,
           data: updatePostData,
+        })
+        .catch((err) => {
+          console.log(err);
         })
         .finally(() => {
           isShowEditPost.value = false;
         });
     }
-
-    onMounted(() => {
-      createCommentInput.value = document.querySelector(
-        "#create-comment-input"
-      );
-    });
 
     return {
       isLoaded,
@@ -534,7 +543,7 @@ export default {
       postReactions,
       user,
       commentInput,
-      createCommentInput,
+      commentInputEl,
       commentShowOverviewCount,
       commentShowBelow,
       onHoverReaction,
@@ -547,7 +556,8 @@ export default {
       handleClickShowPostMore,
       handleShowEditPost,
       onClosePostEditor,
-      onSubmittedForm,
+      onSubmitUpdatePost,
+      handleClickCreateComment,
     };
   },
 };

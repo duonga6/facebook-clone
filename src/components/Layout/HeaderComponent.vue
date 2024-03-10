@@ -2,13 +2,19 @@
   <div class="mx-auto z-10 relative">
     <div class="flex justify-between items-center shadow-sm">
       <div class="flex-1 flex py-2 items-center">
-        <div class="ms-4">
+        <router-link
+          :to="{
+            name: 'home',
+            params: null,
+          }"
+          class="ms-4"
+        >
           <img
             class="w-10"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/2048px-2023_Facebook_icon.svg.png"
             alt=""
           />
-        </div>
+        </router-link>
         <div class="relative">
           <input
             type="text"
@@ -201,7 +207,12 @@
                 <li
                   class="rounded-lg border border-gray-200 shadow-lg p-1 mb-4"
                 >
-                  <div
+                  <router-link
+                    :to="{
+                      name: 'profile',
+                      params: null,
+                    }"
+                    @click="isShowUserMenu = false"
                     class="flex items-center p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-all"
                   >
                     <div
@@ -218,7 +229,7 @@
                         `${user.firstName} ${user.lastName}`
                       }}</span>
                     </div>
-                  </div>
+                  </router-link>
                 </li>
                 <li
                   class="flex items-center p-2 cursor-pointer hover:bg-gray-100 transition-all rounded-lg"

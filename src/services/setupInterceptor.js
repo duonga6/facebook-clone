@@ -28,7 +28,10 @@ const setup = (store) => {
       if (res.data.success) {
         return res.data;
       } else {
-        return Promise.reject(res.data);
+        if (res.data.errors) {
+          return Promise.reject(res.data.errors);
+        }
+        return Promise.reject(res);
       }
     },
     // response có lỗi
@@ -64,8 +67,6 @@ const setup = (store) => {
                 return Promise.reject(rs);
               }
             }
-          } else {
-            return Promise.reject(err);
           }
         }
       }

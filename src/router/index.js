@@ -25,6 +25,24 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "login" */ "../views/Auth/LoginView.vue"),
   },
+  {
+    path: "/friend",
+    name: "friend",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/FriendView.vue"),
+  },
+  {
+    path: "/profile/:id?",
+    name: "profile",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(/* webpackChunkName: "login" */ "../views/ProfileView.vue"),
+  },
 ];
 
 const router = createRouter({

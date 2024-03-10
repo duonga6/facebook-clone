@@ -11,18 +11,12 @@ export const postService = {
       url += `&searchString=${searchString}`;
     }
 
-    return api.get(url).catch((err) => {
-      throw new Error(`Error post service ${err}`);
-    });
+    return api.get(url);
   },
   create(data) {
-    return api.post(BASE_URL, data).catch((err) => {
-      throw new Error(`Error post service ${err}`);
-    });
+    return api.post(BASE_URL, data);
   },
   update(id, data) {
-    return api.put(`${BASE_URL}/${id}`, data).catch((err) => {
-      throw new Error(`Error post service ${err}`);
-    });
+    return api.put(`${BASE_URL}/${id}`, data);
   },
 };

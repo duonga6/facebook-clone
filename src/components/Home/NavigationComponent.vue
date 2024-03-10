@@ -3,7 +3,15 @@
     <!-- Main navigation -->
     <ul>
       <li>
-        <router-link to="/" class="navigation-item">
+        <router-link
+          :to="{
+            name: 'profile',
+            params: {
+              id: userData.id,
+            },
+          }"
+          class="navigation-item"
+        >
           <div class="navigation-img">
             <img
               class=""
@@ -11,7 +19,9 @@
               alt=""
             />
           </div>
-          <div class="navigation-text">Phạm Dương</div>
+          <div class="navigation-text">
+            {{ userData.firstName + " " + userData.lastName }}
+          </div>
         </router-link>
       </li>
       <li>
@@ -198,11 +208,13 @@
 
 <script>
 import { ref } from "vue";
+import tokenService from "@/services/token.service";
 export default {
   setup() {
     const isShowMore = ref(false);
     const isShowEditSubNav = ref(false);
-    return { isShowMore, isShowEditSubNav };
+
+    return { isShowMore, isShowEditSubNav, userData: tokenService.getUser() };
   },
 };
 </script>
