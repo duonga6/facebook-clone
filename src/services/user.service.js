@@ -28,9 +28,4 @@ export const userService = {
       params: params,
     });
   },
-  getFriend(id, params) {
-    return api.get(`${BASE_URL}/${id}/Friendship`, {
-      params: params,
-    });
-  },
 };

@@ -18,7 +18,7 @@
             </div>
           </div>
           <div class="user-action">
-            <button class="add-friend-btn">
+            <button class="add-friend-btn" v-if="loggedUserId != userId">
               <i class="btn-icon pi pi-plus"></i>
               <span class="btn-text">Kết bạn</span>
             </button>
@@ -160,7 +160,7 @@ export default {
       userPhotos.value.data = photoRes.data;
       userPhotos.value.total = photoRes.totalItems;
 
-      const userFriendRes = await userService.getFriend(userId, {
+      const userFriendRes = await friendshipService.get({
         pageSize: 9,
         pageNumber: 1,
         type: FRIEND_TYPE.ACCEPTED,
@@ -210,6 +210,8 @@ export default {
       userPhotos,
       userFriends,
       friendStatus,
+      loggedUserId,
+      userId,
     };
   },
 };

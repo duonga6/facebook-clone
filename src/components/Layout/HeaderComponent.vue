@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto z-10 relative">
+  <div class="z-10 sticky top-0 right-0 w-full bg-white shadow-sm">
     <div class="flex justify-between items-center shadow-sm">
       <div class="flex-1 flex py-2 items-center">
         <router-link

@@ -1,5 +1,5 @@
 <template>
-  <div class="ms-auto w-90 px-2">
+  <div class="ms-auto w-90 px-2 fixed right-0 top-14">
     <!-- Message -->
     <div class="flex justify-between items-center mt-3">
       <span

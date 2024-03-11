@@ -1,5 +1,5 @@
 <template>
-  <div class="w-90 px-2 py-4">
+  <div class="w-90 px-2 py-4 fixed left-0 top-14">
     <!-- Main navigation -->
     <ul>
       <li>
@@ -25,7 +25,13 @@
         </router-link>
       </li>
       <li>
-        <router-link to="/" class="navigation-item">
+        <router-link
+          :to="{
+            name: 'friends',
+            params: null,
+          }"
+          class="navigation-item"
+        >
           <div class="navigation-img">
             <i
               data-visualcompletion="css-img"

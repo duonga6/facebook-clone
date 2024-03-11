@@ -41,6 +41,8 @@ module.exports = {
         0.75: "3px",
         62: "248px",
         500: "500px",
+        90: "360px",
+        86: "344px",
       },
       fontSize: {
         md: "15px",

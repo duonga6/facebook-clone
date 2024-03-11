@@ -178,10 +178,10 @@
               : 'invisible opacity-0 translate-y-3'
           "
         >
-          <reaction-component
+          <ReactionComponent
             :isShowReaction="isShowReaction"
             @onSelectReaction="handleSelectReaction"
-          ></reaction-component>
+          ></ReactionComponent>
         </div>
       </div>
       <div class="post-action-item action--comment">
@@ -231,17 +231,17 @@
       >
         Xem thêm bình luận
       </button>
-      <loading-component
+      <LoadingComponent
         :classCss="'ms-10 w-6 h-6 mt-2'"
         v-if="isLoadingComment"
-      ></loading-component>
+      ></LoadingComponent>
       <div v-if="post.comment" class="comment-list space-y-1 mt-2">
-        <comment-component
+        <CommentComponent
           v-for="comment in commentShowBelow"
           :key="comment.id"
           :comment="comment"
         >
-        </comment-component>
+        </CommentComponent>
       </div>
       <div v-if="!isOverlay" class="create-comment-container mt-2">
         <div class="user-avatar">
@@ -275,31 +275,21 @@
       </div>
     </div>
   </div>
-  <post-editor
+  <PostEditor
     v-if="isShowEditPost"
     :data="post"
     @closePostEditor="onClosePostEditor"
     :action="'Update'"
     @submittedForm="onSubmitUpdatePost"
-  ></post-editor>
+  ></PostEditor>
 </template>
 
 <script>
 import { computed, ref } from "vue";
-import ReactionComponent from "@/components/Post/Reaction/ReactionComponent.vue";
 import { useStore } from "vuex";
-import CommentComponent from "@/components/Post/Comment/CommentComponent.vue";
-import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
-import PostEditor from "./PostEditorComponent.vue";
 import tokenService from "@/services/token.service";
 
 export default {
-  components: {
-    ReactionComponent,
-    CommentComponent,
-    LoadingComponent,
-    PostEditor,
-  },
   props: {
     post: {
       type: Object,

@@ -26,13 +26,13 @@ const routes = [
       import(/* webpackChunkName: "login" */ "../views/Auth/LoginView.vue"),
   },
   {
-    path: "/friend",
-    name: "friend",
+    path: "/friends",
+    name: "friends",
     meta: {
       requiresAuth: true,
     },
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/FriendView.vue"),
+      import(/* webpackChunkName: "friend" */ "../views/FriendView.vue"),
   },
   {
     path: "/profile/:id?",
@@ -41,7 +41,7 @@ const routes = [
       requiresAuth: true,
     },
     component: () =>
-      import(/* webpackChunkName: "login" */ "../views/ProfileView.vue"),
+      import(/* webpackChunkName: "profile" */ "../views/ProfileView.vue"),
   },
 ];
 

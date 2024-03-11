@@ -9,9 +9,17 @@
         @mouseenter="onHoverComment"
         @mouseleave="onLeaveComment"
       >
-        <div class="user-name">
+        <router-link
+          :to="{
+            name: 'profile',
+            params: {
+              id: comment.user.id,
+            },
+          }"
+          class="user-name"
+        >
           {{ comment.user.firstName + comment.user.lastName }}
-        </div>
+        </router-link>
         <div class="main-content">
           {{ comment.content }}
         </div>
@@ -96,9 +104,9 @@
                 : 'invisible opacity-0 translate-y-3'
             "
           >
-            <reaction-component
+            <ReactionComponent
               @onSelectReaction="handleSelectReaction"
-            ></reaction-component>
+            ></ReactionComponent>
           </div>
         </div>
         <div @click="handleShowReplyComment" class="reply-comment">
@@ -128,16 +136,16 @@
           }}
           phản hồi
         </div>
-        <loading-component
+        <LoadingComponent
           :classCss="'ms-10 w-6 h-6'"
           v-if="isLoadingChildComment"
-        ></loading-component>
-        <comment-component
+        ></LoadingComponent>
+        <CommentComponent
           v-for="childComment in comment.childComment.comments"
           :key="childComment.id"
           :comment="childComment"
           :isChild="true"
-        ></comment-component>
+        ></CommentComponent>
       </div>
       <div
         v-show="isShowReplyComment"
@@ -187,11 +195,8 @@
 <script>
 import { computed, reactive, ref } from "vue";
 import { convertDateDisplay } from "@/utilities/dateUtils";
-import ReactionComponent from "@/components/Post/Reaction/ReactionComponent.vue";
-import LoadingComponent from "@/components/Utils/LoadingComponent.vue";
 import { useStore } from "vuex";
 export default {
-  components: { ReactionComponent, LoadingComponent },
   props: {
     comment: {
       type: Object,

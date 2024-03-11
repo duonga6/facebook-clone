@@ -1,17 +1,15 @@
 <template>
   <div class="post-list flex flex-col space-y-2 mt-4">
-    <post-component v-for="post in posts" :key="post.id" :post="post" />
+    <PostComponent v-for="post in posts" :key="post.id" :post="post" />
   </div>
 </template>
 
 <script>
-import PostComponent from "@/components/Post/PostComponent.vue";
 import { useStore } from "vuex";
 import { computed, onUnmounted } from "vue";
 import { POST_TYPE } from "@/constants";
 
 export default {
-  components: { PostComponent },
   setup() {
     const store = useStore();
     const posts = computed(() => store.getters["post/getPosts"]);
