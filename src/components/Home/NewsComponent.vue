@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center w-full">
+  <div class="flex justify-center w-full min-h-screen">
     <div class="max-w-news-width">
       <StoryComponent />
       <CreatePost />

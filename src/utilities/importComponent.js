@@ -60,5 +60,11 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Home/StoryComponent"))
   );
 
+  // === Profile
+  app.component(
+    "ProfileComponent",
+    defineAsyncComponent(() => import("@/components/Profile/ProfileComponent"))
+  );
+
   app.component("drop-down", Dropdown);
 }

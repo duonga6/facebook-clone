@@ -3,7 +3,12 @@
     <div class="top-section">
       <div class="top-info">
         <div class="cover-image">
-          <img :src="userData.coverImageUrl" alt="" />
+          <img
+            v-if="userData.coverImageUrl"
+            :src="userData.coverImageUrl"
+            alt=""
+          />
+          <div v-else class="cover-image-none"></div>
         </div>
         <div class="user-info">
           <div class="user-avatar">
@@ -18,10 +23,80 @@
             </div>
           </div>
           <div class="user-action">
-            <button class="add-friend-btn" v-if="loggedUserId != userId">
-              <i class="btn-icon pi pi-plus"></i>
-              <span class="btn-text">Kết bạn</span>
-            </button>
+            <template v-if="friendShip.status == FRIEND_TYPE.NOT_FRIEND">
+              <button
+                class="add-friend-btn btn--primary"
+                @click="handleRequestFriend"
+              >
+                <img
+                  class="btn-icon"
+                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yK/r/r2FA830xjtI.png?_nc_eui2=AeF8FiEA9JN6wBCKRYj0KLFCLvJBHXhZHNwu8kEdeFkc3AFyf9KO7QelJ1VsfggLZ_H2aExODmvyZfN2IPZJeEPt"
+                  alt=""
+                  height="16"
+                  width="16"
+                />
+                <span class="btn-text">Thêm bạn bè</span>
+              </button>
+            </template>
+            <template
+              v-else-if="friendShip.status == FRIEND_TYPE.PENDING_OTHER"
+            >
+              <button
+                class="add-friend-btn btn--primary"
+                @click="handleAcceptFriend"
+              >
+                <span class="btn-text">Chấp nhận lời mời</span>
+              </button>
+              <button
+                class="add-friend-btn btn--secondary"
+                @click="handleRefuseFriend"
+              >
+                <span class="btn-text">Xóa lời mời</span>
+              </button>
+            </template>
+            <template v-else-if="friendShip.status == FRIEND_TYPE.PENDING_ME">
+              <button
+                class="add-friend-btn btn--primary"
+                @click="handleCancelRequest"
+              >
+                <img
+                  class="btn-icon"
+                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yo/r/Qg9sXPTnmFb.png?_nc_eui2=AeHPOLXvfCjmO8mg2ATf3Goo70XPseqSZArvRc-x6pJkCrqKooLPT71xgMEXyo1TeOvUzjc2nBQq5VXqAZkeosB1"
+                  alt=""
+                  height="16"
+                  width="16"
+                />
+                <span class="btn-text">Hủy lời mời</span>
+              </button>
+            </template>
+            <template v-else-if="friendShip.status == FRIEND_TYPE.ACCEPTED">
+              <button
+                class="add-friend-btn btn--secondary cursor-pointer"
+                disabled
+              >
+                <img
+                  class="btn-icon"
+                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yF/r/5nzjDogBZbf.png?_nc_eui2=AeFgCUS7kICqGJnL23ZuvyGBr5jr7d_7UXGvmOvt3_tRcZHrN7Yoq1SqiKqcusNCNC0FpGaBVOaJc1ATKqGZNNvt"
+                  alt=""
+                  height="16"
+                  width="16"
+                />
+                <span class="btn-text">Bạn bè</span>
+              </button>
+              <button
+                class="add-friend-btn btn--primary"
+                @click="handleAcceptFriend"
+              >
+                <img
+                  class="btn-icon"
+                  src="https://static.xx.fbcdn.net/rsrc.php/v3/y9/r/YjBUcSAL8TC.png?_nc_eui2=AeGST8v48r_KM_1wK_FJk7NOYWMzpYRsku5hYzOlhGyS7tQP2I7aYMXxMEgeIAEI8mywcGMW2-cptWU44nI_Vb_p"
+                  alt=""
+                  height="16"
+                  width="16"
+                />
+                <span class="btn-text">Nhắn tin</span>
+              </button>
+            </template>
           </div>
         </div>
         <ul class="user-navbar-list">
@@ -122,86 +197,164 @@ import { userService } from "@/services/user.service";
 import { useRoute } from "vue-router";
 import ProfilePost from "./ProfilePostComponent.vue";
 import tokenService from "@/services/token.service";
-import { ref } from "vue";
-import { FRIENDSHIP_STATUS, FRIEND_TYPE } from "@/constants";
+import { computed, reactive, ref, watch } from "vue";
+import { FRIEND_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
+import { toastAlert } from "@/utilities/toastAlert";
 export default {
   components: { ProfilePost },
-  async setup() {
+  props: {
+    id: {
+      type: String,
+    },
+  },
+  async setup(props) {
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
-    const userId =
-      !route.params.id || route.params.id == ""
-        ? loggedUserId
-        : route.params.id;
-    const userData = ref({});
 
+    const userId = computed(() =>
+      props.id
+        ? props.id
+        : !route.params.id || route.params.id == ""
+        ? loggedUserId
+        : route.params.id
+    );
+
+    const userData = ref({});
     const userPhotos = ref({
       total: 0,
       data: [],
     });
-
     const userFriends = ref({
       data: [],
       total: 0,
     });
 
-    const friendStatus = ref({});
+    const friendShip = reactive({
+      id: null,
+      status: null,
+    });
 
     async function loadUser() {
-      const userRes = await userService.getById(userId);
-      userData.value = userRes.data;
+      try {
+        // User info
+        const userRes = await userService.getById(userId.value);
+        userData.value = userRes.data;
 
-      const photoRes = await userService.getPhoto(userId, {
-        pageSize: 9,
-        pageNumber: 1,
-      });
+        const photoRes = await userService.getPhoto(userId.value, {
+          pageSize: 9,
+          pageNumber: 1,
+        });
 
-      userPhotos.value.data = photoRes.data;
-      userPhotos.value.total = photoRes.totalItems;
+        // User photo
 
-      const userFriendRes = await friendshipService.get({
-        pageSize: 9,
-        pageNumber: 1,
-        type: FRIEND_TYPE.ACCEPTED,
-      });
+        userPhotos.value.data = photoRes.data;
+        userPhotos.value.total = photoRes.totalItems;
 
-      const userFriendMapped = await Promise.all(
-        userFriendRes.data.map(async (item) => {
-          const targetUserId =
-            item.requestUserId == userId
-              ? item.targetUserId
-              : item.requestUserId;
+        // User's friends
 
-          const targetUserRes = await userService.getById(targetUserId);
+        const userFriendRes = await friendshipService.get({
+          pageSize: 9,
+          pageNumber: 1,
+          type: FRIEND_TYPE.ACCEPTED,
+        });
 
-          return targetUserRes.data;
-        })
-      );
+        const userFriendMapped = await Promise.all(
+          userFriendRes.data.map(async (item) => {
+            const targetUserId =
+              item.requestUserId == userId.value
+                ? item.targetUserId
+                : item.requestUserId;
 
-      userFriends.value.total = userFriendRes.totalItems;
-      userFriends.value.data = userFriendMapped;
+            const targetUserRes = await userService.getById(targetUserId);
 
-      if (userId == loggedUserId) {
-        friendStatus.value = FRIENDSHIP_STATUS.SELF;
-      } else {
-        const friendStatusRes = await friendshipService.getInfo(userId);
-        switch (friendStatusRes.data) {
-          case null:
-            friendStatus.value = FRIENDSHIP_STATUS.NOT_FRIEND;
-            break;
-          case 1:
-            friendStatus.value = FRIENDSHIP_STATUS.PENDING;
-            break;
-          case 2:
-            friendStatus.value = FRIENDSHIP_STATUS.ACCEPTED;
-            break;
-          case 3:
-            friendStatus.value = FRIENDSHIP_STATUS.BLOCKED;
-            break;
+            return targetUserRes.data;
+          })
+        );
+
+        userFriends.value.total = userFriendRes.totalItems;
+        userFriends.value.data = userFriendMapped;
+
+        // friendShip
+
+        if (userId.value == loggedUserId) {
+          friendShip.status = FRIEND_TYPE.SELF;
+        } else {
+          const friendShipRes = await friendshipService.getInfo(userId.value);
+          if (!friendShipRes.data) {
+            friendShip.status = FRIEND_TYPE.NOT_FRIEND;
+          } else {
+            friendShip.id = friendShipRes.data.id;
+
+            switch (friendShipRes.data.friendStatus) {
+              case 1:
+                friendShip.status =
+                  friendShipRes.data.requestUserId == loggedUserId
+                    ? FRIEND_TYPE.PENDING_ME
+                    : FRIEND_TYPE.PENDING_OTHER;
+                break;
+              case 2:
+                friendShip.status = FRIEND_TYPE.ACCEPTED;
+                break;
+              case 3:
+                friendShip.status = FRIEND_TYPE.BLOCKED;
+                break;
+            }
+          }
         }
+
+        console.log(friendShip);
+      } catch (err) {
+        toastAlert.error(err);
       }
     }
+
+    async function handleRequestFriend() {
+      try {
+        const res = await friendshipService.sendRequest({
+          targetUserId: userId.value,
+        });
+
+        friendShip.id = res.data.id;
+        friendShip.status = FRIEND_TYPE.PENDING_ME;
+      } catch (err) {
+        toastAlert.error(err);
+      }
+    }
+
+    async function handleAcceptFriend() {
+      try {
+        await friendshipService.accept(friendShip.id);
+        friendShip.status = FRIEND_TYPE.ACCEPTED;
+      } catch (err) {
+        toastAlert.error(err);
+      }
+    }
+
+    async function handleRefuseFriend() {
+      try {
+        await friendshipService.refuseFriend(friendShip.id);
+        friendShip.status = FRIEND_TYPE.NOT_FRIEND;
+      } catch (error) {
+        toastAlert.error(error);
+      }
+    }
+
+    async function handleCancelRequest() {
+      try {
+        await friendshipService.cancelSendRequest(friendShip.id);
+        friendShip.status = FRIEND_TYPE.NOT_FRIEND;
+      } catch (error) {
+        toastAlert.error(error);
+      }
+    }
+
+    watch(
+      () => props.id,
+      async () => {
+        await loadUser();
+      }
+    );
 
     await loadUser();
 
@@ -209,9 +362,14 @@ export default {
       userData,
       userPhotos,
       userFriends,
-      friendStatus,
+      friendShip,
       loggedUserId,
       userId,
+      FRIEND_TYPE,
+      handleRequestFriend,
+      handleAcceptFriend,
+      handleRefuseFriend,
+      handleCancelRequest,
     };
   },
 };
@@ -219,16 +377,21 @@ export default {
 
 <style lang="scss" scoped>
 .profile-container {
+  @apply w-full;
   .top-section {
-    @apply shadow-lg;
+    @apply shadow-lg bg-white;
     .top-info {
       width: 1260px;
       @apply mx-auto;
 
       .cover-image {
+        @apply rounded-bl-lg rounded-br-lg overflow-hidden;
+        height: 460px;
         img {
-          height: 460px;
-          @apply w-full object-cover rounded-bl-lg rounded-br-lg;
+          @apply w-full object-cover;
+        }
+        .cover-image-none {
+          @apply w-full h-full bg-gray-100;
         }
       }
       .user-info {
@@ -249,9 +412,22 @@ export default {
           }
         }
         .user-action {
-          @apply bg-primary rounded-md px-3 ms-auto;
+          @apply ms-auto flex items-center space-x-2;
           .add-friend-btn {
-            @apply flex items-center py-2 text-white;
+            @apply flex space-x-2 items-center py-2 rounded-md px-3;
+
+            &.btn--primary {
+              @apply text-white bg-primary;
+
+              .btn-icon {
+                filter: invert(1);
+              }
+            }
+
+            &.btn--secondary {
+              @apply bg-gray-200;
+            }
+
             .btn-icon {
               @apply text-13 font-bold;
             }

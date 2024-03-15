@@ -12,6 +12,8 @@ export const FRIEND_TYPE = {
   ACCEPTED: 3,
   BLOCKED: 4,
   REFUSED: 5,
+  SELF: 6,
+  NOT_FRIEND: 7,
 };
 
 export const FRIENDSHIP_STATUS = {

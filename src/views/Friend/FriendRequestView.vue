@@ -2,17 +2,27 @@
   <div class="friend-page-container">
     <div class="friend-navbar">
       <div class="navbar-heading">
-        <div class="navbar-heading-icon">
+        <router-link
+          :to="{
+            name: 'friends',
+            params: null,
+          }"
+          class="navbar-heading-icon"
+        >
           <i class="pi pi-arrow-left"></i>
-        </div>
+        </router-link>
         <span class="navbar-heading-text">Lời mời kết bạn</span>
       </div>
       <ul class="friend-list">
-        <div class="friend-count">33 Lời mời kết bạn</div>
+        <div class="friend-count">
+          {{ friendAcceptPending.data.length }} Lời mời kết bạn
+        </div>
         <li
           class="friend-item"
           v-for="friend in friendAcceptPending.data"
           :key="friend.id"
+          @click="showfriendProfileId(friend.user.id)"
+          :class="friendProfileId == friend.user.id ? 'active' : ''"
         >
           <div class="friend-avatar">
             <img :src="friend.user.avatarUrl" alt="" />
@@ -27,12 +37,53 @@
               </p>
             </div>
             <div class="friend-action">
-              <div class="friend-btn friend-btn--primary">Xác nhận</div>
-              <div class="friend-btn friend-btn--remove">Xóa</div>
+              <template v-if="friend.status == FRIEND_TYPE.PENDING_OTHER">
+                <button
+                  class="friend-btn friend-btn--primary"
+                  @click.stop="handleAcceptFriend(friend.id)"
+                >
+                  Xác nhận
+                </button>
+                <button
+                  class="friend-btn friend-btn--remove"
+                  @click.stop="handleRemoveFriend(friend.id)"
+                >
+                  Xóa
+                </button>
+              </template>
+              <template v-else-if="friend.status == FRIEND_TYPE.ACCEPTED">
+                <button
+                  class="friend-btn friend-btn--notify"
+                  disabled
+                  @click.stop=""
+                >
+                  Đã chấp nhận lời mời
+                </button>
+              </template>
+              <template v-else-if="friend.status == FRIEND_TYPE.REFUSED">
+                <span class="friend-btn friend-btn--notify">Đã gỡ lời mời</span>
+              </template>
             </div>
           </div>
         </li>
       </ul>
+    </div>
+    <div class="friend-profile">
+      <ProfileComponent
+        v-if="friendProfileId"
+        :id="friendProfileId"
+      ></ProfileComponent>
+      <div v-else class="friend-profile-empty">
+        <div class="profile-empty-img">
+          <img
+            src="https://www.facebook.com/images/comet/empty_states_icons/people/null_states_people_gray_wash.svg"
+            alt=""
+          />
+        </div>
+        <div class="profile-empty-text">
+          Chọn tên của người mà bạn muốn xem trước trang cá nhân.
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -42,13 +93,14 @@ import { FRIEND_TYPE } from "@/constants";
 import { userService } from "@/services/user.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import tokenService from "@/services/token.service";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { friendshipService } from "@/services/friendship.service";
 import { convertDateDisplay } from "@/utilities/dateUtils";
 
 export default {
-  setup() {
+  async setup() {
     const user = tokenService.getUser();
+    const friendProfileId = ref(null);
     const friendAcceptPending = reactive({
       total: 0,
       pageSize: 14,
@@ -81,8 +133,6 @@ export default {
           })
         );
 
-        console.log(userPendingMapped);
-
         friendAcceptPending.data = [
           ...friendAcceptPending.data,
           ...userPendingMapped,
@@ -93,12 +143,55 @@ export default {
         toastAlert.error(err);
       }
     }
-    getAcceptPending();
+
+    async function showfriendProfileId(id) {
+      if (
+        !friendProfileId.value ||
+        (friendProfileId.value && friendProfileId.value != id)
+      ) {
+        friendProfileId.value = id;
+      }
+    }
+
+    async function handleAcceptFriend(id) {
+      const friendRequest = friendAcceptPending.data.find((x) => x.id == id);
+      if (friendRequest) {
+        try {
+          await friendshipService.accept(id);
+          friendRequest.status = FRIEND_TYPE.ACCEPTED;
+        } catch (err) {
+          toastAlert.error(err);
+        }
+      } else {
+        toastAlert.error("Không tìm thấy user này");
+      }
+    }
+
+    async function handleRemoveFriend(id) {
+      const friendRequest = friendAcceptPending.data.find((x) => x.id == id);
+      if (friendRequest) {
+        try {
+          await friendshipService.refuseFriend(id);
+          friendRequest.status = FRIEND_TYPE.REFUSED;
+        } catch (err) {
+          toastAlert.error(err);
+        }
+      } else {
+        toastAlert.error("Không tìm thấy user này");
+      }
+    }
+
+    await getAcceptPending();
 
     return {
       friendAcceptPending,
+      friendProfileId,
       user,
+      FRIEND_TYPE,
       convertDateDisplay,
+      showfriendProfileId,
+      handleAcceptFriend,
+      handleRemoveFriend,
     };
   },
 };
@@ -128,10 +221,13 @@ export default {
       @apply font-semibold mb-2;
     }
     .friend-item {
-      @apply px-2 py-3 hover:bg-slate-100 rounded-lg cursor-pointer transition-all;
-      @apply flex items-center;
+      &.active {
+        @apply bg-slate-100;
+      }
+
+      @apply p-2.5 hover:bg-slate-100 rounded-md cursor-pointer transition-all flex items-center;
       .friend-avatar {
-        @apply w-14 h-14 rounded-full overflow-hidden;
+        @apply w-16 h-16 rounded-full overflow-hidden;
         img {
           @apply w-full h-full object-cover;
         }
@@ -139,7 +235,7 @@ export default {
       .friend-main {
         @apply flex flex-col flex-1 ms-3;
         .friend-info {
-          @apply flex items-center justify-between mb-2;
+          @apply flex items-center justify-between mb-1.5;
           .friend-name {
             @apply font-semibold text-15;
           }
@@ -152,7 +248,7 @@ export default {
         .friend-action {
           @apply flex items-center space-x-2;
           .friend-btn {
-            @apply flex-1 p-2 rounded-lg font-semibold text-15 text-center;
+            @apply flex-1 p-1.5 rounded-lg font-semibold text-15 text-center;
 
             &.friend-btn--primary {
               @apply bg-primary text-white;
@@ -162,12 +258,27 @@ export default {
               @apply bg-gray-200;
             }
 
-            &.friend-btn-disabled {
-              @apply bg-gray-200 text-gray-500;
+            &.friend-btn--notify {
+              @apply font-normal text-left bg-none text-gray-500 py-1.5;
             }
           }
         }
       }
+    }
+  }
+}
+
+.friend-profile {
+  @apply flex-1 h-full bg-gray-200 flex items-center justify-center overflow-y-auto;
+  .friend-profile-empty {
+    .profile-empty-img {
+      @apply flex justify-center;
+      img {
+        @apply w-24 h-24 object-cover;
+      }
+    }
+    .profile-empty-text {
+      @apply font-bold text-xl text-gray-600;
     }
   }
 }

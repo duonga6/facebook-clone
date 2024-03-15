@@ -27,7 +27,13 @@
           <div class="navbar-item-text">Trang chủ</div>
           <div class="navbar-item-arrow"></div>
         </li>
-        <li class="navbar-item">
+        <router-link
+          :to="{
+            name: 'friends-requests',
+            params: null,
+          }"
+          class="navbar-item"
+        >
           <div class="navbar-item-icon">
             <i
               data-visualcompletion="css-img"
@@ -48,7 +54,7 @@
           <div class="navbar-item-arrow">
             <i class="pi pi-chevron-right"></i>
           </div>
-        </li>
+        </router-link>
         <li class="navbar-item">
           <div class="navbar-item-icon">
             <i
@@ -126,13 +132,29 @@
             v-for="item in friendAcceptPending.data"
             :key="item.id"
           >
-            <div class="friend-avatar">
+            <router-link
+              :to="{
+                name: 'profile',
+                params: {
+                  id: item.user.id,
+                },
+              }"
+              class="friend-avatar"
+            >
               <img class="friend-img" :src="item.user.avatarUrl" alt="" />
-            </div>
+            </router-link>
             <div class="friend-info">
-              <div class="friend-name">
+              <router-link
+                :to="{
+                  name: 'profile',
+                  params: {
+                    id: item.user.id,
+                  },
+                }"
+                class="friend-name"
+              >
                 {{ item.user.firstName + " " + item.user.lastName }}
-              </div>
+              </router-link>
               <div class="friend-action">
                 <template v-if="item.status == FRIEND_TYPE.PENDING_OTHER">
                   <button
@@ -180,13 +202,29 @@
             v-for="friend in suggestionFriend.data"
             :key="friend.id"
           >
-            <div class="friend-avatar">
+            <router-link
+              :to="{
+                name: 'profile',
+                params: {
+                  id: friend.id,
+                },
+              }"
+              class="friend-avatar"
+            >
               <img class="friend-img" :src="friend.avatarUrl" alt="" />
-            </div>
+            </router-link>
             <div class="friend-info">
-              <div class="friend-name">
+              <router-link
+                :to="{
+                  name: 'profile',
+                  params: {
+                    id: friend.id,
+                  },
+                }"
+                class="friend-name"
+              >
                 {{ friend.firstName + " " + friend.lastName }}
-              </div>
+              </router-link>
               <div class="friend-action">
                 <template v-if="friend.status == FRIEND_TYPE.PENDING_ME">
                   <button class="friend-btn friend-btn--disable">
