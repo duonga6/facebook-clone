@@ -120,7 +120,7 @@
     <div class="friend-type-list">
       <div class="friend-type-item">
         <div class="friend-type-heading">Lời mời kết bạn</div>
-        <ul class="friend-list">
+        <ul class="friend-list" v-if="friendAcceptPending.data.length">
           <li
             class="friend-item"
             v-for="item in friendAcceptPending.data"
@@ -157,29 +157,76 @@
             </div>
           </li>
         </ul>
+        <div class="friend-type-empty" v-else>
+          <span>Không có lời mời nào</span>
+        </div>
+        <button
+          class="load-more-btn"
+          v-if="
+            friendAcceptPending.pageSize * friendAcceptPending.pageNumber <
+            friendAcceptPending.total
+          "
+          @click="getAcceptPending"
+        >
+          Xem thêm
+          <i class="load-more-icon pi pi-angle-down"></i>
+        </button>
       </div>
       <div class="friend-type-item">
         <div class="friend-type-heading">Những người bạn có thể biết</div>
-        <ul class="friend-list">
-          <li class="friend-item" v-for="number in 10" :key="number">
+        <ul class="friend-list" v-if="suggestionFriend.data">
+          <li
+            class="friend-item"
+            v-for="friend in suggestionFriend.data"
+            :key="friend.id"
+          >
             <div class="friend-avatar">
-              <img
-                class="friend-img"
-                src="https://scontent.fhan5-5.fna.fbcdn.net/v/t39.30808-1/354042207_1598633840646756_2143386141373116572_n.jpg?stp=dst-jpg_p240x240&_nc_cat=104&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeFps095tzy_szdbfj3uPqNVepgJJ3ThRgB6mAkndOFGALHLPQewddyYLEd1G3AuC-r_ut1alYqCrCWX7il8leWH&_nc_ohc=uVfXpt4NSRkAX_0foqS&_nc_ht=scontent.fhan5-5.fna&oh=00_AfD-MyPxiQsihu-gyXkXl7Ou-qbGVgwyHwu7WFzYPx3elQ&oe=65F48C45"
-                alt=""
-              />
+              <img class="friend-img" :src="friend.avatarUrl" alt="" />
             </div>
             <div class="friend-info">
-              <div class="friend-name">Phạm Dương</div>
+              <div class="friend-name">
+                {{ friend.firstName + " " + friend.lastName }}
+              </div>
               <div class="friend-action">
-                <button class="friend-btn friend-btn--accept">
-                  Thêm bạn bè
-                </button>
-                <button class="friend-btn friend-btn--remove">Xóa</button>
+                <template v-if="friend.status == FRIEND_TYPE.PENDING_ME">
+                  <button class="friend-btn friend-btn--disable">
+                    Đã gửi lời mời kết bạn
+                  </button>
+                </template>
+                <template v-else>
+                  <button
+                    class="friend-btn friend-btn--accept"
+                    @click="handleRequestFriend(friend.id)"
+                  >
+                    Thêm bạn bè
+                  </button>
+                  <button
+                    class="friend-btn friend-btn--remove"
+                    @click="handleDeleteSuggest(friend.id)"
+                  >
+                    Xóa
+                  </button>
+                </template>
               </div>
             </div>
           </li>
         </ul>
+        <div class="friend-type-empty" v-else>
+          <span>Không có gợi ý nào</span>
+        </div>
+        <div class="load-more-friend">
+          <button
+            class="load-more-btn"
+            v-if="
+              suggestionFriend.pageSize * suggestionFriend.pageNumber <
+              suggestionFriend.total
+            "
+            @click="getSuggestFriends"
+          >
+            Xem thêm
+            <i class="load-more-icon pi pi-angle-down"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -191,6 +238,8 @@ import { reactive } from "vue";
 import { FRIEND_TYPE } from "@/constants";
 import tokenService from "@/services/token.service";
 import { userService } from "@/services/user.service";
+import { toastAlert } from "@/utilities/toastAlert";
+
 export default {
   setup() {
     const user = tokenService.getUser();
@@ -201,7 +250,14 @@ export default {
       data: [],
     });
 
-    async function loadAcceptPending() {
+    const suggestionFriend = reactive({
+      total: 0,
+      pageSize: 14,
+      pageNumber: 0,
+      data: [],
+    });
+
+    async function getAcceptPending() {
       try {
         const res = await friendshipService.get({
           pageSize: friendAcceptPending.pageSize,
@@ -225,57 +281,121 @@ export default {
           })
         );
 
-        friendAcceptPending.data = userPendingMapped;
+        friendAcceptPending.data = [
+          ...friendAcceptPending.data,
+          ...userPendingMapped,
+        ];
         friendAcceptPending.pageNumber++;
         friendAcceptPending.total = res.totalItems;
-
-        console.log(friendAcceptPending);
       } catch (err) {
-        console.log(err);
+        toastAlert.error(err);
       }
     }
 
-    function handleAcceptFriend(id) {
+    async function getSuggestFriends() {
+      try {
+        const res = await friendshipService.getSuggestion({
+          pageSize: suggestionFriend.pageSize,
+          pageNumber: suggestionFriend.pageNumber + 1,
+        });
+
+        const suggestFriendMapped = res.data.map((user) => {
+          return {
+            ...user,
+            status: null,
+          };
+        });
+
+        suggestionFriend.pageNumber++;
+        suggestionFriend.total = res.totalItems;
+        suggestionFriend.data = [
+          ...suggestionFriend.data,
+          ...suggestFriendMapped,
+        ];
+
+        console.log(suggestionFriend);
+      } catch (err) {
+        toastAlert.error(err);
+      }
+    }
+
+    async function handleAcceptFriend(id) {
       const friendPending = friendAcceptPending.data.find((x) => x.id == id);
       if (friendPending) {
-        friendshipService
-          .accept(id)
-          .then(() => {
+        try {
+          const res = await friendshipService.accept(id);
+
+          if (res.success) {
             friendPending.status = FRIEND_TYPE.ACCEPTED;
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+          }
+        } catch (err) {
+          toastAlert.error(err);
+        }
       } else {
-        console.log("Không tìm thấy user này");
+        toastAlert.error("Không tìm thấy user này");
       }
     }
 
     function handleRefuseFriend(id) {
       const friendPending = friendAcceptPending.data.find((x) => x.id == id);
       if (friendPending) {
-        friendshipService
-          .refuseFriend(id)
-          .then(() => {
+        try {
+          const res = friendshipService.refuseFriend(id);
+
+          if (res.success) {
             friendAcceptPending.data = friendAcceptPending.data.filter(
               (x) => x.id != id
             );
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+          }
+        } catch (err) {
+          toastAlert.error(err);
+        }
       } else {
-        console.log("Không tìm thấy user này");
+        toastAlert.error("Không tìm thấy user này");
       }
     }
 
-    loadAcceptPending();
+    async function handleRequestFriend(id) {
+      const user = suggestionFriend.data.find((x) => x.id == id);
+      if (user) {
+        try {
+          const res = await friendshipService.sendRequest({
+            targetUserId: id,
+          });
+
+          if (res.success) {
+            user.status = FRIEND_TYPE.PENDING_ME;
+          }
+        } catch (err) {
+          toastAlert.error(err);
+        }
+      } else {
+        toastAlert.error("Không tìm thấy user này");
+      }
+    }
+
+    function handleDeleteSuggest(id) {
+      const user = suggestionFriend.data.find((x) => x.id == id);
+      if (user) {
+        suggestionFriend.data = suggestionFriend.data.filter((x) => x.id != id);
+      } else {
+        toastAlert.error("Không tìm thấy user này");
+      }
+    }
+
+    getAcceptPending();
+    getSuggestFriends();
 
     return {
       FRIEND_TYPE,
       friendAcceptPending,
+      suggestionFriend,
       handleAcceptFriend,
       handleRefuseFriend,
+      handleRequestFriend,
+      handleDeleteSuggest,
+      getAcceptPending,
+      getSuggestFriends,
     };
   },
 };
@@ -367,6 +487,20 @@ export default {
               }
             }
           }
+        }
+      }
+    }
+
+    .friend-type-empty {
+      @apply h-32 flex items-center justify-center font-semibold;
+    }
+
+    .load-more-friend {
+      @apply flex justify-center;
+      .load-more-btn {
+        @apply flex items-center text-17 font-semibold text-primary hover:bg-gray-300 p-2 px-4 rounded-lg;
+        .load-more-icon {
+          @apply text-lg ms-1;
         }
       }
     }

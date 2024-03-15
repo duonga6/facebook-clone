@@ -1,8 +1,8 @@
 <template>
   <div class="mx-auto bg-gray-100">
-    <div class="flex py-32">
-      <div class="flex-1">
-        <div class="flex flex-col ms-96">
+    <div class="flex w-screen h-screen space-x-20">
+      <div class="flex-1 flex items-center">
+        <div class="flex flex-col ms-auto w-500px">
           <div class="">
             <img
               src="https://static.xx.fbcdn.net/rsrc.php/y1/r/4lCu2zih0ca.svg"
@@ -16,7 +16,7 @@
           </div>
         </div>
       </div>
-      <div class="flex-1 flex justify-start items-center ms-20">
+      <div class="flex-1 flex justify-start items-center">
         <Form
           @submit="handleLogin"
           class="bg-white p-4 rounded-lg drop-shadow-md flex flex-col space-y-3"
@@ -289,7 +289,7 @@ export default {
           },
           (error) => {
             messagesLogin.length = 0;
-            messagesLogin.push(...error.errors);
+            messagesLogin.push(...error);
           }
         )
         .finally(() => {
@@ -313,7 +313,7 @@ export default {
           },
           (error) => {
             messagesRegister.length = 0;
-            messagesRegister.push(...error.errors);
+            messagesRegister.push(...error);
           }
         )
         .finally(() => {

@@ -43,7 +43,7 @@
           </div>
           <div class="story-owner-img">
             <img
-              class="w-full h-full object-contain"
+              class="w-full h-full object-cover"
               :src="user?.avatarUrl"
               alt=""
             />

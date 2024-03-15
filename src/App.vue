@@ -2,6 +2,7 @@
   <Suspense>
     <component :is="layout">
       <router-view :key="$route.fullPath" />
+      <Toast position="bottom-right" />
     </component>
   </Suspense>
 </template>
@@ -13,8 +14,10 @@ import { DEFAULT_LAYOUT } from "@/constants";
 import { useStore } from "vuex";
 import EventBus from "@/common/EventBus";
 import { useToast } from "primevue/usetoast";
+import Toast from "primevue/toast";
 
 export default {
+  components: { Toast },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -34,17 +37,19 @@ export default {
         logOut();
       });
 
-      EventBus.on("toastAlert", (type, message) => {
+      EventBus.on("toastAlert", (data) => {
         toast.add({
-          severity: type,
-          summary: message,
-          life: 3000,
+          severity: data.type,
+          summary: data.summary,
+          detail: data.message,
+          life: 5000,
         });
       });
     });
 
     onBeforeMount(() => {
       EventBus.remove("logout");
+      EventBus.remove("toastAlert");
     });
 
     return {

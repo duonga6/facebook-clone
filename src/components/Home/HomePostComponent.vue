@@ -6,24 +6,25 @@
 
 <script>
 import { useStore } from "vuex";
-import { computed, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { POST_TYPE } from "@/constants";
 
 export default {
-  setup() {
+  async setup() {
     const store = useStore();
-    const posts = computed(() => store.getters["post/getPosts"]);
-
-    store.dispatch("post/getPost", {
-      postType: POST_TYPE.HOME_POST,
-    });
 
     onUnmounted(() => {
       store.dispatch("post/reset");
     });
 
+    onMounted(async () => {
+      await store.dispatch("post/getPost", {
+        postType: POST_TYPE.HOME_POST,
+      });
+    });
+
     return {
-      posts,
+      posts: computed(() => store.getters["post/getPosts"]),
     };
   },
 };

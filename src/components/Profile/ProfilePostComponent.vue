@@ -8,7 +8,7 @@
   </div>
 </template>
 <script>
-import { computed, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import PostComponent from "../Post/PostComponent.vue";
 import { useStore } from "vuex";
 import { POST_TYPE } from "@/constants";
@@ -20,15 +20,17 @@ export default {
     },
   },
   async setup(props) {
+    const store = useStore();
+
     onUnmounted(() => {
       store.dispatch("post/reset");
     });
 
-    const store = useStore();
-
-    await store.dispatch("post/getPost", {
-      postType: POST_TYPE.PROFILE_POST,
-      userId: props.userId,
+    onMounted(async () => {
+      await store.dispatch("post/getPost", {
+        postType: POST_TYPE.PROFILE_POST,
+        userId: props.userId,
+      });
     });
 
     const posts = computed(() => store.getters["post/getPosts"]);

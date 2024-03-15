@@ -32,4 +32,9 @@ export const friendshipService = {
   unblockUser(id) {
     return api.delete(`${BASE_URL}/UnblockFriend/${id}`);
   },
+  getSuggestion(params) {
+    return api.get(`${BASE_URL}/GetSuggestionFriend`, {
+      params: params,
+    });
+  },
 };
