@@ -1,9 +1,8 @@
 import { commentReactionService } from "@/services/comment-reaction.service";
 import { postCommentService } from "@/services/post-comment.service";
-import { userService } from "@/services/user.service";
 
 export const homePostUtils = {
-  async getCommentWithData(
+  async getCommentChild(
     postId,
     pageSize,
     parentId = null,
@@ -20,7 +19,6 @@ export const homePostUtils = {
 
     commentsRes.data = await Promise.all(
       commentsRes.data.map(async (comment) => {
-        const authorRes = await userService.getById(comment.userId);
         const reaction = await commentReactionService.getOverview(comment.id);
         const childCommentCount = await postCommentService.getChildCount(
           comment.id
@@ -30,7 +28,7 @@ export const homePostUtils = {
         } else {
           comment.path = [...path, comment.id];
         }
-        comment.user = authorRes.data;
+
         comment.reaction = reaction.data;
 
         comment.childComment = {

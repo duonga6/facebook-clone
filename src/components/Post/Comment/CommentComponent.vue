@@ -18,7 +18,7 @@
           }"
           class="user-name"
         >
-          {{ comment.user.firstName + comment.user.lastName }}
+          {{ comment.user.firstName + " " + comment.user.lastName }}
         </router-link>
         <div class="main-content">
           {{ comment.content }}

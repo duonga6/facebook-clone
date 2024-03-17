@@ -34,9 +34,8 @@ export const post = {
         // Map post => get comment, reaction, author
         const postMapped = await Promise.all(
           postResponse.data.map(async (post) => {
-            const postAuthorRes = await userService.getById(post.authorId);
             const reactionsRes = await postReactionService.getOverview(post.id);
-            const commentsRes = await homePostUtils.getCommentWithData(
+            const commentsRes = await homePostUtils.getCommentChild(
               post.id,
               Math.floor(Math.random() * 2) + 1
             );
@@ -54,7 +53,6 @@ export const post = {
             };
 
             post.reaction = reactionsRes.data;
-            post.user = postAuthorRes.data;
 
             return post;
           })
@@ -257,7 +255,7 @@ export const post = {
     },
     async getComment({ commit }, payLoad) {
       try {
-        const commentRes = await homePostUtils.getCommentWithData(
+        const commentRes = await homePostUtils.getCommentChild(
           payLoad.postId,
           payLoad.pageSize,
           payLoad.parentId,

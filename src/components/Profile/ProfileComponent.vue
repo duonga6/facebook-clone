@@ -240,6 +240,7 @@ export default {
         // User info
         const userRes = await userService.getById(userId.value);
         userData.value = userRes.data;
+        console.log(userRes);
 
         const photoRes = await userService.getPhoto(userId.value, {
           pageSize: 9,
@@ -257,20 +258,14 @@ export default {
           pageSize: 9,
           pageNumber: 1,
           type: FRIEND_TYPE.ACCEPTED,
+          userId: userId.value,
         });
 
-        const userFriendMapped = await Promise.all(
-          userFriendRes.data.map(async (item) => {
-            const targetUserId =
-              item.requestUserId == userId.value
-                ? item.targetUserId
-                : item.requestUserId;
-
-            const targetUserRes = await userService.getById(targetUserId);
-
-            return targetUserRes.data;
-          })
-        );
+        const userFriendMapped = userFriendRes.data.map((item) => {
+          return item.requestUser.id == userId.value
+            ? item.targetUser
+            : item.requestUser;
+        });
 
         userFriends.value.total = userFriendRes.totalItems;
         userFriends.value.data = userFriendMapped;
@@ -302,8 +297,6 @@ export default {
             }
           }
         }
-
-        console.log(friendShip);
       } catch (err) {
         toastAlert.error(err);
       }

@@ -1,3 +1,4 @@
+import { FRIEND_TYPE } from "@/constants";
 import { createRouter, createWebHistory, useRouter } from "vue-router";
 
 const routes = [
@@ -26,26 +27,6 @@ const routes = [
       import(/* webpackChunkName: "login" */ "../views/Auth/LoginView.vue"),
   },
   {
-    path: "/friends",
-    name: "friends",
-    meta: {
-      requiresAuth: true,
-    },
-    component: () =>
-      import(/* webpackChunkName: "friend" */ "../views/Friend/FriendView.vue"),
-  },
-  {
-    path: "/friends/requests",
-    name: "friends-requests",
-    meta: {
-      requiresAuth: true,
-    },
-    component: () =>
-      import(
-        /* webpackChunkName: "friendrequest" */ "../views/Friend/FriendRequestView.vue"
-      ),
-  },
-  {
     path: "/profile/:id?",
     name: "profile",
     meta: {
@@ -53,6 +34,57 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/ProfileView.vue"),
+  },
+  {
+    path: "/friends",
+    name: "friends",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(/* webpackChunkName: "friend" */ "@/views/Friend/FriendView.vue"),
+  },
+  {
+    path: "/friends/request",
+    name: "friend-request",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+      ),
+    props: {
+      friendType: FRIEND_TYPE.PENDING_OTHER,
+    },
+  },
+  {
+    path: "/friends/suggests",
+    name: "friends-suggests",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+      ),
+    props: {
+      friendType: FRIEND_TYPE.NOT_FRIEND,
+    },
+  },
+  {
+    path: "/friends/list",
+    name: "friends-list",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+      ),
+    props: {
+      friendType: FRIEND_TYPE.ACCEPTED,
+    },
   },
 ];
 

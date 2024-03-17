@@ -2,12 +2,13 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import { registerGlobalComponents } from "./utilities/importComponent";
+import { registerGlobalComponents } from "./components/importComponent";
 import "@/assets/styles/index.css";
 import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import lara from "./presets/lara";
 import ToastService from "primevue/toastservice";
+import { clickOutside } from "./utilities/clickOutSide";
 
 const app = createApp(App);
 registerGlobalComponents(app);
@@ -19,6 +20,7 @@ app.use(PrimeVue, {
   pt: lara,
 });
 app.use(ToastService);
+app.directive("click-outside", clickOutside);
 app.mount("#app");
 
 // createApp(App).use(store).use(router).mount("#app");

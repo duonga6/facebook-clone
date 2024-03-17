@@ -29,7 +29,7 @@
         </li>
         <router-link
           :to="{
-            name: 'friends-requests',
+            name: 'friend-request',
             params: null,
           }"
           class="navbar-item"
@@ -55,7 +55,13 @@
             <i class="pi pi-chevron-right"></i>
           </div>
         </router-link>
-        <li class="navbar-item">
+        <router-link
+          :to="{
+            name: 'friends-suggests',
+            params: null,
+          }"
+          class="navbar-item"
+        >
           <div class="navbar-item-icon">
             <i
               data-visualcompletion="css-img"
@@ -76,8 +82,14 @@
           <div class="navbar-item-arrow">
             <i class="pi pi-chevron-right"></i>
           </div>
-        </li>
-        <li class="navbar-item">
+        </router-link>
+        <router-link
+          :to="{
+            name: 'friends-list',
+            params: null,
+          }"
+          class="navbar-item"
+        >
           <div class="navbar-item-icon">
             <i
               data-visualcompletion="css-img"
@@ -98,29 +110,7 @@
           <div class="navbar-item-arrow">
             <i class="pi pi-chevron-right"></i>
           </div>
-        </li>
-        <li class="navbar-item">
-          <div class="navbar-item-icon">
-            <i
-              data-visualcompletion="css-img"
-              class="x1b0d499 xep6ejk"
-              aria-hidden="true"
-              style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/y-/r/P9mM2ciwWWP.png?_nc_eui2=AeGEZP96V1VC8zTjOCTXfZEcugNPbDBDFjG6A09sMEMWMfqjN0TnZ2ovsFAI6XC0t8hUAjIeGRXvEkXKxHGSi9kJ');
-                background-position: 0px -222px;
-                background-size: auto;
-                width: 20px;
-                height: 20px;
-                background-repeat: no-repeat;
-                display: inline-block;
-              "
-            ></i>
-          </div>
-          <div class="navbar-item-text">Lời mời đã gửi</div>
-          <div class="navbar-item-arrow">
-            <i class="pi pi-chevron-right"></i>
-          </div>
-        </li>
+        </router-link>
       </ul>
     </div>
     <div class="friend-type-list">
@@ -136,24 +126,30 @@
               :to="{
                 name: 'profile',
                 params: {
-                  id: item.user.id,
+                  id: item.requestUser.id,
                 },
               }"
               class="friend-avatar"
             >
-              <img class="friend-img" :src="item.user.avatarUrl" alt="" />
+              <img
+                class="friend-img"
+                :src="item.requestUser.avatarUrl"
+                alt=""
+              />
             </router-link>
             <div class="friend-info">
               <router-link
                 :to="{
                   name: 'profile',
                   params: {
-                    id: item.user.id,
+                    id: item.requestUser.id,
                   },
                 }"
                 class="friend-name"
               >
-                {{ item.user.firstName + " " + item.user.lastName }}
+                {{
+                  item.requestUser.firstName + " " + item.requestUser.lastName
+                }}
               </router-link>
               <div class="friend-action">
                 <template v-if="item.status == FRIEND_TYPE.PENDING_OTHER">
@@ -274,13 +270,10 @@
 import { friendshipService } from "@/services/friendship.service";
 import { reactive } from "vue";
 import { FRIEND_TYPE } from "@/constants";
-import tokenService from "@/services/token.service";
-import { userService } from "@/services/user.service";
 import { toastAlert } from "@/utilities/toastAlert";
 
 export default {
   setup() {
-    const user = tokenService.getUser();
     const friendAcceptPending = reactive({
       total: 0,
       pageSize: 14,
@@ -303,21 +296,12 @@ export default {
           type: FRIEND_TYPE.PENDING_OTHER,
         });
 
-        const userPendingMapped = await Promise.all(
-          res.data.map(async (item) => {
-            const userOtherId =
-              item.requestUserId == user.id
-                ? item.targetUserId
-                : item.requestUserId;
-            const userOtherData = await userService.getById(userOtherId);
-
-            return {
-              id: item.id,
-              user: userOtherData.data,
-              status: FRIEND_TYPE.PENDING_OTHER,
-            };
-          })
-        );
+        const userPendingMapped = res.data.map((item) => {
+          return {
+            ...item,
+            status: FRIEND_TYPE.PENDING_OTHER,
+          };
+        });
 
         friendAcceptPending.data = [
           ...friendAcceptPending.data,
@@ -350,8 +334,6 @@ export default {
           ...suggestionFriend.data,
           ...suggestFriendMapped,
         ];
-
-        console.log(suggestionFriend);
       } catch (err) {
         toastAlert.error(err);
       }
@@ -446,7 +428,7 @@ export default {
 }
 
 .friend-navbar {
-  @apply w-90 border-r border-gray-200;
+  @apply w-90 border-r border-gray-200 bg-white;
   .navbar-heading {
     @apply flex items-center justify-between px-4 py-2;
     .navbar-heading-text {

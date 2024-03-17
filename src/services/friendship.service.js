@@ -4,7 +4,7 @@ const BASE_URL = "/Friendship";
 
 export const friendshipService = {
   getInfo(id) {
-    return api.get(`${BASE_URL}/GetInfo/${id}`);
+    return api.get(`${BASE_URL}/Info/${id}`);
   },
   get(params) {
     return api.get(`${BASE_URL}`, {
@@ -33,7 +33,7 @@ export const friendshipService = {
     return api.delete(`${BASE_URL}/UnblockFriend/${id}`);
   },
   getSuggestion(params) {
-    return api.get(`${BASE_URL}/GetSuggestionFriend`, {
+    return api.get(`${BASE_URL}/SuggestionFriend`, {
       params: params,
     });
   },

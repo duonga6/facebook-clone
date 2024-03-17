@@ -14,6 +14,7 @@ export const FRIEND_TYPE = {
   REFUSED: 5,
   SELF: 6,
   NOT_FRIEND: 7,
+  SUGGESTION: 8,
 };
 
 export const FRIENDSHIP_STATUS = {

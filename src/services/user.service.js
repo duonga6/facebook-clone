@@ -14,9 +14,7 @@ export const userService = {
   },
 
   getById(id) {
-    return api.get(`${BASE_URL}/${id}`).catch((err) => {
-      throw new Error(`Error post comment service ${err}`);
-    });
+    return api.get(`${BASE_URL}/${id}`);
   },
   getPost(id, params) {
     return api.get(`${BASE_URL}/${id}/Posts`, {
