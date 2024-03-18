@@ -3,6 +3,7 @@ export const DEFAULT_LAYOUT = "default";
 export const POST_TYPE = {
   HOME_POST: "Home Post",
   PROFILE_POST: "Profile Post",
+  SINGLE_POST: "Single Post",
 };
 
 export const FRIEND_TYPE = {

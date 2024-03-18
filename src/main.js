@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -6,7 +7,6 @@ import { registerGlobalComponents } from "./components/importComponent";
 import "@/assets/styles/index.css";
 import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
-import lara from "./presets/lara";
 import ToastService from "primevue/toastservice";
 import { clickOutside } from "./utilities/clickOutSide";
 
@@ -15,10 +15,7 @@ registerGlobalComponents(app);
 setupInterceptor(store);
 app.use(store);
 app.use(router);
-app.use(PrimeVue, {
-  unstyled: true,
-  pt: lara,
-});
+app.use(PrimeVue);
 app.use(ToastService);
 app.directive("click-outside", clickOutside);
 app.mount("#app");

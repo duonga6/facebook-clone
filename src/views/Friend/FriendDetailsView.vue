@@ -379,18 +379,20 @@ export default {
         }
       });
 
-      friendSearchInputEl.value.addEventListener("input", () => {
-        clearTimeout(friendSearchTimeout);
+      if (props.friendType == FRIEND_TYPE.ACCEPTED) {
+        friendSearchInputEl.value.addEventListener("input", () => {
+          clearTimeout(friendSearchTimeout);
 
-        friendSearchTimeout = setTimeout(async () => {
-          friendData.data = [];
-          friendData.total = 0;
-          friendData._fetched = false;
-          friendData.pageNumber = 0;
+          friendSearchTimeout = setTimeout(async () => {
+            friendData.data = [];
+            friendData.total = 0;
+            friendData._fetched = false;
+            friendData.pageNumber = 0;
 
-          await getAcceptPending();
-        }, 500);
-      });
+            await getAcceptPending();
+          }, 500);
+        });
+      }
     });
 
     await getAcceptPending();

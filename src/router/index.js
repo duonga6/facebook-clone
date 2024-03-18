@@ -86,6 +86,17 @@ const routes = [
       friendType: FRIEND_TYPE.ACCEPTED,
     },
   },
+  {
+    path: "/post/:id",
+    name: "post-detail",
+    meta: {
+      requiresAuth: true,
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "friendsuggest" */ "../views/PostDetailView.vue"
+      ),
+  },
 ];
 
 const router = createRouter({

@@ -29,6 +29,12 @@ export const post = {
             pageSize: state.pageSize,
             pageNumber: state.pageNumber + 1,
           });
+        } else if (payLoad.postType == POST_TYPE.SINGLE_POST) {
+          const res = await postService.getById(payLoad.postId);
+          postResponse = {
+            totalItems: 1,
+            data: [res.data],
+          };
         }
 
         // Map post => get comment, reaction, author

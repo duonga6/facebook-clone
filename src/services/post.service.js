@@ -19,4 +19,7 @@ export const postService = {
   update(id, data) {
     return api.put(`${BASE_URL}/${id}`, data);
   },
+  getById(id) {
+    return api.get(`${BASE_URL}/${id}`);
+  },
 };

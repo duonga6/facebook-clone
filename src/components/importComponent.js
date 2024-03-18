@@ -1,5 +1,7 @@
+/* eslint-disable */
 import { defineAsyncComponent } from "vue";
 import Dropdown from "primevue/dropdown";
+import Gallery from "@/components/Post/GalleryComponent";
 
 export function registerGlobalComponents(app) {
   // ==== Layout
@@ -44,6 +46,11 @@ export function registerGlobalComponents(app) {
   );
 
   app.component(
+    "PostDetailComponent",
+    defineAsyncComponent(() => import("@/components/Post/PostDetailComponent"))
+  );
+
+  app.component(
     "CreatePost",
     defineAsyncComponent(() => import("@/components/Post/CreatePostComponent"))
   );
@@ -67,4 +74,5 @@ export function registerGlobalComponents(app) {
   );
 
   app.component("drop-down", Dropdown);
+  app.component("Gallery", Gallery);
 }
