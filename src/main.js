@@ -9,13 +9,16 @@ import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import { clickOutside } from "./utilities/clickOutSide";
+import Lara from "@/presets/lara";
 
 const app = createApp(App);
 registerGlobalComponents(app);
 setupInterceptor(store);
 app.use(store);
 app.use(router);
-app.use(PrimeVue);
+app.use(PrimeVue, {
+  pt: Lara
+});
 app.use(ToastService);
 app.directive("click-outside", clickOutside);
 app.mount("#app");

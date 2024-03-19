@@ -4,6 +4,9 @@ import { user } from "./user.module";
 import { mediaType } from "./mediaType.module";
 import { post } from "./post.module";
 import { reaction } from "./reaction.module";
+import createModule from "./postModuleFactory";
+
+const homePost = createModule();
 
 export default createStore({
   state: {},
@@ -15,5 +18,5 @@ export default createStore({
       commit("auth/logout");
     },
   },
-  modules: { auth, user, mediaType, post, reaction },
+  modules: { auth, user, mediaType, post, reaction, homePost },
 });

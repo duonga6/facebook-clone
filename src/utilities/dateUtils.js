@@ -66,7 +66,7 @@ export function convertDateDisplay(date) {
   if (miliseconds / year > 1) {
     return parseInt(miliseconds / year) + " năm";
   } else if (miliseconds / month > 1) {
-    return miliseconds / month + " tháng";
+    return parseInt(miliseconds / month) + " tháng";
   } else if (miliseconds / day > 1) {
     return parseInt(miliseconds / day) + " ngày";
   } else if (miliseconds / hour > 1) {

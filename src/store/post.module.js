@@ -3,7 +3,7 @@ import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { userService } from "@/services/user.service";
-import { homePostUtils } from "./postUtils";
+import { PostUtils } from "./postUtils";
 import { POST_TYPE } from "@/constants";
 
 export const post = {
@@ -41,7 +41,7 @@ export const post = {
         const postMapped = await Promise.all(
           postResponse.data.map(async (post) => {
             const reactionsRes = await postReactionService.getOverview(post.id);
-            const commentsRes = await homePostUtils.getCommentChild(
+            const commentsRes = await PostUtils.getCommentChild(
               post.id,
               Math.floor(Math.random() * 2) + 1
             );
@@ -93,9 +93,6 @@ export const post = {
             total: 0,
             userReacted: null,
           };
-
-          const postAuthorRes = await userService.getById(postData.authorId);
-          postData.user = postAuthorRes.data;
 
           commit("addPostSuccess", postData);
           return Promise.resolve();
@@ -261,7 +258,7 @@ export const post = {
     },
     async getComment({ commit }, payLoad) {
       try {
-        const commentRes = await homePostUtils.getCommentChild(
+        const commentRes = await PostUtils.getCommentChild(
           payLoad.postId,
           payLoad.pageSize,
           payLoad.parentId,

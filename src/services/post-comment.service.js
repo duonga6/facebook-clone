@@ -15,7 +15,7 @@ export const postCommentService = {
         throw new Error(`Error post comment service ${err}`);
       });
   },
-  getCursor(postId, pageSize, endCursor, desc, parentId) {
+  getCursor(postId, pageSize, endCursor, parentId = null, desc = true) {
     return api.get(`${BASE_URL}/GetCursor?postId=${postId}&pageSize=${pageSize}&desc=${desc}&endCursor=${endCursor ?? ""}&parentId=${parentId ?? ""}`)
       .catch((err) => {
         throw new Error(`Error post comment service ${err}`);

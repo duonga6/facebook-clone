@@ -13,9 +13,9 @@ export const postReaction = {
     }
   },
   delete(id) {
-    return api.delete(`${BASE_URL}/${id}`).catch(err => { throw new Error(`Error Post Reaction Service ${err}`) });
+    return api.delete(`${BASE_URL}/${id}`);
   },
   create(data) {
-    return api.post(`${BASE_URL}`, data).catch(err => { throw new Error(`Error Post Reaction Service ${err}`) });
+    return api.post(`${BASE_URL}`, data);
   }
 }

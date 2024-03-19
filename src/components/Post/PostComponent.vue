@@ -125,7 +125,7 @@
             />
           </li>
         </ul>
-        <div class="post-reaction-count">
+        <div class="post-reaction-count" v-if="postReactions.total > 1">
           {{ postReactions.total }}
         </div>
       </div>
@@ -138,7 +138,7 @@
         class="post-action-item action--reaction"
         @mouseenter="onHoverReaction"
         @mouseleave="onCloseReaction"
-        @click="onHandleClickReaction"
+        @click="handleClickReaction"
       >
         <template v-if="userReacted.reaction">
           <div class="post-action-icon">
@@ -240,6 +240,7 @@
           v-for="comment in commentShowBelow"
           :key="comment.id"
           :comment="comment"
+          :storeName="'homePost'"
         >
         </CommentComponent>
       </div>
@@ -288,6 +289,8 @@
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
+import { toastAlert } from "@/utilities/toastAlert";
+import { PostUtils } from "@/store/postUtils";
 
 export default {
   props: {
@@ -298,6 +301,10 @@ export default {
     isOverlay: {
       type: Boolean,
       default: false,
+    },
+    storeName: {
+      type: String,
+      required: true,
     },
   },
   setup(props) {
@@ -329,15 +336,18 @@ export default {
     });
 
     const postReactions = computed(() => {
-      const postReactionIds = props.post.reaction.reactionTypes
-        ? props.post.reaction.reactionTypes
+      const postReactionIds = props.post.reaction.reactions
+        ? props.post.reaction.reactions.map((item) => item.reactionId)
         : [];
 
       return {
         reactions: reactions.value.filter((x) =>
           postReactionIds.includes(x.id)
         ),
-        total: props.post.reaction.total,
+        total: props.post.reaction.reactions.reduce(
+          (total, item) => total + item.total,
+          0
+        ),
       };
     });
 
@@ -372,7 +382,7 @@ export default {
     }
 
     // Click nút like, User đã thả reaction ? xóa : thêm
-    function onHandleClickReaction() {
+    function handleClickReaction() {
       onCloseReaction();
 
       if (!userReacted.value.reaction) {
@@ -403,29 +413,32 @@ export default {
     // ---- Reaction CRUD
 
     function createReaction(id = 1) {
-      store.dispatch("post/createUserReaction", {
+      store.dispatch(`${props.storeName}/createUserReaction`, {
         postId: props.post.id,
         reactionId: id,
       });
     }
 
     function updateReaction(id) {
-      store.dispatch("post/updateUserReaction", {
-        postReactionId: userReacted.value.id,
+      store.dispatch(`${props.storeName}/updateUserReaction`, {
+        id: userReacted.value.id,
         data: {
           reactionId: id,
         },
+        oldReactionId: userReacted.value.reaction.id,
+        postId: props.post.id,
       });
     }
 
     function deleteReaction() {
       if (userReacted.value) {
-        store.dispatch("post/deleteUserReacted", {
-          postReactionId: userReacted.value.id,
+        store.dispatch(`${props.storeName}/deleteUserReaction`, {
+          id: userReacted.value.id,
           postId: props.post.id,
+          reactionId: userReacted.value.reaction.id,
         });
       } else {
-        console.log("Lỗi: Không tìm thấy user reacted");
+        toastAlert.error("Có lỗi!");
       }
     }
 
@@ -433,7 +446,7 @@ export default {
     function createComment() {
       if (commentInput.value) {
         if (
-          store.dispatch("post/createComment", {
+          store.dispatch(`${props.storeName}/createComment`, {
             data: {
               content: commentInput.value,
               postId: props.post.id,
@@ -450,18 +463,31 @@ export default {
       commentInputEl.value.focus();
     }
 
-    function handleClickShowMoreComment() {
-      isLoadingComment.value = true;
-      store
-        .dispatch("post/getComment", {
-          postId: props.post.id,
-          pageSize: props.post.comment.pageSize,
-          parent: null,
-          endCursor: props.post.comment.endCursor,
-        })
-        .then(() => {
-          isLoadingComment.value = false;
-        });
+    async function handleClickShowMoreComment() {
+      // isLoadingComment.value = true;
+      // store
+      //   .dispatch(`${props.storeName}/getComment`, {
+      //     postId: props.post.id,
+      //     pageSize: props.post.comment.pageSize,
+      //     parent: null,
+      //     endCursor: props.post.comment.endCursor,
+      //   })
+      //   .then(() => {
+      //     isLoadingComment.value = false;
+      //   });
+      const res = await PostUtils.getCommentWithDependent(
+        props.post.id,
+        props.post.comment.pageSize,
+        props.post.comment.endCursor
+      );
+
+      console.log(res);
+
+      store.dispatch(`${props.storeName}/setComments`, {
+        path: null,
+        postId: props.post.id,
+        data: res,
+      });
     }
 
     // Set tự động height cho comment input
@@ -510,7 +536,7 @@ export default {
       };
 
       store
-        .dispatch("post/updatePost", {
+        .dispatch(`${props.storeName}/updatePost`, {
           id: props.post.id,
           data: updatePostData,
         })
@@ -539,7 +565,7 @@ export default {
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
-      onHandleClickReaction,
+      handleClickReaction,
       onCommentChange,
       handleClickShowMoreComment,
       createComment,

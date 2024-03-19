@@ -196,6 +196,7 @@
 import { computed, reactive, ref } from "vue";
 import { convertDateDisplay } from "@/utilities/dateUtils";
 import { useStore } from "vuex";
+import tokenService from "@/services/token.service";
 export default {
   props: {
     comment: {
@@ -204,6 +205,10 @@ export default {
     isChild: {
       type: Boolean,
       default: false,
+    },
+    storeName: {
+      type: String,
+      required: true,
     },
   },
   setup(props) {
@@ -219,7 +224,7 @@ export default {
     const isShowChildComment = ref(false);
 
     // Data variables
-    const user = computed(() => store.getters["user/getUser"]);
+    const user = tokenService.getUser();
     const commentInput = ref(null);
     const commentInputEl = ref(null);
     const commentsData = reactive({
@@ -233,15 +238,18 @@ export default {
     });
 
     const commentReactions = computed(() => {
-      const commentReactionIds = props.comment.reaction?.reactionTypes
-        ? props.comment.reaction.reactionTypes
+      const commentReactionIds = props.comment.reaction.reactions
+        ? props.comment.reaction.reactions.map((item) => item.reactionId)
         : null;
 
       return {
         reactions: reactions.value.filter((x) =>
           commentReactionIds?.includes(x.id)
         ),
-        total: props.comment.reaction?.total ? props.comment.reaction.total : 0,
+        total: props.comment.reaction.reactions.reduce(
+          (total, item) => total + item.total,
+          0
+        ),
       };
     });
 
@@ -261,7 +269,7 @@ export default {
       isShowChildComment.value = true;
       isLoadingChildComment.value = true;
       store
-        .dispatch("post/getComment", {
+        .dispatch(`${props.storeName}/getComment`, {
           postId: props.comment.postId,
           pageSize: props.comment.childComment.pageSize,
           parentId: props.comment.id,
@@ -332,15 +340,16 @@ export default {
 
     // CRUD reaction
     function deleteReaction() {
-      store.dispatch("post/deleteCommentReaction", {
+      store.dispatch(`${props.storeName}/deleteCommentReaction`, {
         path: props.comment.path,
-        commentReactionId: userReacted.value.id,
         postId: props.comment.postId,
+        reactionId: userReacted.value.reaction.id,
+        commentReactionId: userReacted.value.id,
       });
     }
 
     function createReaction(id) {
-      store.dispatch("post/createCommentReaction", {
+      store.dispatch(`${props.storeName}/createCommentReaction`, {
         path: props.comment.path,
         data: {
           commentId: props.comment.id,
@@ -351,13 +360,14 @@ export default {
     }
 
     function updateReaction(id) {
-      store.dispatch("post/updateCommentReaction", {
+      store.dispatch(`${props.storeName}/updateCommentReaction`, {
+        postId: props.comment.postId,
         path: props.comment.path,
+        reactionIdOld: userReacted.value.reaction.id,
         data: {
           reactionId: id,
         },
         commentReactionId: userReacted.value.id,
-        postId: props.comment.postId,
       });
     }
 
@@ -372,7 +382,7 @@ export default {
     function handleCreateReplyComment() {
       if (commentInput.value) {
         if (
-          store.dispatch("post/createComment", {
+          store.dispatch(`${props.storeName}/createComment`, {
             data: {
               content: commentInput.value,
               postId: props.comment.postId,
@@ -394,7 +404,7 @@ export default {
     }
 
     function handleDeleteComment() {
-      store.dispatch("post/deleteComment", {
+      store.dispatch(`${props.storeName}/deleteComment`, {
         commentId: props.comment.id,
         postId: props.comment.postId,
         path: props.comment.path,
