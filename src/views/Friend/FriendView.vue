@@ -424,7 +424,7 @@ export default {
 <style lang="scss" scoped>
 .friend-page-container {
   height: calc(100vh - 56px);
-  @apply flex;
+  @apply flex mt-14;
 }
 
 .friend-navbar {

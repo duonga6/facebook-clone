@@ -15,6 +15,11 @@ body {
   border-bottom: 5px solid black;
 }
 
+.h-full-56px {
+  height: calc(100vh - 56px);
+  margin-top: 56px;
+}
+
 :root {
   --primary-50: 236 253 245;
   --primary-100: 209 250 229;

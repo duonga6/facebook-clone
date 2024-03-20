@@ -1,19 +1,20 @@
 <template>
   <div class="user-post-list space-y-4">
-    <post-component
-      v-for="post in posts"
+    <PostComponent
+      v-for="post in postData.posts"
       :key="post.id"
       :post="post"
-    ></post-component>
+      :storeName="'profilePost'"
+    ></PostComponent>
   </div>
 </template>
 <script>
-import { computed, onMounted, onUnmounted } from "vue";
-import PostComponent from "../Post/PostComponent.vue";
+import { computed, onMounted, onUnmounted, reactive } from "vue";
 import { useStore } from "vuex";
 import { POST_TYPE } from "@/constants";
+import { PostUtils } from "@/store/postUtils";
+import tokenService from "@/services/token.service";
 export default {
-  components: { PostComponent },
   props: {
     userId: {
       type: String,
@@ -22,21 +23,43 @@ export default {
   async setup(props) {
     const store = useStore();
 
+    // Id của user nếu props ko có thì là user đã log => lấy ở token
+    const id = props.userId == "" ? tokenService.getUser().id : props.userId;
+
+    const postData = reactive({
+      total: 0,
+      posts: computed(() => store.getters["profilePost/getPosts"]),
+      pageSize: 20,
+      pageNumber: 0,
+      _isFetched: false,
+    });
+
+    async function getPost() {
+      const res = await PostUtils.getPostWithDependent({
+        type: POST_TYPE.PROFILE_POST,
+        pageSize: postData.pageSize,
+        pageNumber: postData.pageNumber,
+        userId: id,
+      });
+
+      postData.pageNumber++;
+      postData._isFetched = true;
+
+      store.dispatch("profilePost/setPosts", res);
+    }
+
     onUnmounted(() => {
-      store.dispatch("post/reset");
+      store.dispatch("profilePost/reset");
     });
 
     onMounted(async () => {
-      await store.dispatch("post/getPost", {
-        postType: POST_TYPE.PROFILE_POST,
-        userId: props.userId,
-      });
+      if (!postData._isFetched) {
+        await getPost();
+      }
     });
 
-    const posts = computed(() => store.getters["post/getPosts"]);
-
     return {
-      posts,
+      postData,
     };
   },
 };

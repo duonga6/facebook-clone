@@ -72,6 +72,9 @@ module.exports = {
       boxShadow: {
         "custom-sm": "0 5px 15px 0px rgba(0, 0, 0, 0.2)",
       },
+      zIndex: {
+        1: 1,
+      },
     },
   },
   plugins: [],

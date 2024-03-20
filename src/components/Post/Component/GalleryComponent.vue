@@ -2,7 +2,7 @@
   <div class="gallery-container">
     <div class="gallery-navbar">
       <div class="right-navbar">
-        <div class="navbar-item">
+        <div class="navbar-item" @click="handleClosePost">
           <i class="pi pi-times"></i>
         </div>
       </div>
@@ -19,15 +19,35 @@
       </div>
     </div>
     <div class="gallery-main">
-      <button class="gallery-control-btn btn--left" @click="handlePrevMedia">
+      <button
+        v-if="data.length > 1"
+        class="gallery-control-btn btn--left"
+        @click.stop="handlePrevMedia"
+      >
         <i class="pi pi-chevron-left"></i>
       </button>
       <div class="media-list">
         <div class="media-item">
-          <img class="media-src" :src="mediaShow.url" alt="" />
+          <img
+            v-if="mediaShow.mediaTypeId == 2"
+            class="media-src image"
+            :src="mediaShow.url"
+            alt=""
+          />
+          <video
+            v-if="mediaShow.mediaTypeId == 3"
+            class="media-src video"
+            :src="mediaShow.url"
+            alt=""
+            controls
+          />
         </div>
       </div>
-      <button class="gallery-control-btn btn--right" @click="handleNextMedia">
+      <button
+        v-if="data.length > 1"
+        class="gallery-control-btn btn--right"
+        @click.stop="handleNextMedia"
+      >
         <i class="pi pi-chevron-right"></i>
       </button>
     </div>
@@ -36,6 +56,7 @@
 
 <script>
 import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 export default {
   props: {
     data: {
@@ -43,7 +64,20 @@ export default {
     },
   },
   setup(props) {
+    const route = useRoute();
+    const router = useRouter();
     const mediaIndex = ref(0);
+
+    if (route.query.mediaId) {
+      const mediaIdSeleted = props.data.find(
+        (x) => x.id == route.query.mediaId
+      );
+      if (mediaIdSeleted) {
+        mediaIndex.value = props.data.findIndex(
+          (x) => x["id"] == mediaIdSeleted.id
+        );
+      }
+    }
 
     function handlePrevMedia() {
       if (props.data.length == 0) {
@@ -69,10 +103,21 @@ export default {
       }
     }
 
+    function handleClosePost() {
+      if (window.history.length <= 1) {
+        router.push({
+          name: "home",
+        });
+      } else {
+        router.back();
+      }
+    }
+
     return {
       mediaShow: computed(() => props.data[mediaIndex.value]),
       handlePrevMedia,
       handleNextMedia,
+      handleClosePost,
     };
   },
 };
@@ -94,7 +139,7 @@ export default {
     }
 
     .navbar-item {
-      @apply w-10 h-10 flex items-center justify-center;
+      @apply w-10 h-10 flex items-center justify-center cursor-pointer;
 
       i {
         @apply text-xl text-white;

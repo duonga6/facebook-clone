@@ -1,12 +1,18 @@
 <template>
-  <PostDetailComponent v-for="post in posts" :key="post.id" :post="post" />
+  <PostDetailComponent
+    v-for="post in postData.posts"
+    :key="post.id"
+    :post="post"
+    :storeName="'singlePost'"
+  />
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted, reactive } from "vue";
 import { useStore } from "vuex";
 import { POST_TYPE } from "@/constants";
 import { useRoute } from "vue-router";
+import { PostUtils } from "@/store/postUtils";
 
 export default {
   setup() {
@@ -14,19 +20,37 @@ export default {
     const route = useRoute();
     const postId = route.params.id;
 
+    const postData = reactive({
+      total: 0,
+      posts: computed(() => store.getters["singlePost/getPosts"]),
+      pageSize: 1,
+      pageNumber: 1,
+      _isFetched: false,
+    });
+
+    async function getPosts() {
+      const posts = await PostUtils.getPostWithDependent({
+        type: POST_TYPE.SINGLE_POST,
+        postId: postId,
+      });
+
+      postData._isFetched = true;
+
+      store.dispatch("singlePost/setPosts", posts);
+    }
+
     onUnmounted(() => {
-      store.dispatch("post/reset");
+      store.dispatch("singlePost/reset");
     });
 
     onMounted(async () => {
-      await store.dispatch("post/getPost", {
-        postType: POST_TYPE.SINGLE_POST,
-        postId: postId,
-      });
+      if (!postData._isFetched) {
+        await getPosts();
+      }
     });
 
     return {
-      posts: computed(() => store.getters["post/getPosts"]),
+      postData,
     };
   },
 };

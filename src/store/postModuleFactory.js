@@ -5,33 +5,17 @@ import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { toastAlert } from "@/utilities/toastAlert";
 
-const updatePostReaction = async (commit, postId) => {
-  const updateReactionRes = await postReactionService.getOverview(postId);
-  commit("updatePostReaction", {
-    reaction: updateReactionRes.data,
-    postId: postId,
-  });
-};
-
-const updateCommentReaction = async (commit, commentId, payLoad) => {
-  const updateRes = await commentReactionService.getOverview(commentId);
-  commit("updateCommentReaction", {
-    path: payLoad.path,
-    data: updateRes.data,
-    postId: payLoad.postId,
-  });
-};
-
 const createModule = () => ({
   namespaced: true,
   state: {
     data: [],
+    _isFetched: false,
   },
   actions: {
     // #region POST
 
     setPosts({ commit }, payLoad) {
-      commit("setPost", payLoad);
+      commit("setPosts", payLoad);
     },
 
     async createPost({ commit }, payLoad) {
@@ -50,8 +34,7 @@ const createModule = () => ({
         };
 
         postData.reaction = {
-          reactionTypes: [],
-          total: 0,
+          reactions: [],
           userReacted: null,
         };
 
@@ -201,14 +184,31 @@ const createModule = () => ({
   },
 
   mutations: {
-    setPost(state, payLoad) {
+    // #region POST
+    setPosts(state, payLoad) {
       state.data = [...state.data, ...payLoad];
+      state._isFetched = true;
     },
+
+    addPostSuccess(state, payLoad) {
+      state.data = [payLoad, ...state.data];
+    },
+
+    updatePostSuccess(state, payLoad) {
+      const post = state.data.find((x) => x.id == payLoad.id);
+      if (post) {
+        post.content = payLoad.content;
+        post.postMedias = payLoad.postMedias;
+      }
+    },
+
     reset(state) {
       state.data = [];
     },
 
-    // #region POST
+    // #endregion
+
+    // #region POST REACTION
     createUserReactionSuccess(state, payLoad) {
       const post = state.data.find((x) => x.id == payLoad.postId);
 
@@ -292,6 +292,7 @@ const createModule = () => ({
       const post = state.data.find(x => x.id == payLoad.data.postId);
 
       if (post) {
+        post.comment.totalComment++;
         const newComment = payLoad.data;
         const path = payLoad.path;
 
@@ -481,12 +482,17 @@ const createModule = () => ({
     }
 
     // #endregion
+
   },
   getters: {
     // #region POST
     getPosts(state) {
       return state.data;
     },
+
+    getFecthStatus(state) {
+      return state._isFetched;
+    }
 
     // #endregion
   },

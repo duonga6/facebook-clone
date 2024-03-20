@@ -1,8 +1,6 @@
 /* eslint-disable */
 import { defineAsyncComponent } from "vue";
 import Dropdown from "primevue/dropdown";
-import Gallery from "@/components/Post/GalleryComponent";
-
 export function registerGlobalComponents(app) {
   // ==== Layout
   app.component(
@@ -55,6 +53,36 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Post/CreatePostComponent"))
   );
 
+  app.component(
+    "PostHeader",
+    defineAsyncComponent(() => import("@/components/Post/Component/PostHeaderComponent"))
+  );
+
+  app.component(
+    "PostMedia",
+    defineAsyncComponent(() => import("@/components/Post/Component/PostMediaComponent"))
+  );
+
+  app.component(
+    "PostComment",
+    defineAsyncComponent(() => import("@/components/Post/Component/PostCommentComponent"))
+  );
+
+  app.component(
+    "Gallery",
+    defineAsyncComponent(() => import("@/components/Post/Component/GalleryComponent"))
+  );
+
+  app.component(
+    "PostContent",
+    defineAsyncComponent(() => import("@/components/Post/Component/PostContentComponent"))
+  );
+
+  app.component(
+    "PostShare",
+    defineAsyncComponent(() => import("@/components/Post/PostShareComponent"))
+  );
+
   // === Home
 
   app.component(
@@ -72,7 +100,10 @@ export function registerGlobalComponents(app) {
     "ProfileComponent",
     defineAsyncComponent(() => import("@/components/Profile/ProfileComponent"))
   );
+  app.component(
+    "ProfilePost",
+    defineAsyncComponent(() => import("@/components/Profile/ProfilePostComponent"))
+  );
 
   app.component("drop-down", Dropdown);
-  app.component("Gallery", Gallery);
 }

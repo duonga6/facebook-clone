@@ -1,9 +1,15 @@
 <template>
-  <div class="post-container">
-    <div class="post-media col-span-6">
+  <div
+    class="post-container"
+    :class="isMediaExist ? 'grid-cols-8 h-full-56px' : 'grid-cols-3 mt-20'"
+  >
+    <div class="post-media col-span-6" v-if="isMediaExist">
       <Gallery :data="post.postMedias"></Gallery>
     </div>
-    <div class="post-main col-span-2">
+    <div
+      class="post-main"
+      :class="isMediaExist ? 'col-span-2' : 'col-start-2 col-span-1 rounded-lg'"
+    >
       <div class="post-header">
         <div class="post-author">
           <div class="author-img">
@@ -225,11 +231,12 @@
             v-for="comment in commentShowBelow"
             :key="comment.id"
             :comment="comment"
+            :storeName="storeName"
           >
           </CommentComponent>
         </div>
       </div>
-      <div v-if="!isOverlay" class="create-comment-container mt-2">
+      <div class="create-comment-container mt-2">
         <div class="user-avatar">
           <img class="" :src="user?.avatarUrl" alt="" />
         </div>
@@ -274,6 +281,8 @@
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
+import { toastAlert } from "@/utilities/toastAlert";
+import { PostUtils } from "@/store/postUtils";
 
 export default {
   props: {
@@ -281,9 +290,9 @@ export default {
       type: Object,
       required: true,
     },
-    isOverlay: {
-      type: Boolean,
-      default: false,
+    storeName: {
+      type: String,
+      required: true,
     },
   },
   setup(props) {
@@ -295,6 +304,7 @@ export default {
     const isShowReaction = ref(false);
     const isShowPostMore = ref(false);
     const isShowEditPost = ref(false);
+    const isMediaExist = computed(() => props.post.postMedias.length > 0);
 
     // Data variables
     const user = tokenService.getUser();
@@ -314,15 +324,18 @@ export default {
     });
 
     const postReactions = computed(() => {
-      const postReactionIds = props.post.reaction.reactionTypes
-        ? props.post.reaction.reactionTypes
+      const postReactionIds = props.post.reaction.reactions
+        ? props.post.reaction.reactions.map((item) => item.reactionId)
         : [];
 
       return {
         reactions: reactions.value.filter((x) =>
           postReactionIds.includes(x.id)
         ),
-        total: props.post.reaction.total,
+        total: props.post.reaction.reactions.reduce(
+          (total, item) => total + item.total,
+          0
+        ),
       };
     });
 
@@ -388,29 +401,32 @@ export default {
     // ---- Reaction CRUD
 
     function createReaction(id = 1) {
-      store.dispatch("post/createUserReaction", {
+      store.dispatch(`${props.storeName}/createUserReaction`, {
         postId: props.post.id,
         reactionId: id,
       });
     }
 
     function updateReaction(id) {
-      store.dispatch("post/updateUserReaction", {
-        postReactionId: userReacted.value.id,
+      store.dispatch(`${props.storeName}/updateUserReaction`, {
+        id: userReacted.value.id,
         data: {
           reactionId: id,
         },
+        oldReactionId: userReacted.value.reaction.id,
+        postId: props.post.id,
       });
     }
 
     function deleteReaction() {
       if (userReacted.value) {
-        store.dispatch("post/deleteUserReacted", {
-          postReactionId: userReacted.value.id,
+        store.dispatch(`${props.storeName}/deleteUserReaction`, {
+          id: userReacted.value.id,
           postId: props.post.id,
+          reactionId: userReacted.value.reaction.id,
         });
       } else {
-        console.log("Lỗi: Không tìm thấy user reacted");
+        toastAlert.error("Có lỗi!");
       }
     }
 
@@ -418,7 +434,7 @@ export default {
     function createComment() {
       if (commentInput.value) {
         if (
-          store.dispatch("post/createComment", {
+          store.dispatch(`${props.storeName}/createComment`, {
             data: {
               content: commentInput.value,
               postId: props.post.id,
@@ -435,18 +451,25 @@ export default {
       commentInputEl.value.focus();
     }
 
-    function handleClickShowMoreComment() {
-      isLoadingComment.value = true;
-      store
-        .dispatch("post/getComment", {
+    async function handleClickShowMoreComment() {
+      try {
+        isLoadingComment.value = true;
+        const res = await PostUtils.getCommentChild(
+          props.post.id,
+          props.post.comment.pageSize,
+          props.post.comment.endCursor
+        );
+
+        store.dispatch(`${props.storeName}/setComments`, {
+          path: null,
           postId: props.post.id,
-          pageSize: props.post.comment.pageSize,
-          parent: null,
-          endCursor: props.post.comment.endCursor,
-        })
-        .then(() => {
-          isLoadingComment.value = false;
+          data: res,
         });
+      } catch (error) {
+        toastAlert.error(error);
+      } finally {
+        isLoadingComment.value = false;
+      }
     }
 
     // Set tự động height cho comment input
@@ -495,7 +518,7 @@ export default {
       };
 
       store
-        .dispatch("post/updatePost", {
+        .dispatch(`${props.storeName}/updatePost`, {
           id: props.post.id,
           data: updatePostData,
         })
@@ -506,21 +529,6 @@ export default {
           isShowEditPost.value = false;
         });
     }
-
-    const responsiveOptions = ref([
-      {
-        breakpoint: "991px",
-        numVisible: 4,
-      },
-      {
-        breakpoint: "767px",
-        numVisible: 3,
-      },
-      {
-        breakpoint: "575px",
-        numVisible: 1,
-      },
-    ]);
 
     return {
       isLoaded,
@@ -535,7 +543,7 @@ export default {
       commentInput,
       commentInputEl,
       commentShowBelow,
-      responsiveOptions,
+      isMediaExist,
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
@@ -555,12 +563,10 @@ export default {
 
 <style lang="scss" scoped>
 .post-container {
-  margin-top: 56px;
-  height: calc(100vh - 56px);
   .post-media {
     @apply h-full;
   }
-  @apply grid grid-cols-8 gap-0;
+  @apply grid gap-0;
   .post-main {
     @apply bg-white py-2.5 pb-0 border border-gray-100 h-full flex flex-col overflow-y-hidden;
     .post-header {

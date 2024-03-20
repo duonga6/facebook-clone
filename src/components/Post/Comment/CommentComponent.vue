@@ -145,6 +145,7 @@
           :key="childComment.id"
           :comment="childComment"
           :isChild="true"
+          :storeName="storeName"
         ></CommentComponent>
       </div>
       <div
@@ -197,6 +198,8 @@ import { computed, reactive, ref } from "vue";
 import { convertDateDisplay } from "@/utilities/dateUtils";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
+import { toastAlert } from "@/utilities/toastAlert";
+import { PostUtils } from "@/store/postUtils";
 export default {
   props: {
     comment: {
@@ -265,20 +268,28 @@ export default {
     });
 
     // Show child comment
-    function showChildComment() {
-      isShowChildComment.value = true;
-      isLoadingChildComment.value = true;
-      store
-        .dispatch(`${props.storeName}/getComment`, {
-          postId: props.comment.postId,
-          pageSize: props.comment.childComment.pageSize,
-          parentId: props.comment.id,
-          endCursor: props.comment.childComment.endCursor,
+    async function showChildComment() {
+      try {
+        isShowChildComment.value = true;
+        isLoadingChildComment.value = true;
+        const res = await PostUtils.getCommentChild(
+          props.comment.postId,
+          props.comment.childComment.pageSize,
+          props.comment.childComment.endCursor,
+          props.comment.id,
+          props.comment.path
+        );
+
+        store.dispatch(`${props.storeName}/setComments`, {
           path: props.comment.path,
-        })
-        .then(() => {
-          isLoadingChildComment.value = false;
+          postId: props.comment.postId,
+          data: res,
         });
+      } catch (error) {
+        toastAlert.error(error);
+      } finally {
+        isLoadingChildComment.value = false;
+      }
     }
 
     // Handle comment more

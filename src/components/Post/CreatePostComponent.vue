@@ -56,169 +56,12 @@
       </div>
     </div>
   </div>
-  <!-- <div
-    class="add-post__form"
-    :class="isShowCreatePost ? 'visible opacity-100' : 'invisible opacity-0'"
-  >
-    <form class="form-container" @submit.prevent="handleSubmitAddForm">
-      <div class="form-heading">
-        <p class="form-heading__title">Tạo bài viết</p>
-        <div
-          class="form-heading__icon-container"
-          @click="handleCloseAddPostForm"
-        >
-          <i
-            class="form-heading__icon"
-            data-visualcompletion="css-img"
-            style="
-              background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yd/r/W36oMOXK6VG.png?_nc_eui2=AeEWr61o6UQDE05Ob-mQ3ShLE0nt2lFbHYITSe3aUVsdgvQSWYvHM2Mz8oUt7oAVbrNuSZ4PXI9cL02hX3pApnt1');
-              background-position: -147px -84px;
-              background-size: auto;
-              background-repeat: no-repeat;
-            "
-          ></i>
-        </div>
-      </div>
-      <hr />
-      <div class="user-info-container">
-        <div class="avatar-container">
-          <img class="avatar-img" :src="user?.avatarUrl" alt="" />
-        </div>
-        <div class="user-info">
-          <p class="user-info__name">
-            {{ user?.firstName + " " + user?.lastName }}
-          </p>
-          <drop-down
-            v-model="selectedAccessRange"
-            :options="dataAccessRange"
-            optionLabel="name"
-            :pt="{
-              root: 'px-2 py-0.5 inline-flex items-center relative rounded-md cursor-pointer rounded-md bg-gray-200',
-              input: 'p-0 text-13 font-semibold',
-              trigger:
-                'flex items-center justify-center shrink-0 text-surface-500 rounded-tr-md rounded-br-md ms-1 mt-1',
-            }"
-          >
-          </drop-down>
-        </div>
-      </div>
-      <div class="post-content">
-        <textarea
-          class="post-content__text"
-          :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
-          v-model="postData.content"
-        />
-      </div>
-      <div class="post-media-container" v-if="postData.postMedias.length > 0">
-        <ul
-          class="post-media-list grid gap-1"
-          :class="generateClassMedias(postData.postMedias.length)"
-        >
-          <li
-            v-for="(image, index) in postData.postMedias"
-            :key="index"
-            class="post-media-item"
-            :class="generateClassMedias(postData.postMedias.length, index)"
-          >
-            <div class="post-media-type">
-              <template v-if="image.type == 'image'">
-                <img class="image" :src="image.showUrl" alt="" />
-              </template>
-              <template v-else>
-                <video class="video" :src="image.showUrl" controls></video>
-              </template>
-              <div class="upload-image uploading" v-if="image.uploading">
-                <loading-component :classCss="'w-10 h-10'"></loading-component>
-              </div>
-              <div
-                class="upload-image upload-fail"
-                v-if="!image.uploading && !image.uploaded"
-              >
-                <i class="upload-fail-icon pi pi-exclamation-triangle"></i>
-              </div>
-              <button
-                class="remove-uploaded-image"
-                @click="deleteUploadedImage(image.id)"
-              >
-                <i class="pi pi-times remove-icon"></i>
-              </button>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <drag-file @DragedFile="onDragedFile"></drag-file>
 
-      Additional for post
-
-      <div class="additional-container">
-        <p class="additional-text">Thêm vào bài viết của bạn</p>
-        <ul class="additional-list">
-          <li>
-            <div class="additional-item">
-              <img
-                class="additional-item__img"
-                src="https://static.xx.fbcdn.net/rsrc.php/v3/y7/r/Ivw7nhRtXyo.png?_nc_eui2=AeHiOb2walsELzNmiIvTVE6WPL4YoeGsw5I8vhih4azDkiXTBIXsRGzgyEzQwR5FJ4H7A3rfvpb_p5SqhmStK7mf"
-                alt=""
-              />
-            </div>
-          </li>
-          <li>
-            <div class="additional-item">
-              <img
-                class="additional-item__img"
-                src="https://static.xx.fbcdn.net/rsrc.php/v3/yq/r/b37mHA1PjfK.png?_nc_eui2=AeHjtBDQ5D8hPuN0zwPAG1TwohqwRjkkxMOiGrBGOSTEw5_kDePWZwXdQgWiraOKQRI1ScaUYVfZlRPNLTeGsayj"
-                alt=""
-              />
-            </div>
-          </li>
-          <li>
-            <div class="additional-item">
-              <img
-                class="additional-item__img"
-                src="https://static.xx.fbcdn.net/rsrc.php/v3/yd/r/Y4mYLVOhTwq.png?_nc_eui2=AeHWXCnwisQ8ILfV-PmweUTivPIN-OmHLJy88g346YcsnFLgec4vNEAEUDT0dQcgBGYPYxwLVuNCOcF57wAm7r-j"
-                alt=""
-              />
-            </div>
-          </li>
-          <li>
-            <div class="additional-item">
-              <img
-                class="additional-item__img"
-                src="https://static.xx.fbcdn.net/rsrc.php/v3/y1/r/8zlaieBcZ72.png?_nc_eui2=AeFJhV5xsU5h9xpbGLBUjqP_88Ps36vvyGDzw-zfq-_IYLeH_VlwZ1_kY7vyFx3DLJC_LKqGDvHMJpN9lSJhlGjO"
-                alt=""
-              />
-            </div>
-          </li>
-          <li>
-            <div class="additional-item">
-              <img
-                class="additional-item__img"
-                src="https://static.xx.fbcdn.net/rsrc.php/v3/yT/r/q7MiRkL7MLC.png?_nc_eui2=AeHFoxOAcdIpT_tHJd8e69uKJTqz5hgP3TklOrPmGA_dOSX7t3MUg1G_3ZWa3572gbyRtmvhe3_5_ES8YXapAGdr"
-                alt=""
-              />
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div class="add-post-btn p-4">
-        <button
-          class="w-full rounded-lg p-2 font-semibold transition-all"
-          :class="
-            isCanPost ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
-          "
-          :disabled="!isCanPost"
-        >
-          Đăng
-        </button>
-      </div>
-    </form>
-  </div> -->
-  <!-- <post-editor></post-editor> -->
-  <post-editor
+  <PostEditor
     v-if="isShowCreatePost"
     @closePostEditor="onCloseCreatePost"
     @submittedForm="onSubmittedForm"
-  ></post-editor>
+  ></PostEditor>
 </template>
 
 <script>
@@ -262,7 +105,7 @@ export default {
         });
 
       store
-        .dispatch("post/createPost", {
+        .dispatch("homePost/createPost", {
           content: postData.content,
           postMedias: postMediaFilter,
         })

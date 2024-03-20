@@ -34,6 +34,25 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/ProfileView.vue"),
+    children: [
+      {
+        name: "profile-post",
+        path: "",
+        component: () =>
+          import(
+            /* webpackChunkName: "profile-post" */ "@/components/Profile/ProfilePostComponent.vue"
+          ),
+        props: (route) => ({ userId: route.params.id }),
+      },
+      {
+        name: "profile-photo",
+        path: "photo",
+        component: () =>
+          import(
+            /* webpackChunkName: "profile-post" */ "@/components/Profile/ProfilePhotoComponent.vue"
+          ),
+      },
+    ],
   },
   {
     path: "/friends",

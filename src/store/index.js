@@ -7,6 +7,8 @@ import { reaction } from "./reaction.module";
 import createModule from "./postModuleFactory";
 
 const homePost = createModule();
+const profilePost = createModule();
+const singlePost = createModule();
 
 export default createStore({
   state: {},
@@ -16,7 +18,17 @@ export default createStore({
     logout({ commit }) {
       commit("user/reset");
       commit("auth/logout");
+      commit("homePost/reset");
     },
   },
-  modules: { auth, user, mediaType, post, reaction, homePost },
+  modules: {
+    auth,
+    user,
+    mediaType,
+    post,
+    reaction,
+    homePost,
+    profilePost,
+    singlePost,
+  },
 });

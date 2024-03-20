@@ -100,16 +100,27 @@
           </div>
         </div>
         <ul class="user-navbar-list">
-          <li class="user-navbar-item active">Bài viết</li>
+          <li class="user-navbar-item active">
+            <router-link
+              :to="{
+                name: 'profile-post',
+                params: {
+                  id: id,
+                },
+              }"
+              >Bài viết</router-link
+            >
+          </li>
           <li class="user-navbar-item">Giới thiệu</li>
           <li class="user-navbar-item">Ảnh</li>
+          <li class="user-navbar-item">Video</li>
           <li class="user-navbar-item">Bạn bè</li>
         </ul>
       </div>
     </div>
     <div class="bottom-section">
       <div class="bottom-section-container">
-        <div class="bottom-left">
+        <div class="bottom-left" v-if="isShowIntroduceTab">
           <div class="user-introduce user-data-section">
             <div class="user-data-title">
               <div class="user-data-heading">Giới thiệu</div>
@@ -185,7 +196,8 @@
           </div>
         </div>
         <div class="bottom-right" v-if="userData.id">
-          <profile-post :userId="userData.id"></profile-post>
+          <!-- <ProfilePost :userId="userData.id"></ProfilePost> -->
+          <router-view></router-view>
         </div>
       </div>
     </div>
@@ -195,14 +207,12 @@
 <script>
 import { userService } from "@/services/user.service";
 import { useRoute } from "vue-router";
-import ProfilePost from "./ProfilePostComponent.vue";
 import tokenService from "@/services/token.service";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { FRIEND_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
 import { toastAlert } from "@/utilities/toastAlert";
 export default {
-  components: { ProfilePost },
   props: {
     id: {
       type: String,
@@ -211,14 +221,13 @@ export default {
   async setup(props) {
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
+    const isShowIntroduceTab = computed(() => route.name == "profile-post");
 
-    const userId = computed(() =>
-      props.id
-        ? props.id
-        : !route.params.id || route.params.id == ""
-        ? loggedUserId
-        : route.params.id
-    );
+    const userId = props.id
+      ? props.id
+      : !route.params.id || route.params.id == ""
+      ? loggedUserId
+      : route.params.id;
 
     const userData = ref({});
     const userPhotos = ref({
@@ -238,11 +247,10 @@ export default {
     async function loadUser() {
       try {
         // User info
-        const userRes = await userService.getById(userId.value);
+        const userRes = await userService.getById(userId);
         userData.value = userRes.data;
-        console.log(userRes);
 
-        const photoRes = await userService.getPhoto(userId.value, {
+        const photoRes = await userService.getPhoto(userId, {
           pageSize: 9,
           pageNumber: 1,
         });
@@ -258,11 +266,11 @@ export default {
           pageSize: 9,
           pageNumber: 1,
           type: FRIEND_TYPE.ACCEPTED,
-          userId: userId.value,
+          userId: userId,
         });
 
         const userFriendMapped = userFriendRes.data.map((item) => {
-          return item.requestUser.id == userId.value
+          return item.requestUser.id == userId
             ? item.targetUser
             : item.requestUser;
         });
@@ -272,10 +280,10 @@ export default {
 
         // friendShip
 
-        if (userId.value == loggedUserId) {
+        if (userId == loggedUserId) {
           friendShip.status = FRIEND_TYPE.SELF;
         } else {
-          const friendShipRes = await friendshipService.getInfo(userId.value);
+          const friendShipRes = await friendshipService.getInfo(userId);
           if (!friendShipRes.data) {
             friendShip.status = FRIEND_TYPE.NOT_FRIEND;
           } else {
@@ -305,7 +313,7 @@ export default {
     async function handleRequestFriend() {
       try {
         const res = await friendshipService.sendRequest({
-          targetUserId: userId.value,
+          targetUserId: userId,
         });
 
         friendShip.id = res.data.id;
@@ -342,14 +350,9 @@ export default {
       }
     }
 
-    watch(
-      () => props.id,
-      async () => {
-        await loadUser();
-      }
-    );
-
-    await loadUser();
+    onMounted(async () => {
+      await loadUser();
+    });
 
     return {
       userData,
@@ -359,6 +362,7 @@ export default {
       loggedUserId,
       userId,
       FRIEND_TYPE,
+      isShowIntroduceTab,
       handleRequestFriend,
       handleAcceptFriend,
       handleRefuseFriend,
@@ -370,7 +374,7 @@ export default {
 
 <style lang="scss" scoped>
 .profile-container {
-  @apply w-full;
+  @apply w-full mt-14;
   .top-section {
     @apply shadow-lg bg-white;
     .top-info {

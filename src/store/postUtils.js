@@ -9,8 +9,8 @@ export const PostUtils = {
   async getCommentChild(
     postId,
     pageSize,
-    parentId = null,
     endCursor = null,
+    parentId = null,
     path = null
   ) {
     const commentsRes = await postCommentService.getCursor(
@@ -21,7 +21,7 @@ export const PostUtils = {
     );
 
     commentsRes.data = await Promise.all(
-      commentsRes.data.map(async (comment) => {
+      commentsRes.data.reverse().map(async (comment) => {
         const reaction = await commentReactionService.getOverview(comment.id);
         const childCommentCount = await postCommentService.getChildCount(
           comment.id
@@ -65,7 +65,6 @@ export const PostUtils = {
       } else if (payLoad.type == POST_TYPE.SINGLE_POST) {
         const res = await postService.getById(payLoad.postId);
         postResponse = {
-          totalItems: 1,
           data: [res.data],
         };
       }
@@ -82,7 +81,7 @@ export const PostUtils = {
           const totalCommentCount = await postCommentService.getCount(post.id);
 
           post.comment = {
-            comments: commentsRes.data.reverse(),
+            comments: commentsRes.data,
             pageSize: 5,
             endCursor: commentsRes.endCursor,
             total: commentsRes.totalItems,
@@ -100,44 +99,5 @@ export const PostUtils = {
     } catch (error) {
       console.log(error);
     }
-  },
-  async getCommentWithDependent(
-    postId,
-    pageSize,
-    endCursor = null,
-    parentId = null,
-    path = null
-  ) {
-    const commentsRes = await postCommentService.getCursor(
-      postId,
-      pageSize,
-      endCursor,
-      parentId
-    );
-
-    commentsRes.data = commentsRes.data.reverse().map((comment) => {
-      if (!path) {
-        comment.path = [comment.id];
-      } else {
-        comment.path = [...path, comment.id];
-      }
-
-      comment.reaction = {
-        reactions: [],
-        userReacted: null,
-      };
-
-      comment.childComment = {
-        comments: [],
-        total: 0,
-        pageSize: 10,
-        endCursor: null,
-        hasNextPage: false,
-      };
-
-      return comment;
-    });
-
-    return commentsRes;
   },
 };
