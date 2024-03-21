@@ -100,19 +100,43 @@
           </div>
         </div>
         <ul class="user-navbar-list">
-          <li class="user-navbar-item active">
+          <li>
             <router-link
+              class="user-navbar-item active"
+              :to="{
+                name: 'profile-post',
+                params: {
+                  id: userId,
+                },
+              }"
+              >Bài viết</router-link
+            >
+          </li>
+          <li class="">
+            <router-link
+              class="user-navbar-item"
               :to="{
                 name: 'profile-post',
                 params: {
                   id: id,
                 },
               }"
-              >Bài viết</router-link
+            >
+              Giới thiệu
+            </router-link>
+          </li>
+          <li class="">
+            <router-link
+              :to="{
+                name: 'profile-photo',
+                params: {
+                  id: userId,
+                },
+              }"
+              class="user-navbar-item"
+              >Ảnh</router-link
             >
           </li>
-          <li class="user-navbar-item">Giới thiệu</li>
-          <li class="user-navbar-item">Ảnh</li>
           <li class="user-navbar-item">Video</li>
           <li class="user-navbar-item">Bạn bè</li>
         </ul>
@@ -120,7 +144,7 @@
     </div>
     <div class="bottom-section">
       <div class="bottom-section-container">
-        <div class="bottom-left" v-if="isShowIntroduceTab">
+        <div class="bottom-left col-span-4" v-if="isShowIntroduceTab">
           <div class="user-introduce user-data-section">
             <div class="user-data-title">
               <div class="user-data-heading">Giới thiệu</div>
@@ -195,7 +219,11 @@
             </ul>
           </div>
         </div>
-        <div class="bottom-right" v-if="userData.id">
+        <div
+          class="bottom-right"
+          :class="isShowIntroduceTab ? ' col-span-6' : 'col-span-10'"
+          v-if="userData.id"
+        >
           <!-- <ProfilePost :userId="userData.id"></ProfilePost> -->
           <router-view></router-view>
         </div>
@@ -208,10 +236,11 @@
 import { userService } from "@/services/user.service";
 import { useRoute } from "vue-router";
 import tokenService from "@/services/token.service";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { FRIEND_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
 import { toastAlert } from "@/utilities/toastAlert";
+import { useStore } from "vuex";
 export default {
   props: {
     id: {
@@ -219,6 +248,7 @@ export default {
     },
   },
   async setup(props) {
+    const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
     const isShowIntroduceTab = computed(() => route.name == "profile-post");
@@ -228,6 +258,10 @@ export default {
       : !route.params.id || route.params.id == ""
       ? loggedUserId
       : route.params.id;
+
+    store.dispatch("profile/initStore", {
+      userId: userId,
+    });
 
     const userData = ref({});
     const userPhotos = ref({
@@ -350,9 +384,7 @@ export default {
       }
     }
 
-    onMounted(async () => {
-      await loadUser();
-    });
+    await loadUser();
 
     return {
       userData,
@@ -460,8 +492,6 @@ export default {
       @apply mx-auto grid grid-cols-10 gap-4 pt-4;
 
       .bottom-left {
-        @apply col-span-4;
-
         .user-data-section {
           @apply p-4 bg-white rounded-lg border border-gray-200 mb-4;
           .user-data-title {
@@ -523,7 +553,6 @@ export default {
       }
 
       .bottom-right {
-        @apply col-span-6;
         .user-post-list {
         }
       }

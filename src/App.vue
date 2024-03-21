@@ -1,7 +1,7 @@
 <template>
   <Suspense>
     <component :is="layout">
-      <router-view :key="$route.fullPath" />
+      <router-view />
       <Toast position="bottom-right" />
     </component>
   </Suspense>

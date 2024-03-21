@@ -4,6 +4,7 @@ import { user } from "./user.module";
 import { mediaType } from "./mediaType.module";
 import { post } from "./post.module";
 import { reaction } from "./reaction.module";
+import { profile } from "@/store/profile.module";
 import createModule from "./postModuleFactory";
 
 const homePost = createModule();
@@ -30,5 +31,6 @@ export default createStore({
     homePost,
     profilePost,
     singlePost,
+    profile,
   },
 });

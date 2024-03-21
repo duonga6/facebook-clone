@@ -49,7 +49,7 @@ const routes = [
         path: "photo",
         component: () =>
           import(
-            /* webpackChunkName: "profile-post" */ "@/components/Profile/ProfilePhotoComponent.vue"
+            /* webpackChunkName: "profile-photo" */ "@/components/Profile/ProfilePhotoComponent.vue"
           ),
       },
     ],
