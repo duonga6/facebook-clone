@@ -1,5 +1,5 @@
 <template>
-  <div class="post-list flex flex-col space-y-4 mt-4">
+  <div class="post-list flex flex-col mt-4">
     <PostComponent
       v-for="post in postData.posts"
       :key="post.id"

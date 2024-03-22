@@ -10,17 +10,7 @@
         </p>
         <div class="date-post">
           <div class="post-time">
-            {{
-              createdAt.getDate() +
-              " tháng " +
-              (createdAt.getMonth() + 1) +
-              " lúc " +
-              createdAt.getHours() +
-              ":" +
-              (createdAt.getMinutes() < 10
-                ? "0" + createdAt.getMinutes()
-                : createdAt.getMinutes())
-            }}
+            {{ convertDatePostDisplay(createdAt) }}
           </div>
           <div class="">.</div>
           <svg
@@ -89,6 +79,8 @@
 <script>
 import { ref } from "vue";
 import tokenService from "@/services/token.service";
+import { convertDatePostDisplay } from "@/utilities/dateUtils";
+
 export default {
   props: {
     author: {
@@ -121,6 +113,7 @@ export default {
       user,
       handleClickShowPostMore,
       handleShowEditPost,
+      convertDatePostDisplay,
     };
   },
 };

@@ -37,7 +37,7 @@ const routes = [
     children: [
       {
         name: "profile-post",
-        path: "",
+        path: "post",
         component: () =>
           import(
             /* webpackChunkName: "profile-post" */ "@/components/Profile/ProfilePostComponent.vue"

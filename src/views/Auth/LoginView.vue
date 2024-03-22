@@ -234,7 +234,7 @@
 </template>
 
 <script>
-import { computed, onMounted, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { useStore } from "vuex";
@@ -247,7 +247,6 @@ export default {
     const isShowRegister = ref(false);
     const messagesLogin = reactive([]);
     const messagesRegister = reactive([]);
-    const loggedIn = computed(() => store.state.auth.status.loggedIn);
     const isLogging = ref(false);
     const isRegistering = ref(false);
 
@@ -284,8 +283,11 @@ export default {
       store
         .dispatch("auth/login", user)
         .then(
-          () => {
-            router.push("/");
+          async () => {
+            await router.push({
+              name: "home",
+              params: null,
+            });
           },
           (error) => {
             messagesLogin.length = 0;
@@ -309,7 +311,10 @@ export default {
         .dispatch("auth/register", user)
         .then(
           () => {
-            router.push("/");
+            router.push({
+              name: "home",
+              params: null,
+            });
           },
           (error) => {
             messagesRegister.length = 0;
@@ -320,12 +325,6 @@ export default {
           isRegistering.value = false;
         });
     }
-
-    onMounted(() => {
-      if (loggedIn.value) {
-        router.push({ name: "home", params: {} });
-      }
-    });
 
     return {
       isShowRegister,

@@ -63,6 +63,36 @@ const createModule = () => ({
       }
     },
 
+    async sharePost({ commit }, payLoad) {
+      try {
+        const res = await postService.sharePost({
+          content: payLoad.data.content,
+          sharePostId: payLoad.data.sharePostId,
+        });
+
+        const postData = res.data;
+
+        postData.comment = {
+          comments: [],
+          pageSize: 5,
+          endCursor: null,
+          total: 0,
+          hasNextPage: false,
+          totalComment: 0,
+        };
+
+        postData.reaction = {
+          reactions: [],
+          userReacted: null,
+        };
+
+        commit("addPostSuccess", postData);
+
+      } catch (err) {
+        toastAlert.error(err)
+      }
+    },
+
     // #endregion
 
     // #region USER REACTION
@@ -83,7 +113,7 @@ const createModule = () => ({
     async updateUserReaction({ commit }, payLoad) {
       try {
         const res = await postReactionService.update(payLoad.id, payLoad.data);
-        commit("updateCommentReactionSuccess", {
+        commit("updateUserReactionSuccess", {
           postId: payLoad.postId,
           data: res.data,
           oldReactionId: payLoad.oldReactionId,
@@ -234,7 +264,7 @@ const createModule = () => ({
       }
     },
 
-    updateCommentReactionSuccess(state, payLoad) {
+    updateUserReactionSuccess(state, payLoad) {
       const post = state.data.find((x) => x.id == payLoad.postId);
       const newUserReaction = payLoad.data;
 
@@ -259,7 +289,6 @@ const createModule = () => ({
             total: 1
           }];
         }
-
       }
     },
 

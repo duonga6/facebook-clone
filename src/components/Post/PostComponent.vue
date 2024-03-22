@@ -101,7 +101,7 @@
           Bình luận
         </div>
       </div>
-      <div class="post-action-item action-share">
+      <div class="post-action-item action-share" @click="handleSharePost">
         <div class="post-action-icon">
           <i
             data-visualcompletion="css-img"
@@ -157,11 +157,11 @@
     </div>
   </div>
   <PostEditor
-    v-if="isShowEditPost"
+    v-if="isShowPostEditor"
     :data="post"
     @closePostEditor="onClosePostEditor"
-    :action="'Update'"
-    @submittedForm="onSubmitUpdatePost"
+    :action="actionPostEditor"
+    @submittedForm="onSubmitPostEditor"
   ></PostEditor>
 </template>
 
@@ -171,6 +171,7 @@ import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { PostUtils } from "@/store/postUtils";
+import { POST_EDITOR_TYPE } from "@/constants";
 
 export default {
   props: {
@@ -190,7 +191,8 @@ export default {
     const isLoadingComment = ref(false);
     const isLoaded = ref(false);
     const isShowReaction = ref(false);
-    const isShowEditPost = ref(false);
+    const isShowPostEditor = ref(false);
+    const actionPostEditor = ref(null);
 
     // Data variables
     const commentInputEl = ref(null);
@@ -367,51 +369,67 @@ export default {
     // POST  Edit post
 
     function onClosePostEditor() {
-      isShowEditPost.value = false;
+      isShowPostEditor.value = false;
     }
 
     function handleShowEditPost() {
-      isShowEditPost.value = true;
+      actionPostEditor.value = POST_EDITOR_TYPE.UPDATE;
+      isShowPostEditor.value = true;
     }
 
-    function onSubmitUpdatePost(data) {
-      const postMediasFilter = data.postMedias.map((item) => {
-        return {
-          id: item.id,
-          title: item.title,
-          mediaTypeId: item.mediaTypeId,
-          url: item.url,
-        };
-      });
+    function handleSharePost() {
+      actionPostEditor.value = POST_EDITOR_TYPE.SHARE;
+      isShowPostEditor.value = true;
+    }
 
-      const currentPostMediasId = props.post.postMedias.map((x) => x.id);
-      const newPostMediasId = postMediasFilter.map((x) => x.id);
-
-      const postMediasRemove = currentPostMediasId.filter(
-        (x) => !newPostMediasId.includes(x)
-      );
-
-      const postMediasAdd = postMediasFilter.filter(
-        (x) => !currentPostMediasId.includes(x.id)
-      );
-
-      const updatePostData = {
-        content: data.content,
-        mediasDelete: postMediasRemove,
-        mediasAdd: postMediasAdd,
-      };
-
-      store
-        .dispatch(`${props.storeName}/updatePost`, {
-          id: props.post.id,
-          data: updatePostData,
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-        .finally(() => {
-          isShowEditPost.value = false;
+    function onSubmitPostEditor(payLoad) {
+      if (payLoad.action == POST_EDITOR_TYPE.SHARE) {
+        store
+          .dispatch("homePost/sharePost", {
+            data: payLoad.data,
+          })
+          .finally(() => {
+            isShowPostEditor.value = false;
+          });
+      } else {
+        const postMediasFilter = payLoad.data.postMedias.map((item) => {
+          return {
+            id: item.id,
+            title: item.title,
+            mediaTypeId: item.mediaTypeId,
+            url: item.url,
+          };
         });
+
+        const currentPostMediasId = props.post.postMedias.map((x) => x.id);
+        const newPostMediasId = postMediasFilter.map((x) => x.id);
+
+        const postMediasRemove = currentPostMediasId.filter(
+          (x) => !newPostMediasId.includes(x)
+        );
+
+        const postMediasAdd = postMediasFilter.filter(
+          (x) => !currentPostMediasId.includes(x.id)
+        );
+
+        const updatePostData = {
+          content: payLoad.data.content,
+          mediasDelete: postMediasRemove,
+          mediasAdd: postMediasAdd,
+        };
+
+        store
+          .dispatch(`${props.storeName}/updatePost`, {
+            id: props.post.id,
+            data: updatePostData,
+          })
+          .catch((err) => {
+            console.log(err);
+          })
+          .finally(() => {
+            isShowPostEditor.value = false;
+          });
+      }
     }
 
     // Post media process
@@ -432,7 +450,7 @@ export default {
       isLoaded,
       isShowReaction,
       isLoadingComment,
-      isShowEditPost,
+      isShowPostEditor,
       postDate,
       userReacted,
       postReactions,
@@ -442,6 +460,7 @@ export default {
       commentShowOverviewCount,
       commentShowBelow,
       postMediaShow,
+      actionPostEditor,
       onHoverReaction,
       onCloseReaction,
       handleSelectReaction,
@@ -449,11 +468,12 @@ export default {
       onCommentChange,
       handleClickShowMoreComment,
       createComment,
-      onSubmitUpdatePost,
+      onSubmitPostEditor,
       handleClickCreateComment,
       generateClassMedias,
       onClosePostEditor,
       handleShowEditPost,
+      handleSharePost,
     };
   },
 };
@@ -461,10 +481,10 @@ export default {
 
 <style lang="scss" scoped>
 .post-container {
-  @apply bg-white py-2.5 pb-0 rounded-lg border border-gray-200;
+  @apply bg-white py-2.5 pb-0 rounded-lg border border-gray-200 mb-4;
 
   .post-reaction-comment {
-    @apply px-4 py-3 flex justify-between items-center;
+    @apply mx-4 py-3 flex justify-between items-center border-b;
     .post-reaction {
       @apply flex items-center;
 
@@ -488,7 +508,7 @@ export default {
   }
 
   .post-action {
-    @apply border-t mx-4 py-1 border-gray-300;
+    @apply mx-4 py-1;
     @apply flex justify-around;
     .post-action-item {
       @apply flex-1 flex items-center justify-center py-0.5 rounded-lg  cursor-pointer text-gray-600 hover:bg-gray-100 transition-all relative;

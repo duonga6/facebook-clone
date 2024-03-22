@@ -42,51 +42,65 @@
           </drop-down>
         </div>
       </div>
-      <div class="post-content">
-        <textarea
-          class="post-content__text"
-          :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
-          v-model="postData.content"
-        />
-      </div>
-      <div class="post-media-container" v-if="postData.postMedias.length > 0">
-        <ul
-          class="post-media-list grid gap-1"
-          :class="generateClassMedias(postData.postMedias.length)"
-        >
-          <li
-            v-for="(image, index) in postData.postMedias"
-            :key="index"
-            class="post-media-item"
-            :class="generateClassMedias(postData.postMedias.length, index)"
+      <template v-if="action == POST_EDITOR_TYPE.SHARE">
+        <div class="post-content">
+          <textarea
+            class="post-content__text"
+            :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
+            v-model="postData.content"
+          />
+        </div>
+        <PostShare :post="data"></PostShare>
+      </template>
+      <template v-else>
+        <div class="post-content">
+          <textarea
+            class="post-content__text"
+            :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
+            v-model="postData.content"
+          />
+        </div>
+        <div class="post-media-container" v-if="postData.postMedias.length > 0">
+          <ul
+            class="post-media-list grid gap-1"
+            :class="generateClassMedias(postData.postMedias.length)"
           >
-            <div class="post-media-type">
-              <template v-if="image.mediaTypeId == 2">
-                <img class="image" :src="image.showUrl" alt="" />
-              </template>
-              <template v-else>
-                <video class="video" :src="image.showUrl" controls></video>
-              </template>
-              <div class="upload-image uploading" v-if="image.uploading">
-                <loading-component :classCss="'w-10 h-10'"></loading-component>
+            <li
+              v-for="(image, index) in postData.postMedias"
+              :key="index"
+              class="post-media-item"
+              :class="generateClassMedias(postData.postMedias.length, index)"
+            >
+              <div class="post-media-type">
+                <template v-if="image.mediaTypeId == 2">
+                  <img class="image" :src="image.showUrl" alt="" />
+                </template>
+                <template v-else>
+                  <video class="video" :src="image.showUrl" controls></video>
+                </template>
+                <div class="upload-image uploading" v-if="image.uploading">
+                  <loading-component
+                    :classCss="'w-10 h-10'"
+                  ></loading-component>
+                </div>
+                <div
+                  class="upload-image upload-fail"
+                  v-if="!image.uploading && !image.uploaded"
+                >
+                  <i class="upload-fail-icon pi pi-exclamation-triangle"></i>
+                </div>
+                <span
+                  class="remove-uploaded-image"
+                  @click="deleteUploadedImage(image.id)"
+                >
+                  <i class="pi pi-times remove-icon"></i>
+                </span>
               </div>
-              <div
-                class="upload-image upload-fail"
-                v-if="!image.uploading && !image.uploaded"
-              >
-                <i class="upload-fail-icon pi pi-exclamation-triangle"></i>
-              </div>
-              <span
-                class="remove-uploaded-image"
-                @click="deleteUploadedImage(image.id)"
-              >
-                <i class="pi pi-times remove-icon"></i>
-              </span>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <drag-file @DragedFile="onDragedFile"></drag-file>
+            </li>
+          </ul>
+        </div>
+        <drag-file @DragedFile="onDragedFile"></drag-file>
+      </template>
       <div class="add-post-btn p-4">
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
@@ -95,7 +109,9 @@
           "
           :disabled="!isCanPost"
         >
-          {{ action == "Create" ? "Đăng" : "Lưu" }}
+          <span v-if="action == POST_EDITOR_TYPE.CREATE"> Đăng </span>
+          <span v-if="action == POST_EDITOR_TYPE.UPDATE"> Lưu </span>
+          <span v-if="action == POST_EDITOR_TYPE.SHARE"> Chia sẻ </span>
         </button>
       </div>
     </form>
@@ -104,37 +120,59 @@
 
 <script>
 import { computed, reactive, ref } from "vue";
-import { useStore } from "vuex";
 import DragFile from "../Utils/DragFileComponent.vue";
 import LoadingComponent from "../Utils/LoadingComponent.vue";
 import { uploadFileService } from "@/services/upload-file.service";
 import { generateUUID } from "@/utilities";
+import tokenService from "@/services/token.service";
+import { POST_EDITOR_TYPE } from "@/constants";
 export default {
   components: { DragFile, LoadingComponent },
   props: {
     data: {
-      content: {
-        type: String,
-      },
-      postMedias: {
-        type: Array,
-      },
-      default: {
-        content: "",
-        postMedias: [],
-      },
+      type: Object,
     },
     action: {
-      type: String,
-      default: "Create",
+      type: Number,
+      default: POST_EDITOR_TYPE.CREATE,
     },
   },
   emits: ["closePostEditor", "submittedForm"],
   setup(props, { emit }) {
-    const store = useStore();
+    const user = tokenService.getUser();
+    const postEditorType = { ...props }.action;
+
+    const postData = reactive({
+      content: null,
+      postMedias: [],
+      sharePostId: null,
+      sharePostData: null,
+    });
+
+    switch (postEditorType) {
+      case POST_EDITOR_TYPE.UPDATE:
+        postData.content = { ...props.data }.content;
+        postData.postMedias = props.data.postMedias.map((item) => {
+          return {
+            ...item,
+            uploading: false,
+            uploaded: true,
+            showUrl: item.url,
+          };
+        });
+        break;
+      case POST_EDITOR_TYPE.SHARE:
+        postData.sharePostId = { ...props.data }.id;
+        postData.sharePostData = { ...props.data };
+        break;
+    }
 
     const isCanPost = computed(() => {
-      if (!postData.content && postData.postMedias.length == 0) {
+      if (
+        !postData.content &&
+        postData.postMedias.length == 0 &&
+        props.action != POST_EDITOR_TYPE.SHARE
+      ) {
         return false;
       }
 
@@ -143,18 +181,6 @@ export default {
       }
 
       return true;
-    });
-
-    const postData = reactive({
-      content: props.data.content,
-      postMedias: props.data.postMedias.map((item) => {
-        return {
-          ...item,
-          uploading: false,
-          uploaded: true,
-          showUrl: item.url,
-        };
-      }),
     });
 
     const dataAccessRange = ref([
@@ -181,7 +207,10 @@ export default {
     }
 
     function handleSubmitForm() {
-      emit("submittedForm", postData);
+      emit("submittedForm", {
+        action: postEditorType,
+        data: postData,
+      });
     }
 
     function onDragedFile(files) {
@@ -233,11 +262,12 @@ export default {
     }
 
     return {
-      user: computed(() => store.getters["user/getUser"]),
+      user,
       postData,
       selectedAccessRange,
       isCanPost,
       dataAccessRange,
+      POST_EDITOR_TYPE,
       deleteUploadedImage,
       onDragedFile,
       generateClassMedias,

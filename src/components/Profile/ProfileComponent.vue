@@ -173,7 +173,14 @@
           <div class="user-images user-data-section">
             <div class="user-data-title">
               <div class="user-data-heading">Ảnh</div>
-              <router-link to="/" class="user-data-button"
+              <router-link
+                :to="{
+                  name: 'profile-photo',
+                  params: {
+                    id: userId,
+                  },
+                }"
+                class="user-data-button"
                 >Xem tất cả ảnh</router-link
               >
             </div>
@@ -190,9 +197,7 @@
           <div class="user-friends user-data-section">
             <div class="user-data-title">
               <div class="user-data-heading">Bạn bè</div>
-              <router-link to="/" class="user-data-button"
-                >Xem tất cả bạn bè</router-link
-              >
+              <div class="user-data-button">Xem tất cả bạn bè</div>
             </div>
             <ul class="user-friend-list">
               <li

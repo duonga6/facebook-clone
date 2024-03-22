@@ -17,13 +17,29 @@
     <ul class="profile-friend-list">
       <li class="friend-item" v-for="friend in friendShow" :key="friend.id">
         <div class="friend-item-container">
-          <router-link to="" class="friend-img">
+          <router-link
+            :to="{
+              name: 'profile-post',
+              params: {
+                id: friend.user.id,
+              },
+            }"
+            class="friend-img"
+          >
             <img :src="friend.user.avatarUrl" alt="" />
           </router-link>
           <div class="friend-name">
-            <router-link to="">{{
-              friend.user.firstName + " " + friend.user.lastName
-            }}</router-link>
+            <router-link
+              :to="{
+                name: 'profile-post',
+                params: {
+                  id: friend.user.id,
+                },
+              }"
+              >{{
+                friend.user.firstName + " " + friend.user.lastName
+              }}</router-link
+            >
           </div>
           <div class="friend-more">
             <i class="friend-more-icon pi pi-ellipsis-h"></i>

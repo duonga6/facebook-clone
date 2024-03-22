@@ -77,3 +77,41 @@ export function convertDateDisplay(date) {
     return "1 phút";
   }
 }
+
+export function convertDatePostDisplay(date) {
+  const now = new Date();
+  const targetDate = date;
+
+  const miliseconds = now - targetDate;
+
+  const minute = 1000 * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const week = day * 7;
+  const month = day * 30;
+  const year = month * 12;
+
+  if (miliseconds / year > 1) {
+    return parseInt(miliseconds / year) + " năm";
+  } else if (miliseconds / week > 1) {
+    return (
+      targetDate.getDate() +
+      " tháng " +
+      (targetDate.getMonth() + 1) +
+      " lúc " +
+      targetDate.getHours() +
+      ":" +
+      (targetDate.getMinutes() < 10
+        ? "0" + targetDate.getMinutes()
+        : targetDate.getMinutes())
+    );
+  } else if (miliseconds / day > 1) {
+    return parseInt(miliseconds / day) + " ngày";
+  } else if (miliseconds / hour > 1) {
+    return parseInt(miliseconds / hour) + " giờ";
+  } else if (miliseconds / minute > 1) {
+    return parseInt(miliseconds / minute) + " phút";
+  } else {
+    return "1 phút";
+  }
+}

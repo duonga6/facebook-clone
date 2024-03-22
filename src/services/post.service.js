@@ -22,4 +22,7 @@ export const postService = {
   getById(id) {
     return api.get(`${BASE_URL}/${id}`);
   },
+  sharePost(data) {
+    return api.post(`${BASE_URL}/Share`, data);
+  },
 };

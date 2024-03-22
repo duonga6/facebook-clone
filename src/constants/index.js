@@ -25,3 +25,9 @@ export const FRIENDSHIP_STATUS = {
   NOT_FRIEND: 4,
   SELF: 5,
 };
+
+export const POST_EDITOR_TYPE = {
+  CREATE: 1,
+  UPDATE: 2,
+  SHARE: 3,
+};
