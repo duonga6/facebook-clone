@@ -52,6 +52,14 @@ const routes = [
             /* webpackChunkName: "profile-photo" */ "@/components/Profile/ProfilePhotoComponent.vue"
           ),
       },
+      {
+        name: "profile-friend",
+        path: "friends",
+        component: () =>
+          import(
+            /* webpackChunkName: "profile-friend" */ "@/components/Profile/ProfileFriendComponent.vue"
+          ),
+      },
     ],
   },
   {

@@ -13,11 +13,7 @@
           class="navigation-item"
         >
           <div class="navigation-img">
-            <img
-              class=""
-              src="https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png"
-              alt=""
-            />
+            <img class="" :src="userData.avatarUrl" alt="" />
           </div>
           <div class="navigation-text">
             {{ userData.firstName + " " + userData.lastName }}

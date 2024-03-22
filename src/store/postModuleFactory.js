@@ -204,6 +204,7 @@ const createModule = () => ({
 
     reset(state) {
       state.data = [];
+      state._isFetched = false;
     },
 
     // #endregion

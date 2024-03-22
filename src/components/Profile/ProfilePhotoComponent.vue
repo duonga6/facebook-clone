@@ -11,7 +11,7 @@
     <ul class="profile-photo-list grid grid-cols-6 gap-2">
       <li
         class="profile-photo-item col-span-1"
-        v-for="media in photoData"
+        v-for="media in photoData.data"
         :key="media.id"
       >
         <router-link
@@ -37,7 +37,7 @@
 import tokenService from "@/services/token.service";
 import { useRoute } from "vue-router";
 import { useStore } from "vuex";
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 export default {
   setup() {
     const store = useStore();
@@ -45,9 +45,30 @@ export default {
     const loggedUserId = tokenService.getUser().id;
     const userId = route.params.id;
 
-    const photoData = computed(() => store.getters["profile/getPhotos"]);
+    const photoData = computed(() => store.getters["profile/getPhoto"]);
 
-    console.log(photoData.value);
+    function handleScrollWindow() {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.offsetHeight
+      ) {
+        if (
+          photoData.value.pageNumber != 0 &&
+          photoData.value.pageSize * photoData.value.pageNumber <
+            photoData.value.total
+        ) {
+          store.dispatch("profile/getPhoto");
+        }
+      }
+    }
+
+    onMounted(() => {
+      window.addEventListener("scroll", handleScrollWindow);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScrollWindow);
+    });
 
     return {
       loggedUserId,
@@ -60,7 +81,7 @@ export default {
 
 <style lang="scss" scoped>
 .profile-photo-container {
-  @apply p-4 bg-white border border-gray-200 rounded-lg;
+  @apply p-4 bg-white border border-gray-200 rounded-lg mb-4;
   .profile-photo-header {
     @apply flex items-center justify-between;
     .header-title {
@@ -73,8 +94,9 @@ export default {
     }
   }
   .profile-photo-list {
+    @apply mt-4;
     .profile-photo-item {
-      @apply aspect-square;
+      @apply aspect-square rounded-lg overflow-hidden;
       .profile-photo-link {
         @apply w-full h-full;
         .profile-photo-img {

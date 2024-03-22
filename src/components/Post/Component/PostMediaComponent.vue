@@ -25,6 +25,10 @@
         <template v-else-if="media.mediaTypeId == 3">
           <video class="video" :src="media.url" controls></video>
         </template>
+        <div class="more-media" v-if="data.length > 4 && index == 3">
+          <i class="more-media-icon pi pi-plus"></i>
+          <span class="more-media-text">{{ data.length - 4 }}</span>
+        </div>
       </router-link>
     </div>
   </div>
@@ -69,12 +73,25 @@ export default {
 .post-media {
   .post-media-list {
     .post-media-item {
+      @apply relative;
+
       .image {
         @apply w-full h-62 object-cover cursor-pointer;
       }
 
       .video {
         @apply w-full h-full object-cover;
+      }
+
+      .more-media {
+        @apply absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center space-x-1 bg-black bg-opacity-50;
+        .more-media-icon {
+          @apply text-md font-bold text-white mt-1;
+        }
+
+        .more-media-text {
+          @apply text-3xl font-semibold text-white;
+        }
       }
     }
   }

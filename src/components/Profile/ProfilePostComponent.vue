@@ -7,6 +7,9 @@
       :storeName="'profilePost'"
     ></PostComponent>
   </div>
+  <div class="empty-post" v-if="!postData.posts.length && postData._isFetched">
+    Chưa có bài viết nào
+  </div>
 </template>
 <script>
 import { computed, onMounted, onUnmounted, reactive } from "vue";
@@ -64,3 +67,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.empty-post {
+  @apply rounded-lg border border-gray-200 bg-white text-17 font-semibold text-center py-4;
+}
+</style>
