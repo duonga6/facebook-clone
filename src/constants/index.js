@@ -31,3 +31,8 @@ export const POST_EDITOR_TYPE = {
   UPDATE: 2,
   SHARE: 3,
 };
+
+export const NOTIFICATION_TYPE = {
+  POST_REACTION: "POST_REACTION",
+  POST_COMMENT: "POST_COMMENT",
+};

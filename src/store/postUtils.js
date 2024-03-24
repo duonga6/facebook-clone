@@ -79,9 +79,11 @@ export const PostUtils = {
             3
           );
           const totalCommentCount = await postCommentService.getCount(post.id);
-
           post.comment = {
-            comments: commentsRes.data,
+            comments: commentsRes.data.map((item) => {
+              item.pathTest = item.pathTest.split(";");
+              return item;
+            }),
             pageSize: 5,
             endCursor: commentsRes.endCursor,
             total: commentsRes.totalItems,

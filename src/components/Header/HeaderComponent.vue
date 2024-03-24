@@ -173,17 +173,7 @@
         </li>
         <li>
           <div class="nav-header-right">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="currentColor"
-              class="text-gray-950"
-            >
-              <path
-                d="M3 9.5a9 9 0 1 1 18 0v2.927c0 1.69.475 3.345 1.37 4.778a1.5 1.5 0 0 1-1.272 2.295h-4.625a4.5 4.5 0 0 1-8.946 0H2.902a1.5 1.5 0 0 1-1.272-2.295A9.01 9.01 0 0 0 3 12.43V9.5zm6.55 10a2.5 2.5 0 0 0 4.9 0h-4.9z"
-              ></path>
-            </svg>
+            <notification></notification>
           </div>
         </li>
         <li>
@@ -262,14 +252,18 @@
 </template>
 
 <script>
-import { computed, ref } from "vue";
-import { useStore } from "vuex";
+import { ref } from "vue";
 import eventBus from "@/common/EventBus";
+import tokenService from "@/services/token.service";
+import Notification from "./NotificationComponent.vue";
+
 export default {
+  components: {
+    Notification,
+  },
   setup() {
     const isShowUserMenu = ref(false);
-    const store = useStore();
-
+    const user = tokenService.getUser();
     function handleToggleUserMenu() {
       isShowUserMenu.value = !isShowUserMenu.value;
     }
@@ -279,7 +273,7 @@ export default {
     }
 
     return {
-      user: computed(() => store.getters["user/getUser"]),
+      user,
       isShowUserMenu,
       handleToggleUserMenu,
       handleLogout,

@@ -27,9 +27,9 @@ export default {
     store.dispatch("mediaType/getAll");
     store.dispatch("reaction/getDefaultReaction");
 
-    function logOut() {
+    async function logOut() {
+      await router.push({ name: "login", params: {} });
       store.dispatch("logout");
-      router.push({ name: "login", params: {} });
     }
 
     onMounted(() => {

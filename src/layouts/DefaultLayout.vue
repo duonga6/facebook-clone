@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import HeaderComponent from "@/components/Layout/HeaderComponent.vue";
+import HeaderComponent from "@/components/Header/HeaderComponent.vue";
 import { useStore } from "vuex";
 export default {
   components: { HeaderComponent },

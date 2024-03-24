@@ -369,6 +369,10 @@ const createModule = () => ({
       const path = payLoad.path;
       const postId = payLoad.postId;
       const commentData = payLoad.data;
+      commentData.data = commentData.data.map((item) => {
+        item.pathTest = item.pathTest.split(";");
+        return item;
+      })
 
       const post = state.data.find(x => x.id == postId);
 
