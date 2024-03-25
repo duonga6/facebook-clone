@@ -6,13 +6,7 @@ import { postService } from "@/services/post.service";
 import { userService } from "@/services/user.service";
 
 export const PostUtils = {
-  async getCommentChild(
-    postId,
-    pageSize,
-    endCursor = null,
-    parentId = null,
-    path = null
-  ) {
+  async getCommentChild(postId, pageSize, endCursor = null, parentId = null) {
     const commentsRes = await postCommentService.getCursor(
       postId,
       pageSize,
@@ -26,11 +20,6 @@ export const PostUtils = {
         const childCommentCount = await postCommentService.getChildCount(
           comment.id
         );
-        if (!path) {
-          comment.path = [comment.id];
-        } else {
-          comment.path = [...path, comment.id];
-        }
 
         comment.reaction = reaction.data;
 
@@ -80,10 +69,7 @@ export const PostUtils = {
           );
           const totalCommentCount = await postCommentService.getCount(post.id);
           post.comment = {
-            comments: commentsRes.data.map((item) => {
-              item.pathTest = item.pathTest.split(";");
-              return item;
-            }),
+            comments: commentsRes.data,
             pageSize: 5,
             endCursor: commentsRes.endCursor,
             total: commentsRes.totalItems,

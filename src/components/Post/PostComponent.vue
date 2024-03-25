@@ -484,7 +484,7 @@ export default {
   @apply bg-white py-2.5 pb-0 rounded-lg border border-gray-200 mb-4;
 
   .post-reaction-comment {
-    @apply mx-4 py-3 flex justify-between items-center border-b;
+    @apply mx-4 py-3 flex justify-between items-center;
     .post-reaction {
       @apply flex items-center;
 
@@ -508,7 +508,7 @@ export default {
   }
 
   .post-action {
-    @apply mx-4 py-1;
+    @apply mx-4 py-1 border-t border-b;
     @apply flex justify-around;
     .post-action-item {
       @apply flex-1 flex items-center justify-center py-0.5 rounded-lg  cursor-pointer text-gray-600 hover:bg-gray-100 transition-all relative;

@@ -86,6 +86,6 @@ export default {
 
 <style lang="scss" scoped>
 .post-comment {
-  @apply mx-4  border-t;
+  @apply mx-4;
 }
 </style>

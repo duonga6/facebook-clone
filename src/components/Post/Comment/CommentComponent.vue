@@ -393,14 +393,18 @@ export default {
     function handleCreateReplyComment() {
       if (commentInput.value) {
         if (
-          store.dispatch(`${props.storeName}/createComment`, {
-            data: {
-              content: commentInput.value,
-              postId: props.comment.postId,
-              parentCommentId: props.comment.id,
-            },
-            path: props.comment.path,
-          })
+          store
+            .dispatch(`${props.storeName}/createComment`, {
+              data: {
+                content: commentInput.value,
+                postId: props.comment.postId,
+                parentCommentId: props.comment.id,
+              },
+              path: props.comment.path,
+            })
+            .finally(() => {
+              isShowReplyComment.value = false;
+            })
         ) {
           commentInput.value = null;
         }

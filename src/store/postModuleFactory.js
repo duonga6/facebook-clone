@@ -346,8 +346,9 @@ const createModule = () => ({
             commentParent = commentParent.childComment.comments.find(x => x.id == path[i]);
           }
 
-          // Tạo path cho comment này
-          newComment.path = [...path, newComment.id];
+          if (commentParent.childComment.comments.length == 0) {
+            commentParent.childComment.endCursor = newComment.createdAt;
+          }
 
           commentParent.childComment.comments = [
             ...commentParent.childComment.comments,
@@ -355,7 +356,6 @@ const createModule = () => ({
           ];
           commentParent.childComment.total++;
         } else {
-          newComment.path = [newComment.id];
           post.comment.comments = [
             ...post.comment.comments,
             newComment
@@ -369,10 +369,6 @@ const createModule = () => ({
       const path = payLoad.path;
       const postId = payLoad.postId;
       const commentData = payLoad.data;
-      commentData.data = commentData.data.map((item) => {
-        item.pathTest = item.pathTest.split(";");
-        return item;
-      })
 
       const post = state.data.find(x => x.id == postId);
 

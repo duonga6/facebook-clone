@@ -10,7 +10,7 @@
       class="post-main"
       :class="isMediaExist ? 'col-span-2' : 'col-start-2 col-span-1 rounded-lg'"
     >
-      <div class="post-header">
+      <!-- <div class="post-header">
         <div class="post-author">
           <div class="author-img">
             <img :src="post.user.avatarUrl" alt="" />
@@ -94,8 +94,15 @@
             </li>
           </ul>
         </div>
-      </div>
-      <div class="post-content">{{ post.content }}</div>
+      </div> -->
+      <PostHeader
+        :author="post.user"
+        :createdAt="new Date(post.createdAt)"
+        @onClickEditPost="handleShowEditPost"
+      ></PostHeader>
+      <PostContent :data="post.content"></PostContent>
+      <PostShare v-if="post.sharePost" :post="post.sharePost"></PostShare>
+
       <div
         class="post-reaction-comment"
         v-if="postReactions.reactions.length > 0 || post.totalComment"

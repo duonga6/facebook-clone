@@ -1,27 +1,23 @@
 import api from "./api";
+const BASE_URL = "/CommentReactions";
 
 export const commentReactionService = {
   create(data) {
-    return api.post("CommentReactions", data).catch((err) => {
-      throw new Error(`Error post comment service ${err}`);
-    });
+    return api.post(`${BASE_URL}`, data);
   },
 
   delete(id) {
-    return api.delete("CommentReactions/" + id).catch((err) => {
-      throw new Error(`Error post comment service ${err}`);
-    });
+    return api.delete(`${BASE_URL}/` + id);
   },
 
   update(id, data) {
-    return api.put("CommentReactions/" + id, data).catch((err) => {
-      throw new Error(`Error post comment service ${err}`);
-    });
+    return api.put(`${BASE_URL}/` + id, data);
   },
 
   getOverview(id) {
-    return api.get(`CommentReactions/${id}/GetOverview`).catch((err) => {
-      throw new Error(`Error post comment service ${err}`);
-    });
+    return api.get(`${BASE_URL}/${id}/GetOverview`);
+  },
+  getById(id) {
+    return api.get(`${BASE_URL}/${id}`);
   },
 };

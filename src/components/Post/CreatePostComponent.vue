@@ -93,8 +93,8 @@ export default {
       isShowCreatePost.value = false;
     }
 
-    function onSubmittedForm(postData) {
-      const postMediaFilter = [...postData.postMedias]
+    function onSubmittedForm(payLoad) {
+      const postMediaFilter = [...payLoad.data.postMedias]
         .filter((x) => x.uploaded)
         .map((x) => {
           return {
@@ -106,7 +106,7 @@ export default {
 
       store
         .dispatch("homePost/createPost", {
-          content: postData.content,
+          content: payLoad.data.content,
           postMedias: postMediaFilter,
         })
         .then(() => {

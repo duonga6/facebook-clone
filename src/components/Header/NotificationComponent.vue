@@ -44,6 +44,8 @@ import { reactive, ref } from "vue";
 import { notificatonService } from "@/services/notification.service";
 import { convertDateDisplay } from "@/utilities/dateUtils";
 import { NOTIFICATION_TYPE } from "@/constants";
+import { toastAlert } from "@/utilities/toastAlert";
+import { postCommentService } from "@/services/post-comment.service";
 
 export default {
   async setup() {
@@ -79,32 +81,79 @@ async function getNotifications(notiData) {
     getNext: true,
   });
 
-  res.data = res.data.map((item) => {
-    const jsonDetail = JSON.parse(item.jsonDetail);
-    switch (item.notificationType) {
-      case NOTIFICATION_TYPE.POST_REACTION:
-        item.router = {
-          name: "post-detail",
-          params: {
-            id: jsonDetail.PostId,
-          },
-        };
-        break;
-      case NOTIFICATION_TYPE.POST_COMMENT:
-        item.router = {
-          name: "post-detail",
-          params: {
-            id: jsonDetail.PostId,
-          },
-          query: {
-            commentId: jsonDetail.Id,
-          },
-        };
-        break;
-    }
+  res.data = await Promise.all(
+    res.data.map(async (item) => {
+      item.jsonDetail = JSON.parse(item.jsonDetail);
+      switch (item.notificationType) {
+        case NOTIFICATION_TYPE.POST_REACTION:
+          item.router = {
+            name: "post-detail",
+            params: {
+              id: item.jsonDetail.PostId,
+            },
+          };
+          break;
+        case NOTIFICATION_TYPE.POST_COMMENT:
+          item.router = {
+            name: "post-detail",
+            params: {
+              id: item.jsonDetail.PostId,
+            },
+            query: {
+              commentId: item.jsonDetail.Id,
+            },
+          };
+          break;
 
-    return item;
-  });
+        case NOTIFICATION_TYPE.COMMENT_REACTION:
+          try {
+            const comment = await postCommentService.getById(
+              item.jsonDetail.CommentId
+            );
+            console.log(comment);
+            item.router = {
+              name: "post-detail",
+              params: {
+                id: comment.data.postId,
+              },
+              query: {
+                commentId: item.jsonDetail.CommentId,
+              },
+            };
+          } catch (err) {
+            toastAlert.error(err);
+          }
+
+          break;
+        case NOTIFICATION_TYPE.CREATE_POST:
+          item.router = {
+            name: "post-detail",
+            params: {
+              id: item.jsonDetail.Id,
+            },
+          };
+          break;
+        case NOTIFICATION_TYPE.SHARE_POST:
+          item.router = {
+            name: "post-detail",
+            params: {
+              id: item.jsonDetail.Id,
+            },
+          };
+          break;
+        case NOTIFICATION_TYPE.FRIEND_REQUEST:
+          item.router = {
+            name: "friend-request",
+            query: {
+              id: item.jsonDetail.Id,
+            },
+          };
+          break;
+      }
+
+      return item;
+    })
+  );
 
   console.log(res);
 
@@ -146,7 +195,7 @@ async function getNotifications(notiData) {
         }
 
         .notify-content {
-          @apply w-auto flex flex-col;
+          @apply flex-1 flex flex-col;
 
           .notify-text {
             @apply text-15 leading-18;
