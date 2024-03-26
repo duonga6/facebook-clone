@@ -182,10 +182,7 @@
         <li>
           <div class="navigation-item">
             <div class="navigation-img">
-              <img
-                src="https://scontent-hkg1-2.xx.fbcdn.net/v/t1.6435-9/118473811_924398421381823_1175556635789774528_n.jpg?stp=c19.0.50.50a_cp0_dst-jpg_p50x50&_nc_cat=104&ccb=1-7&_nc_sid=f2fd11&_nc_eui2=AeEnUmAH4ofp7d2xNu9GWt6zHdapBAUkRNsd1qkEBSRE27wWru_E0lHlYwvKDzsyOrvqfbXmweQKfJ2Ieu-Z0zG4&_nc_ohc=NRjLBnlqc1wAX8JaiFi&_nc_ht=scontent-hkg1-2.xx&oh=00_AfAa_p69OY_VrSb2F48-WS-khRFEpPGWZ_H21qoGbD9rhw&oe=65D1F74F"
-                alt=""
-              />
+              <img src="" alt="" />
             </div>
             <div class="navigation-text">
               Chia sẻ kiến thức lập trình - RHP Team
@@ -195,10 +192,7 @@
         <li>
           <div class="navigation-item">
             <div class="navigation-img">
-              <img
-                src="https://scontent-hkg1-1.xx.fbcdn.net/v/t1.18169-9/1483207_10150001784124944_240076833_n.png?stp=cp0_dst-png_p50x50&_nc_cat=1&ccb=1-7&_nc_sid=abdf32&_nc_eui2=AeFXPPojlTuwBQRNcBR7AAOdQif8GfH4WC9CJ_wZ8fhYL_-9rkxhkIGhVQIZqpbHwEqJf-QS6naEddxuBTkl33lP&_nc_ohc=GMdzM6dw-F0AX_m7YPe&_nc_ht=scontent-hkg1-1.xx&oh=00_AfB2AZ2tB1goapXpT3LvQ5eeJ3Il7fp5G5saqQKCLkKvkA&oe=65D1F847"
-                alt=""
-              />
+              <img src="" alt="" />
             </div>
             <div class="navigation-text">K15CNTT2_FIT-HaUI</div>
           </div>

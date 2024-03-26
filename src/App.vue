@@ -8,13 +8,14 @@
 </template>
 
 <script>
-import { computed, onBeforeMount, onMounted } from "vue";
+/* eslint-disable */
+import { computed, onBeforeMount, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { DEFAULT_LAYOUT } from "@/constants";
 import { useStore } from "vuex";
 import EventBus from "@/common/EventBus";
 import { useToast } from "primevue/usetoast";
 import Toast from "primevue/toast";
+import { DEFAULT_LAYOUT } from "./constants";
 
 export default {
   components: { Toast },
@@ -23,6 +24,12 @@ export default {
     const router = useRouter();
     const store = useStore();
     const toast = useToast();
+
+    const layoutReady = ref(false);
+    const layout = computed(() => {
+      const layoutName = route.meta.layout || DEFAULT_LAYOUT;
+      return layoutName + "-layout";
+    });
 
     store.dispatch("mediaType/getAll");
     store.dispatch("reaction/getDefaultReaction");
@@ -53,7 +60,8 @@ export default {
     });
 
     return {
-      layout: computed(() => (route.meta.layout || DEFAULT_LAYOUT) + "-layout"),
+      layout,
+      layoutReady,
     };
   },
 };

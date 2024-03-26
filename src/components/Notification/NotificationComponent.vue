@@ -37,6 +37,7 @@
       </div>
     </div>
   </div>
+  <NotificationAlert></NotificationAlert>
 </template>
 
 <script>
@@ -46,8 +47,12 @@ import { convertDateDisplay } from "@/utilities/dateUtils";
 import { NOTIFICATION_TYPE } from "@/constants";
 import { toastAlert } from "@/utilities/toastAlert";
 import { postCommentService } from "@/services/post-comment.service";
+import NotificationAlert from "@/components/Notification/NotificationAlertComponent.vue";
 
 export default {
+  components: {
+    NotificationAlert,
+  },
   async setup() {
     const isShowNotify = ref(false);
 
@@ -75,92 +80,96 @@ export default {
 };
 
 async function getNotifications(notiData) {
-  const res = await notificatonService.get({
-    pageSize: notiData.pageSize,
-    endCursor: notiData.endCursor,
-    getNext: true,
-  });
+  try {
+    const res = await notificatonService.get({
+      pageSize: notiData.pageSize,
+      endCursor: notiData.endCursor,
+      getNext: true,
+    });
 
-  res.data = await Promise.all(
-    res.data.map(async (item) => {
-      item.jsonDetail = JSON.parse(item.jsonDetail);
-      switch (item.notificationType) {
-        case NOTIFICATION_TYPE.POST_REACTION:
-          item.router = {
-            name: "post-detail",
-            params: {
-              id: item.jsonDetail.PostId,
-            },
-          };
-          break;
-        case NOTIFICATION_TYPE.POST_COMMENT:
-          item.router = {
-            name: "post-detail",
-            params: {
-              id: item.jsonDetail.PostId,
-            },
-            query: {
-              commentId: item.jsonDetail.Id,
-            },
-          };
-          break;
-
-        case NOTIFICATION_TYPE.COMMENT_REACTION:
-          try {
-            const comment = await postCommentService.getById(
-              item.jsonDetail.CommentId
-            );
-            console.log(comment);
+    res.data = await Promise.all(
+      res.data.map(async (item) => {
+        item.jsonDetail = JSON.parse(item.jsonDetail);
+        switch (item.notificationType) {
+          case NOTIFICATION_TYPE.POST_REACTION:
             item.router = {
               name: "post-detail",
               params: {
-                id: comment.data.postId,
-              },
-              query: {
-                commentId: item.jsonDetail.CommentId,
+                id: item.jsonDetail.PostId,
               },
             };
-          } catch (err) {
-            toastAlert.error(err);
-          }
+            break;
+          case NOTIFICATION_TYPE.POST_COMMENT:
+            item.router = {
+              name: "post-detail",
+              params: {
+                id: item.jsonDetail.PostId,
+              },
+              query: {
+                commentId: item.jsonDetail.Id,
+              },
+            };
+            break;
 
-          break;
-        case NOTIFICATION_TYPE.CREATE_POST:
-          item.router = {
-            name: "post-detail",
-            params: {
-              id: item.jsonDetail.Id,
-            },
-          };
-          break;
-        case NOTIFICATION_TYPE.SHARE_POST:
-          item.router = {
-            name: "post-detail",
-            params: {
-              id: item.jsonDetail.Id,
-            },
-          };
-          break;
-        case NOTIFICATION_TYPE.FRIEND_REQUEST:
-          item.router = {
-            name: "friend-request",
-            query: {
-              id: item.jsonDetail.Id,
-            },
-          };
-          break;
-      }
+          case NOTIFICATION_TYPE.COMMENT_REACTION:
+            try {
+              const comment = await postCommentService.getById(
+                item.jsonDetail.CommentId
+              );
 
-      return item;
-    })
-  );
+              item.router = {
+                name: "post-detail",
+                params: {
+                  id: comment.data.postId,
+                },
+                query: {
+                  commentId: item.jsonDetail.CommentId,
+                },
+              };
+            } catch (err) {
+              toastAlert.error(err);
+            }
 
-  console.log(res);
+            break;
+          case NOTIFICATION_TYPE.CREATE_POST:
+            item.router = {
+              name: "post-detail",
+              params: {
+                id: item.jsonDetail.Id,
+              },
+            };
+            break;
+          case NOTIFICATION_TYPE.SHARE_POST:
+            item.router = {
+              name: "post-detail",
+              params: {
+                id: item.jsonDetail.Id,
+              },
+            };
+            break;
+          case NOTIFICATION_TYPE.FRIEND_REQUEST:
+            item.router = {
+              name: "friend-request",
+              query: {
+                id: item.jsonDetail.Id,
+              },
+            };
+            break;
+        }
 
-  notiData.total = res.totalItems;
-  notiData.data = [...notiData.data, ...res.data];
-  notiData.endCursor = res.endCursor;
-  notiData.hasNext = res.hasNext;
+        return item;
+      })
+    );
+
+    // console.log(res);
+
+    notiData.total = res.totalItems;
+    notiData.data = [...notiData.data, ...res.data];
+    notiData.endCursor = res.endCursor;
+    notiData.hasNext = res.hasNext;
+  } catch (err) {
+    console.log(err);
+  }
 }
 </script>
 

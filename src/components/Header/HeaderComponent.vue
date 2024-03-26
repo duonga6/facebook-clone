@@ -255,7 +255,7 @@
 import { ref } from "vue";
 import eventBus from "@/common/EventBus";
 import tokenService from "@/services/token.service";
-import Notification from "./NotificationComponent.vue";
+import Notification from "../Notification/NotificationComponent.vue";
 
 export default {
   components: {

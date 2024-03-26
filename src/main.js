@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -17,10 +16,8 @@ setupInterceptor(store);
 app.use(store);
 app.use(router);
 app.use(PrimeVue, {
-  pt: Lara
+  pt: Lara,
 });
 app.use(ToastService);
 app.directive("click-outside", clickOutside);
 app.mount("#app");
-
-// createApp(App).use(store).use(router).mount("#app");

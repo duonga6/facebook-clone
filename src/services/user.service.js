@@ -3,14 +3,7 @@ const BASE_URL = "/Users";
 
 export const userService = {
   getUserInfo() {
-    return api
-      .get(`${BASE_URL}/Info`)
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
+    return api.get(`${BASE_URL}/Info`);
   },
 
   getById(id) {

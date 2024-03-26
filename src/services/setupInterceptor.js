@@ -66,6 +66,8 @@ const setup = (store) => {
                 eventBus.dispatch("logout");
                 return Promise.reject(rs);
               }
+            } else {
+              eventBus.dispatch("logout");
             }
           }
         }

@@ -256,7 +256,9 @@ export default {
     const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
-    const isShowIntroduceTab = computed(() => route.name == "profile-post");
+    const isShowIntroduceTab = computed(
+      () => route.name == "profile-post" || ""
+    );
 
     const userId = props.id
       ? props.id

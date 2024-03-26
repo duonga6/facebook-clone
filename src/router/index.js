@@ -3,10 +3,11 @@ import { createRouter, createWebHistory, useRouter } from "vue-router";
 
 const routes = [
   {
-    path: "/",
+    path: "/home",
     name: "home",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(/* webpackChunkName: "home" */ "../views/HomeView.vue"),
@@ -31,6 +32,7 @@ const routes = [
     name: "profile",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/ProfileView.vue"),
@@ -67,6 +69,7 @@ const routes = [
     name: "friends",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(/* webpackChunkName: "friend" */ "@/views/Friend/FriendView.vue"),
@@ -76,6 +79,7 @@ const routes = [
     name: "friend-request",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(
@@ -90,6 +94,7 @@ const routes = [
     name: "friends-suggests",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(
@@ -104,6 +109,7 @@ const routes = [
     name: "friends-list",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(
@@ -118,6 +124,7 @@ const routes = [
     name: "post-detail",
     meta: {
       requiresAuth: true,
+      layout: "default",
     },
     component: () =>
       import(
