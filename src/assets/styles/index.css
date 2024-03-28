@@ -20,6 +20,24 @@ body {
   margin-top: 56px;
 }
 
+@keyframes notification-alert {
+  0% {
+    transform: translateX(200px);
+  }
+
+  20% {
+    transform: translateX(0px);
+  }
+
+  80% {
+    transform: translateX(-200px);
+  }
+
+  100% {
+    transform: translateX(-400px);
+  }
+}
+
 :root {
   --primary-50: 236 253 245;
   --primary-100: 209 250 229;

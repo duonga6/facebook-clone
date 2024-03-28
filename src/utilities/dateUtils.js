@@ -78,6 +78,33 @@ export function convertDateDisplay(date) {
   }
 }
 
+export function convertTimeNotificationAlert(date) {
+  const now = new Date();
+  const targetDate = date;
+
+  const miliseconds = now - targetDate;
+
+  const minute = 1000 * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const month = day * 30;
+  const year = month * 12;
+
+  if (miliseconds / year > 1) {
+    return parseInt(miliseconds / year) + " năm";
+  } else if (miliseconds / month > 1) {
+    return parseInt(miliseconds / month) + " tháng";
+  } else if (miliseconds / day > 1) {
+    return parseInt(miliseconds / day) + " ngày";
+  } else if (miliseconds / hour > 1) {
+    return parseInt(miliseconds / hour) + " giờ";
+  } else if (miliseconds / minute > 1) {
+    return parseInt(miliseconds / minute) + " phút";
+  } else {
+    return "vài giây trước";
+  }
+}
+
 export function convertDatePostDisplay(date) {
   const now = new Date();
   const targetDate = date;

@@ -8,6 +8,8 @@ import HeaderComponent from "@/components/Header/HeaderComponent.vue";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import eventBus from "@/common/EventBus";
+import { generateNotificationUrl } from "@/utilities/notification";
 export default {
   components: { HeaderComponent },
   setup() {
@@ -27,6 +29,12 @@ export default {
 
     connection.start().catch(() => {
       console.log("Có lỗi khi kết nối socket");
+    });
+
+    connection.on("NewNotification", async (data) => {
+      data.jsonDetail = JSON.parse(data.jsonDetail);
+      data.router = await generateNotificationUrl(data);
+      eventBus.dispatch("NewNotificaiton", data);
     });
   },
 };
