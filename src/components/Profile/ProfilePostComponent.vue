@@ -1,64 +1,58 @@
 <template>
   <div class="user-post-list space-y-4">
     <PostComponent
-      v-for="post in postData.posts"
+      v-for="post in postData.data"
       :key="post.id"
       :post="post"
       :storeName="'profilePost'"
     ></PostComponent>
   </div>
-  <div class="empty-post" v-if="!postData.posts.length && postData._isFetched">
+  <div
+    class="empty-post"
+    v-if="!postData.data.length && postData.state.isFetched"
+  >
     Chưa có bài viết nào
   </div>
 </template>
 <script>
 import { computed, onMounted, onUnmounted, reactive } from "vue";
 import { useStore } from "vuex";
-import { POST_TYPE } from "@/constants";
-import { PostUtils } from "@/store/postUtils";
-import tokenService from "@/services/token.service";
 export default {
   props: {
     userId: {
       type: String,
     },
   },
-  async setup(props) {
+  async setup() {
     const store = useStore();
-
-    // Id của user nếu props ko có thì là user đã log => lấy ở token
-    const id = props.userId == "" ? tokenService.getUser().id : props.userId;
-
     const postData = reactive({
-      total: 0,
-      posts: computed(() => store.getters["profilePost/getPosts"]),
-      pageSize: 20,
-      pageNumber: 0,
-      _isFetched: false,
+      data: computed(() => store.getters["profilePost/getPosts"]),
+      state: computed(() => store.getters["profile/getPostState"]),
     });
 
-    async function getPost() {
-      const res = await PostUtils.getPostWithDependent({
-        type: POST_TYPE.PROFILE_POST,
-        pageSize: postData.pageSize,
-        pageNumber: postData.pageNumber,
-        userId: id,
-      });
-
-      postData.pageNumber++;
-      postData._isFetched = true;
-
-      store.dispatch("profilePost/setPosts", res);
+    function handleScrollWindow() {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.offsetHeight
+      ) {
+        console.log("ABC");
+        if (
+          postData.state.pageNumber != 0 &&
+          postData.state.pageSize * postData.state.pageNumber <
+            postData.state.total
+        ) {
+          store.dispatch("profile/getPost");
+        }
+      }
     }
 
-    onUnmounted(() => {
-      store.dispatch("profilePost/reset");
+    onMounted(() => {
+      console.log(postData);
+      window.addEventListener("scroll", handleScrollWindow);
     });
 
-    onMounted(async () => {
-      if (!postData._isFetched) {
-        await getPost();
-      }
+    onUnmounted(() => {
+      window.removeEventListener("scroll", handleScrollWindow);
     });
 
     return {

@@ -35,8 +35,7 @@ export default {
       });
 
       postData._isFetched = true;
-
-      store.dispatch("singlePost/setPosts", posts);
+      store.dispatch("singlePost/setPosts", posts.data);
     }
 
     onUnmounted(() => {

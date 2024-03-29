@@ -48,20 +48,16 @@
           class="friend-item"
           v-for="friend in friendData.data"
           :key="friend.id"
-          @click="handleSelectFriendItem(friend.requestUser.id)"
-          :class="friendProfileId == friend.requestUser.id ? 'active' : ''"
+          @click="handleSelectFriendItem(friend.user.id)"
+          :class="friendSelectedId == friend.user.id ? 'active' : ''"
         >
           <div class="friend-avatar">
-            <img :src="friend.requestUser.avatarUrl" alt="" />
+            <img :src="friend.user.avatarUrl" alt="" />
           </div>
           <div class="friend-main">
             <div class="friend-info">
               <p class="friend-name">
-                {{
-                  friend.requestUser.firstName +
-                  " " +
-                  friend.requestUser.lastName
-                }}
+                {{ friend.user.firstName + " " + friend.user.lastName }}
               </p>
               <p
                 class="friend-date"
@@ -142,15 +138,13 @@
                 <template v-if="friend.status == FRIEND_TYPE.NOT_FRIEND">
                   <button
                     class="friend-btn friend-btn--primary"
-                    @click.stop="handleSendFriendRequest(friend.requestUser.id)"
+                    @click.stop="handleSendFriendRequest(friend.user.id)"
                   >
                     Thêm bạn bè
                   </button>
                   <button
                     class="friend-btn friend-btn--remove"
-                    @click.stop="
-                      handleRemoveFriendSuggest(friend.requestUser.id)
-                    "
+                    @click.stop="handleRemoveFriendSuggest(friend.user.id)"
                   >
                     Xóa
                   </button>
@@ -177,10 +171,9 @@
       </ul>
     </div>
     <div class="friend-profile">
-      <ProfileComponent
-        v-if="friendProfileId"
-        :id="friendProfileId"
-      ></ProfileComponent>
+      <div v-if="friendSelectedId" class="-mt-28 w-full h-full">
+        <ProfileView></ProfileView>
+      </div>
       <div v-else class="friend-profile-empty">
         <div class="profile-empty-img">
           <img
@@ -203,6 +196,7 @@ import tokenService from "@/services/token.service";
 import { onMounted, reactive, ref } from "vue";
 import { friendshipService } from "@/services/friendship.service";
 import { convertDateDisplay } from "@/utilities/dateUtils";
+import { useRoute, useRouter } from "vue-router";
 
 export default {
   props: {
@@ -212,9 +206,12 @@ export default {
   },
   async setup(props) {
     const user = tokenService.getUser();
-    const friendProfileId = ref(null);
+    const route = useRoute();
+    const router = useRouter();
+    const friendSelectedId = ref(null);
     const friendSearchInput = ref(null);
     const friendSearchInputEl = ref(null);
+    const loggedUserId = tokenService.getUser().id;
     let friendSearchTimeout;
     const friendData = reactive({
       total: 0,
@@ -225,8 +222,6 @@ export default {
     });
 
     const listFriendsEl = ref(null);
-
-    console.log(friendSearchTimeout);
 
     async function getAcceptPending() {
       if (
@@ -247,7 +242,7 @@ export default {
           friendRes.data = friendRes.data.map((item) => {
             return {
               id: item.id,
-              requestUser: item,
+              user: item,
             };
           });
         } else {
@@ -260,6 +255,10 @@ export default {
         }
 
         friendRes.data = friendRes.data.map((item) => {
+          item.user =
+            item.requestUser.id == loggedUserId
+              ? item.targetUser
+              : item.requestUser;
           switch (item.friendStatus) {
             case 1:
               item.status = FRIEND_TYPE.PENDING_OTHER;
@@ -290,11 +289,16 @@ export default {
     }
 
     async function handleSelectFriendItem(id) {
-      if (
-        !friendProfileId.value ||
-        (friendProfileId.value && friendProfileId.value != id)
-      ) {
-        friendProfileId.value = id;
+      if (id == friendSelectedId.value) {
+        return;
+      } else {
+        friendSelectedId.value = id;
+        router.push({
+          name: route.name,
+          query: {
+            userId: id,
+          },
+        });
       }
     }
 
@@ -362,7 +366,7 @@ export default {
     }
 
     function handleShowFriendMore(friendItem) {
-      friendItem.isShowMore = true;
+      friendItem.isShowMore = !friendItem.isShowMore;
     }
 
     function closeShowFriendMore(friendItem) {
@@ -399,7 +403,7 @@ export default {
 
     return {
       friendData,
-      friendProfileId,
+      friendSelectedId,
       friendSearchInput,
       user,
       FRIEND_TYPE,

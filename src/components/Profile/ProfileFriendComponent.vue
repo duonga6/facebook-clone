@@ -19,7 +19,7 @@
         <div class="friend-item-container">
           <router-link
             :to="{
-              name: 'profile-post',
+              name: 'profile',
               params: {
                 id: friend.user.id,
               },
@@ -31,7 +31,7 @@
           <div class="friend-name">
             <router-link
               :to="{
-                name: 'profile-post',
+                name: 'profile',
                 params: {
                   id: friend.user.id,
                 },

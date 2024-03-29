@@ -59,7 +59,7 @@ export const PostUtils = {
       }
 
       // Map post => get comment, reaction, author
-      const postMapped = await Promise.all(
+      postResponse.data = await Promise.all(
         postResponse.data.map(async (post) => {
           const reactionsRes = await postReactionService.getOverview(post.id);
           const commentsRes = await PostUtils.getCommentChild(
@@ -83,7 +83,7 @@ export const PostUtils = {
         })
       );
 
-      return Promise.resolve(postMapped);
+      return Promise.resolve(postResponse);
     } catch (error) {
       console.log(error);
     }

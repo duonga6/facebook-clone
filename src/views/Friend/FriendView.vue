@@ -124,7 +124,7 @@
           >
             <router-link
               :to="{
-                name: 'profile-post',
+                name: 'profile',
                 params: {
                   id: item.requestUser.id,
                 },
@@ -140,7 +140,7 @@
             <div class="friend-info">
               <router-link
                 :to="{
-                  name: 'profile-post',
+                  name: 'profile',
                   params: {
                     id: item.requestUser.id,
                   },

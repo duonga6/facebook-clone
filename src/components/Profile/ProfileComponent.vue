@@ -104,7 +104,7 @@
             <router-link
               class="user-navbar-item active"
               :to="{
-                name: 'profile-post',
+                name: 'profile',
                 params: {
                   id: userId,
                 },
@@ -116,7 +116,7 @@
             <router-link
               class="user-navbar-item"
               :to="{
-                name: 'profile-post',
+                name: 'profile',
                 params: {
                   id: id,
                 },
@@ -128,7 +128,7 @@
           <li class="">
             <router-link
               :to="{
-                name: 'profile-photo',
+                name: 'profile',
                 params: {
                   id: userId,
                 },
@@ -175,7 +175,7 @@
               <div class="user-data-heading">Ảnh</div>
               <router-link
                 :to="{
-                  name: 'profile-photo',
+                  name: 'profile',
                   params: {
                     id: userId,
                   },

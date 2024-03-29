@@ -499,7 +499,7 @@ export default {
         }
       }
       .post-reaction-count {
-        @apply text-15 text-gray-500 ms-1 cursor-default;
+        @apply text-15 leading-15 text-gray-500 ms-1 cursor-default;
       }
     }
     .post-comment-count {

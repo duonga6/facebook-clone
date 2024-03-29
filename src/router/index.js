@@ -3,7 +3,7 @@ import { createRouter, createWebHistory, useRouter } from "vue-router";
 
 const routes = [
   {
-    path: "/home",
+    path: "/",
     name: "home",
     meta: {
       requiresAuth: true,
@@ -36,33 +36,6 @@ const routes = [
     },
     component: () =>
       import(/* webpackChunkName: "profile" */ "../views/ProfileView.vue"),
-    children: [
-      {
-        name: "profile-post",
-        path: "post",
-        component: () =>
-          import(
-            /* webpackChunkName: "profile-post" */ "@/components/Profile/ProfilePostComponent.vue"
-          ),
-        props: (route) => ({ userId: route.params.id }),
-      },
-      {
-        name: "profile-photo",
-        path: "photo",
-        component: () =>
-          import(
-            /* webpackChunkName: "profile-photo" */ "@/components/Profile/ProfilePhotoComponent.vue"
-          ),
-      },
-      {
-        name: "profile-friend",
-        path: "friends",
-        component: () =>
-          import(
-            /* webpackChunkName: "profile-friend" */ "@/components/Profile/ProfileFriendComponent.vue"
-          ),
-      },
-    ],
   },
   {
     path: "/friends",

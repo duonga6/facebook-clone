@@ -5,7 +5,7 @@
       <li>
         <router-link
           :to="{
-            name: 'profile-post',
+            name: 'profile',
             params: {
               id: userData.id,
             },

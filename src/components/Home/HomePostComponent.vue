@@ -28,14 +28,15 @@ export default {
     });
 
     async function getPosts() {
-      const posts = await PostUtils.getPostWithDependent({
+      const postRes = await PostUtils.getPostWithDependent({
         type: POST_TYPE.HOME_POST,
         pageSize: postData.pageSize,
         pageNumber: postData.pageNumber,
       });
 
+      store.dispatch("homePost/setPosts", postRes.data);
       postData.pageNumber++;
-      store.dispatch("homePost/setPosts", posts);
+      postData.total = postRes.totalItems;
     }
 
     onMounted(async () => {

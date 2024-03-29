@@ -1,5 +1,7 @@
 import { userService } from "@/services/user.service";
 import { toastAlert } from "@/utilities/toastAlert";
+import { PostUtils } from "./postUtils";
+import { POST_TYPE } from "@/constants";
 
 export const profile = {
   namespaced: true,
@@ -11,18 +13,28 @@ export const profile = {
       pageSize: 12,
       pageNumber: 0,
       total: 0,
+      _isFetched: false,
     },
     video: {
       data: [],
       pageSize: 12,
       pageNumber: 0,
       total: 0,
+      _isFetched: false,
     },
     friend: {
       data: [],
       pageSize: 6,
       pageNumber: 0,
       total: 0,
+      _isFetched: false,
+    },
+    post: {
+      data: [],
+      total: 0,
+      pageSize: 10,
+      pageNumber: 0,
+      _isFetched: false,
     },
   },
   actions: {
@@ -35,10 +47,11 @@ export const profile = {
 
           await dispatch("getPhoto");
           await dispatch("getFriend");
+          await dispatch("getPost");
 
           return Promise.resolve();
         } catch (error) {
-          toastAlert.error(error);
+          toastAlert.error("profile/initStore: " + error);
         }
       }
     },
@@ -56,11 +69,20 @@ export const profile = {
       });
       commit("getFriendSuccess", friendRes);
     },
-    reset({ commit }) {
-      commit("reset");
+    async getPost({ commit, state, dispatch }) {
+      const postRes = await PostUtils.getPostWithDependent({
+        type: POST_TYPE.PROFILE_POST,
+        pageSize: state.post.pageSize,
+        pageNumber: state.post.pageNumber,
+        userId: state.userId,
+      });
+
+      commit("getPostSuccess", postRes);
+      dispatch("profilePost/setPosts", postRes.data, { root: true });
     },
-    resetFriendSearch({ commit }) {
-      commit("resetFriendSearch");
+    reset({ commit, dispatch }) {
+      commit("reset");
+      dispatch("profilePost/reset", null, { root: true });
     },
   },
   mutations: {
@@ -74,16 +96,18 @@ export const profile = {
       state.photo.data = [...state.photo.data, ...payLoad.data];
       state.photo.pageNumber++;
       state.photo.total = payLoad.totalItems;
+      state.photo._isFetched = true;
     },
     getFriendSuccess(state, payLoad) {
       state.friend.data = [...state.friend.data, ...payLoad.data];
       state.friend.pageNumber++;
       state.friend.total = payLoad.totalItems;
+      state.photo._isFetched = true;
     },
-    getFriendSearchSuccess(state, payLoad) {
-      state.friendSearch.data = [...state.friendSearch.data, ...payLoad.data];
-      state.friendSearch.total = payLoad.totalItems;
-      state.friendSearch.pageNumber++;
+    getPostSuccess(state, payLoad) {
+      state.post.total = payLoad.totalItems;
+      state.post.pageNumber++;
+      state.post._isFetched = true;
     },
     reset(state) {
       state.userId = null;
@@ -106,16 +130,26 @@ export const profile = {
         pageNumber: 0,
         total: 0,
       };
-    },
-    resetFriendSearch(state) {
-      state.friendSearch.data = [];
-      state.friendSearch.total = 0;
-      state.friendSearch.pageNumber = 0;
+      state.post = {
+        data: [],
+        total: 0,
+        pageSize: 10,
+        pageNumber: 0,
+        _isFetched: false,
+      };
     },
   },
   getters: {
     getPhoto: (state) => state.photo,
     getUser: (state) => state.userData,
     getFriend: (state) => state.friend,
+    getPostState: (state) => {
+      return {
+        pageSize: state.post.pageSize,
+        pageNumber: state.post.pageNumber,
+        total: state.post.total,
+        _isFetched: state.post._isFetched,
+      };
+    },
   },
 };

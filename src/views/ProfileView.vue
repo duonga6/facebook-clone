@@ -1,4 +1,4 @@
-<template>
+<template :key="userId">
   <div class="profile-container" v-if="userData">
     <div class="top-section">
       <div class="top-info">
@@ -103,12 +103,11 @@
           <li>
             <router-link
               class="user-navbar-item"
-              :class="{ active: currentTab == 'profile-post' }"
+              :class="{ active: !currentTab }"
               :to="{
-                name: 'profile-post',
-                params: {
-                  id: userId,
-                },
+                name: currentRoute.name,
+                params: currentRoute.params,
+                query: currentRoute.query,
               }"
               >Bài viết</router-link
             >
@@ -118,10 +117,9 @@
               class="user-navbar-item"
               :class="{ active: currentTab == 'profile-introduce' }"
               :to="{
-                name: 'profile-post',
-                params: {
-                  id: userId,
-                },
+                name: currentRoute.name,
+                params: currentRoute.params,
+                query: currentRoute.query,
               }"
             >
               Giới thiệu
@@ -130,11 +128,13 @@
           <li class="">
             <router-link
               class="user-navbar-item"
-              :class="{ active: currentTab == 'profile-friend' }"
+              :class="{ active: currentTab == 'friend' }"
               :to="{
-                name: 'profile-friend',
-                params: {
-                  id: userId,
+                name: currentRoute.name,
+                params: currentRoute.params,
+                query: {
+                  ...currentRoute.query,
+                  tab: 'friend',
                 },
               }"
             >
@@ -144,13 +144,15 @@
           <li class="">
             <router-link
               :to="{
-                name: 'profile-photo',
-                params: {
-                  id: userId,
+                name: currentRoute.name,
+                params: currentRoute.params,
+                query: {
+                  ...currentRoute.query,
+                  tab: 'photo',
                 },
               }"
               class="user-navbar-item"
-              :class="{ active: currentTab == 'profile-photo' }"
+              :class="{ active: currentTab == 'photo' }"
               >Ảnh</router-link
             >
           </li>
@@ -160,108 +162,124 @@
     </div>
     <div class="bottom-section">
       <div class="bottom-section-container">
-        <div class="bottom-left col-span-4" v-if="isShowIntroduceTab">
-          <div class="user-introduce user-data-section">
-            <div class="user-data-title">
-              <div class="user-data-heading">Giới thiệu</div>
-            </div>
-            <ul class="user-introduce-list">
-              <li class="user-introduce-item">
-                <i class="user-introduce-icon pi pi-map-marker"></i>
-                <div class="user-introduce-text">
-                  Đến từ
-                  <span class="user-introduce-strong">{{
-                    userData.address
-                  }}</span>
-                </div>
-              </li>
-              <li class="user-introduce-item">
-                <i class="user-introduce-icon pi pi-user"></i>
-                <div class="user-introduce-text">
-                  Giới tính
-                  <span class="user-introduce-strong">{{
-                    userData.gender
-                  }}</span>
-                </div>
-              </li>
-            </ul>
+        <template v-if="currentTab == 'photo'">
+          <div class="col-span-10">
+            <ProfilePhoto></ProfilePhoto>
           </div>
-          <div class="user-images user-data-section">
-            <div class="user-data-title">
-              <div class="user-data-heading">Ảnh</div>
-              <router-link
-                :to="{
-                  name: 'profile-photo',
-                  params: {
-                    id: userId,
-                  },
-                }"
-                class="user-data-button"
-                >Xem tất cả ảnh</router-link
-              >
+        </template>
+        <template v-else-if="currentTab == 'friend'">
+          <div class="col-span-10">
+            <ProfileFriend></ProfileFriend>
+          </div>
+        </template>
+        <template v-else>
+          <div class="bottom-left col-span-4">
+            <div class="user-introduce user-data-section">
+              <div class="user-data-title">
+                <div class="user-data-heading">Giới thiệu</div>
+              </div>
+              <ul class="user-introduce-list">
+                <li class="user-introduce-item">
+                  <i class="user-introduce-icon pi pi-map-marker"></i>
+                  <div class="user-introduce-text">
+                    Đến từ
+                    <span class="user-introduce-strong">{{
+                      userData.address
+                    }}</span>
+                  </div>
+                </li>
+                <li class="user-introduce-item">
+                  <i class="user-introduce-icon pi pi-user"></i>
+                  <div class="user-introduce-text">
+                    Giới tính
+                    <span class="user-introduce-strong">{{
+                      userData.gender
+                    }}</span>
+                  </div>
+                </li>
+              </ul>
             </div>
-            <ul class="user-image-list">
-              <li
-                v-for="photo in userPhotos"
-                :key="photo.id"
-                class="user-image-item"
-              >
+            <div class="user-images user-data-section">
+              <div class="user-data-title">
+                <div class="user-data-heading">Ảnh</div>
                 <router-link
                   :to="{
-                    name: 'post-detail',
+                    name: 'profile',
                     params: {
-                      id: photo.postId,
+                      id: userId,
                     },
                     query: {
-                      mediaId: photo.id,
+                      tab: 'photo',
                     },
                   }"
+                  class="user-data-button"
+                  >Xem tất cả ảnh</router-link
                 >
-                  <img :src="photo.url" alt="" class="image-item-img" />
-                </router-link>
-              </li>
-            </ul>
-          </div>
-          <div class="user-friends user-data-section">
-            <div class="user-data-title">
-              <div class="user-data-heading">Bạn bè</div>
-              <router-link to="/" class="user-data-button"
-                >Xem tất cả bạn bè</router-link
-              >
+              </div>
+              <ul class="user-image-list">
+                <li
+                  v-for="photo in userPhotos"
+                  :key="photo.id"
+                  class="user-image-item"
+                >
+                  <router-link
+                    :to="{
+                      name: currentRoute.name,
+                      params: currentRoute.params,
+                      query: {
+                        mediaId: photo.id,
+                      },
+                    }"
+                  >
+                    <img :src="photo.url" alt="" class="image-item-img" />
+                  </router-link>
+                </li>
+              </ul>
             </div>
-            <ul class="user-friend-list">
-              <li
-                class="user-friend-item"
-                v-for="friend in userFriends"
-                :key="friend.id"
-              >
+            <div class="user-friends user-data-section">
+              <div class="user-data-title">
+                <div class="user-data-heading">Bạn bè</div>
                 <router-link
                   :to="{
-                    name: 'profile-post',
-                    params: {
-                      id: friend.id,
+                    name: currentRoute.name,
+                    params: currentRoute.params,
+                    query: {
+                      tab: 'friend',
                     },
                   }"
+                  class="user-data-button"
+                  >Xem tất cả bạn bè</router-link
                 >
-                  <div class="user-friend-img">
-                    <img :src="friend.avatarUrl" alt="" />
-                  </div>
-                  <div class="user-friend-name">
-                    {{ friend.firstName + " " + friend.lastName }}
-                  </div>
-                </router-link>
-              </li>
-            </ul>
+              </div>
+              <ul class="user-friend-list">
+                <li
+                  class="user-friend-item"
+                  v-for="friend in userFriends"
+                  :key="friend.id"
+                >
+                  <router-link
+                    :to="{
+                      name: 'profile',
+                      params: {
+                        id: friend.id,
+                      },
+                    }"
+                  >
+                    <div class="user-friend-img">
+                      <img :src="friend.avatarUrl" alt="" />
+                    </div>
+                    <div class="user-friend-name">
+                      {{ friend.firstName + " " + friend.lastName }}
+                    </div>
+                  </router-link>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-        <div
-          class="bottom-right"
-          :class="isShowIntroduceTab ? ' col-span-6' : 'col-span-10'"
-          v-if="userData.id"
-        >
-          <!-- <ProfilePost :userId="userData.id"></ProfilePost> -->
-          <router-view></router-view>
-        </div>
+          <div class="bottom-right col-span-6">
+            <ProfilePost :userId="userId"></ProfilePost>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -270,33 +288,37 @@
 <script>
 import { useRoute } from "vue-router";
 import tokenService from "@/services/token.service";
-import { computed, onUnmounted, reactive, watch } from "vue";
+import { computed, onUnmounted, watch } from "vue";
 import { FRIEND_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { useStore } from "vuex";
+
 export default {
   async setup() {
     const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
-    const isShowIntroduceTab = computed(() => route.name == "profile-post");
-    const currentTab = computed(() => route.name);
-
-    const userId =
-      !route.params.id || route.params.id == ""
-        ? loggedUserId
-        : route.params.id;
-
-    const friendShip = reactive({
-      id: null,
-      status: null,
+    const availableTab = ["photo", "friend", "video"];
+    const currentTab = computed(() => {
+      const tabName = route.query.tab;
+      return availableTab.includes(tabName) ? tabName : null;
     });
+    const currentRoute = {
+      name: route.name,
+      params: route.params,
+      query: route.query,
+    };
+
+    const userId = computed(() => route.params.id || route.query.userId);
 
     watch(
-      () => route.params.id,
-      () => {
-        location.reload();
+      () => userId.value,
+      async (newVal) => {
+        store.dispatch("profile/reset");
+        await store.dispatch("profile/initStore", {
+          userId: newVal,
+        });
       }
     );
 
@@ -304,22 +326,25 @@ export default {
       store.dispatch("profile/reset");
     });
 
-    await checkFriendStatus();
+    const friendShip = await checkFriendStatus(loggedUserId, userId.value);
 
     await store.dispatch("profile/initStore", {
-      userId: userId,
+      userId: userId.value,
     });
 
-    const userData = store.getters["profile/getUser"];
-    const userPhotos = store.getters["profile/getPhoto"].data.slice(0, 9);
-    const userFriends = store.getters["profile/getFriend"].data
-      .slice(0, 9)
-      .map((item) => {
-        return item.requestUser.id == userId
+    const userData = computed(() => store.getters["profile/getUser"]);
+    const userPhotos = computed(() =>
+      store.getters["profile/getPhoto"].data.slice(0, 9)
+    );
+    const userFriends = computed(() =>
+      store.getters["profile/getFriend"].data.slice(0, 9).map((item) => {
+        return item.requestUser.id == userId.value
           ? item.targetUser
           : item.requestUser;
-      });
+      })
+    );
 
+    // Function
     async function handleRequestFriend() {
       try {
         const res = await friendshipService.sendRequest({
@@ -360,31 +385,6 @@ export default {
       }
     }
 
-    async function checkFriendStatus() {
-      if (userId == loggedUserId) {
-        friendShip.status = FRIEND_TYPE.SELF;
-      } else {
-        try {
-          const res = await friendshipService.getInfo(userId);
-          if (res.data) {
-            friendShip.id = res.data.id;
-            switch (res.data.friendStatus) {
-              case 1:
-                friendShip.status = FRIEND_TYPE.PENDING_OTHER;
-                break;
-              case 2:
-                friendShip.status = FRIEND_TYPE.ACCEPTED;
-                break;
-            }
-          } else {
-            friendShip.status = FRIEND_TYPE.NOT_FRIEND;
-          }
-        } catch (err) {
-          toastAlert.error(err);
-        }
-      }
-    }
-
     return {
       userData,
       userPhotos,
@@ -393,9 +393,8 @@ export default {
       loggedUserId,
       userId,
       FRIEND_TYPE,
-      isShowIntroduceTab,
       currentTab,
-      route,
+      currentRoute,
       handleRequestFriend,
       handleAcceptFriend,
       handleRefuseFriend,
@@ -403,6 +402,38 @@ export default {
     };
   },
 };
+
+async function checkFriendStatus(requestId, targetId) {
+  const friendShip = {
+    status: null,
+    id: null,
+  };
+
+  if (requestId == targetId) {
+    friendShip.status = FRIEND_TYPE.SELF;
+  } else {
+    try {
+      const res = await friendshipService.getInfo(targetId);
+      if (res.data) {
+        friendShip.id = res.data.id;
+        switch (res.data.friendStatus) {
+          case 1:
+            friendShip.status = FRIEND_TYPE.PENDING_OTHER;
+            break;
+          case 2:
+            friendShip.status = FRIEND_TYPE.ACCEPTED;
+            break;
+        }
+      } else {
+        friendShip.status = FRIEND_TYPE.NOT_FRIEND;
+      }
+    } catch (err) {
+      toastAlert.error(err);
+    }
+  }
+
+  return friendShip;
+}
 </script>
 
 <style lang="scss" scoped>

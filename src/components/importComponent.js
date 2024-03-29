@@ -96,13 +96,30 @@ export function registerGlobalComponents(app) {
   );
 
   // === Profile
+
+  app.component(
+    "ProfileView",
+    defineAsyncComponent(() => import("@/views/ProfileView"))
+  );
+
   app.component(
     "ProfileComponent",
     defineAsyncComponent(() => import("@/components/Profile/ProfileComponent"))
   );
+
   app.component(
     "ProfilePost",
     defineAsyncComponent(() => import("@/components/Profile/ProfilePostComponent"))
+  );
+
+  app.component(
+    "ProfilePhoto",
+    defineAsyncComponent(() => import("@/components/Profile/ProfilePhotoComponent"))
+  );
+
+  app.component(
+    "ProfileFriend",
+    defineAsyncComponent(() => import("@/components/Profile/ProfileFriendComponent"))
   );
 
   app.component("drop-down", Dropdown);
