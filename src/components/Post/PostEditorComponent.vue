@@ -42,6 +42,7 @@
           </drop-down>
         </div>
       </div>
+      <!-- show share post -->
       <template v-if="action == POST_EDITOR_TYPE.SHARE">
         <div class="post-content">
           <textarea
@@ -105,9 +106,9 @@
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
           :class="
-            isCanPost ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
+            isCanSubmit ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'
           "
-          :disabled="!isCanPost"
+          :disabled="!isCanSubmit"
         >
           <span v-if="action == POST_EDITOR_TYPE.CREATE"> Đăng </span>
           <span v-if="action == POST_EDITOR_TYPE.UPDATE"> Lưu </span>
@@ -167,7 +168,7 @@ export default {
         break;
     }
 
-    const isCanPost = computed(() => {
+    const isCanSubmit = computed(() => {
       if (
         !postData.content &&
         postData.postMedias.length == 0 &&
@@ -200,6 +201,7 @@ export default {
         icon: "",
       },
     ]);
+
     const selectedAccessRange = ref(dataAccessRange.value[0]);
 
     function handleCloseCreatePost() {
@@ -265,7 +267,7 @@ export default {
       user,
       postData,
       selectedAccessRange,
-      isCanPost,
+      isCanSubmit,
       dataAccessRange,
       POST_EDITOR_TYPE,
       deleteUploadedImage,

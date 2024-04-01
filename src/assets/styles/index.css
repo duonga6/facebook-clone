@@ -20,24 +20,6 @@ body {
   margin-top: 56px;
 }
 
-@keyframes notification-alert {
-  0% {
-    transform: translateX(200px);
-  }
-
-  20% {
-    transform: translateX(0px);
-  }
-
-  80% {
-    transform: translateX(-200px);
-  }
-
-  100% {
-    transform: translateX(-400px);
-  }
-}
-
 :root {
   --primary-50: 236 253 245;
   --primary-100: 209 250 229;
@@ -63,3 +45,28 @@ body {
   --surface-900: 15 23 42;
   --surface-950: 3 6 23;
 }
+
+.btn {
+  @apply font-semibold px-6 py-1.5 text-15 rounded-md transition-all;
+}
+
+.btn.btn-primary {
+  @apply bg-primary text-white;
+}
+
+.btn.btn-disable {
+  @apply bg-gray-300 text-dark;
+}
+
+/* 
+&::-webkit-scrollbar {
+  @apply w-1 left-0;
+}
+
+&::-webkit-scrollbar-thumb {
+  @apply rounded-lg bg-gray-300;
+}
+
+&::-webkit-scrollbar-track {
+  @apply hidden;
+} */

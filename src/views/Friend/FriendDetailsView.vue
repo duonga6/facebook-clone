@@ -342,7 +342,6 @@ export default {
         } catch (error) {
           toastAlert.error(error);
         }
-        // friendSuggest.status = FRIEND_TYPE.PENDING_ME;
       }
     }
 

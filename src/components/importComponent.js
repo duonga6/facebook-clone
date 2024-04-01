@@ -122,5 +122,12 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Profile/ProfileFriendComponent"))
   );
 
+  // === GROUP
+
+  app.component(
+    "CreateGroup",
+    defineAsyncComponent(() => import("@/components/Group/CreateGroupComponent"))
+  );
+
   app.component("drop-down", Dropdown);
 }

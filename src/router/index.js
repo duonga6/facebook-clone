@@ -104,6 +104,16 @@ const routes = [
         /* webpackChunkName: "friendsuggest" */ "../views/PostDetailView.vue"
       ),
   },
+  {
+    path: "/groups",
+    name: "group",
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+    },
+    component: () =>
+      import(/* webpackChunkName: "friend" */ "@/views/GroupView.vue"),
+  },
 ];
 
 const router = createRouter({
