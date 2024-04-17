@@ -4,21 +4,34 @@
       <div class="group-header">
         <div class=""></div>
         <span class="group-header-text">Tạo nhóm</span>
-        <div class="group-close-btn">
+        <button @click.prevent="handleCloseGroupCreate" class="group-close-btn">
           <i class="group-close-icon pi pi-times"></i>
-        </div>
+        </button>
       </div>
       <div class="group-cover-image">
         <img
-          src="https://scontent-hkg1-2.xx.fbcdn.net/v/t1.6435-9/31435806_1249955258441579_134985303080304640_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeH5X1Z3k08D-5sUDsxeQbSx1GD2WIuydMvUYPZYi7J0y7G5dFFMIZY1dS1C8ozpHMU-uPgHkZB8esFpVMwfRiaE&_nc_ohc=sRXOppQjkR8AX9SPSQu&_nc_ht=scontent-hkg1-2.xx&oh=00_AfDT5EGB1XprhhiTwhfyIXw7rFlu6Oltbxr4f_jE87WrEw&oe=66319255"
+          :src="
+            groupData.coverImage ??
+            'https://www.facebook.com/images/groups/groups-default-cover-photo-2x.png'
+          "
           alt=""
         />
-        <button class="cover-btn-add">
-          <i class="cover-btn-icon pi pi-camera"></i>
+        <button
+          class="cover-btn-add"
+          @click.prevent="handleOpenSelectCoverImage"
+        >
+          <i class="btn-add-icon pi pi-camera"></i>
+        </button>
+        <button
+          class="cover-btn-remove"
+          @click.prevent="handleRemoveCoverImage"
+          v-if="groupData.coverImage"
+        >
+          <i class="btn-remove-icon pi pi-times"></i>
         </button>
       </div>
       <div class="group-info">
-        <div class="grid grid-cols-2 gap-x-4 gap-y-2">
+        <div class="grid grid-cols-2 gap-4">
           <div class="col-span-1 flex flex-col">
             <input
               class="group-info-input"
@@ -55,10 +68,13 @@
       <div class="form-action">
         <button
           class="submit-btn btn"
-          :disabled="!isCanSubmit"
+          :disabled="!isCanSubmit || isUploading"
           :class="isCanSubmit ? 'btn-primary' : 'btn-disable'"
         >
-          Tạo
+          <template v-if="isUploading">
+            <LoadingComponent :classCss="'w-6 h-6'"></LoadingComponent>
+          </template>
+          <template v-else> Tạo </template>
         </button>
       </div>
     </form>
@@ -67,16 +83,15 @@
 
 <script>
 import { computed, reactive, ref } from "vue";
+import { uploadFileService } from "@/services/upload-file.service";
+import { toastAlert } from "@/utilities/toastAlert";
 export default {
-  emits: ["onSubmit"],
+  emits: ["onSubmit", "onClose"],
   setup(_, { emit }) {
-    const isCanSubmit = computed(() => {
-      if (groupData.name) {
-        return groupData.name.trim();
-      }
+    const isCanSubmit = computed(() => groupData.name?.trim());
+    const isUploading = ref(false);
+    let fileUpload = null;
 
-      return groupData.name;
-    });
     const accessRange = ref([
       {
         status: "Công khai",
@@ -91,21 +106,70 @@ export default {
     const groupData = reactive({
       name: null,
       description: null,
+      coverImage: null,
       isPublic: accessRange.value[0],
     });
 
-    function handleSubmitForm() {
+    async function handleSubmitForm() {
+      isUploading.value = true;
+
+      if (fileUpload) {
+        try {
+          const uploadRes = await uploadFileService.upload(
+            fileUpload,
+            "upload"
+          );
+          groupData.coverImage = uploadRes.data.url;
+        } catch (ex) {
+          toastAlert.error(ex);
+          handleCloseGroupCreate();
+        } finally {
+          isUploading.value = false;
+        }
+      }
+
       emit("onSubmit", {
         ...groupData,
         isPublic: groupData.isPublic.value,
       });
     }
 
+    function handleOpenSelectCoverImage() {
+      const fileUpload = document.createElement("input");
+      fileUpload.type = "file";
+      fileUpload.multiple = false;
+      fileUpload.accept = "image/jpg, image/png, image/jpeg";
+
+      fileUpload.addEventListener("change", function (e) {
+        onUpdateCoverImage(e.target.files[0]);
+      });
+
+      fileUpload.click();
+    }
+
+    function onUpdateCoverImage(file) {
+      groupData.coverImage = URL.createObjectURL(file);
+      fileUpload = file;
+    }
+
+    function handleRemoveCoverImage() {
+      fileUpload = null;
+      groupData.coverImage = null;
+    }
+
+    function handleCloseGroupCreate() {
+      emit("onClose");
+    }
+
     return {
       accessRange,
       groupData,
       isCanSubmit,
+      isUploading,
+      handleOpenSelectCoverImage,
       handleSubmitForm,
+      handleRemoveCoverImage,
+      handleCloseGroupCreate,
     };
   },
 };
@@ -139,9 +203,20 @@ export default {
         @apply w-full h-full object-cover;
       }
 
+      .cover-image-loading {
+        @apply absolute top-0 left-0 right-0 bottom-0 bg-white bg-opacity-70 flex items-center justify-center;
+      }
+
       .cover-btn-add {
         @apply absolute bottom-2 right-2 bg-white w-8 h-8 flex items-center justify-center rounded-lg border;
-        .cover-btn-icon {
+        .btn-add-icon {
+          @apply text-gray-600 font-bold;
+        }
+      }
+
+      .cover-btn-remove {
+        @apply absolute top-2 right-2 bg-white w-8 h-8 flex items-center justify-center rounded-full border;
+        .btn-add-remove {
           @apply text-gray-600 font-bold;
         }
       }
@@ -158,7 +233,7 @@ export default {
     .form-action {
       @apply mt-4;
       .submit-btn {
-        @apply w-full;
+        @apply w-full transition-all;
       }
     }
   }

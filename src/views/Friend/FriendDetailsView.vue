@@ -223,69 +223,69 @@ export default {
 
     const listFriendsEl = ref(null);
 
-    async function getAcceptPending() {
+    async function getFriendData() {
       if (
         friendData.pageSize * friendData.pageNumber >= friendData.total &&
         friendData._fetched
       ) {
         return;
       }
-      try {
-        let friendRes;
+      // try {
+      let friendRes;
 
-        if (props.friendType == FRIEND_TYPE.NOT_FRIEND) {
-          friendRes = await friendshipService.getSuggestion({
-            pageSize: friendData.pageSize,
-            pageNumber: friendData.pageNumber + 1,
-          });
-
-          friendRes.data = friendRes.data.map((item) => {
-            return {
-              id: item.id,
-              user: item,
-            };
-          });
-        } else {
-          friendRes = await friendshipService.get({
-            pageSize: friendData.pageSize,
-            pageNumber: friendData.pageNumber + 1,
-            type: props.friendType,
-            searchString: friendSearchInput.value,
-          });
-        }
+      if (props.friendType == FRIEND_TYPE.NOT_FRIEND) {
+        friendRes = await friendshipService.getSuggestion({
+          pageSize: friendData.pageSize,
+          pageNumber: friendData.pageNumber + 1,
+        });
 
         friendRes.data = friendRes.data.map((item) => {
+          return {
+            id: item.id,
+            user: item,
+          };
+        });
+      } else {
+        friendRes = await friendshipService.get({
+          pageSize: friendData.pageSize,
+          pageNumber: friendData.pageNumber + 1,
+          type: props.friendType,
+          searchString: friendSearchInput.value,
+        });
+      }
+
+      friendRes.data = friendRes.data.map((item) => {
+        if (props.friendType != FRIEND_TYPE.NOT_FRIEND) {
           item.user =
             item.requestUser.id == loggedUserId
               ? item.targetUser
               : item.requestUser;
-          switch (item.friendStatus) {
-            case 1:
-              item.status = FRIEND_TYPE.PENDING_OTHER;
-              break;
-            case 2:
-              item.status = FRIEND_TYPE.ACCEPTED;
-              break;
-            default:
-              item.status = FRIEND_TYPE.NOT_FRIEND;
-              break;
-          }
-          return {
-            ...item,
-            createdAt: new Date(item.updatedAt),
-            isShowMore: false,
-          };
-        });
+        }
+        switch (item.friendStatus) {
+          case 1:
+            item.status = FRIEND_TYPE.PENDING_OTHER;
+            break;
+          case 2:
+            item.status = FRIEND_TYPE.ACCEPTED;
+            break;
+          default:
+            item.status = FRIEND_TYPE.NOT_FRIEND;
+            break;
+        }
+        return {
+          ...item,
+          createdAt: new Date(item.updatedAt),
+          isShowMore: false,
+        };
+      });
 
-        console.log(friendRes);
-
-        friendData.data = [...friendData.data, ...friendRes.data];
-        friendData.pageNumber++;
-        friendData.total = friendRes.totalItems;
-        friendData._fetched = true;
-      } catch (err) {
-        toastAlert.error(err);
-      }
+      friendData.data = [...friendData.data, ...friendRes.data];
+      friendData.pageNumber++;
+      friendData.total = friendRes.totalItems;
+      friendData._fetched = true;
+      // } catch (err) {
+      //   toastAlert.error(err);
+      // }
     }
 
     async function handleSelectFriendItem(id) {
@@ -378,7 +378,7 @@ export default {
           listFriendsEl.value.scrollHeight - listFriendsEl.value.scrollTop ===
           listFriendsEl.value.clientHeight
         ) {
-          getAcceptPending();
+          getFriendData();
         }
       });
 
@@ -392,13 +392,13 @@ export default {
             friendData._fetched = false;
             friendData.pageNumber = 0;
 
-            await getAcceptPending();
+            await getFriendData();
           }, 500);
         });
       }
     });
 
-    await getAcceptPending();
+    await getFriendData();
 
     return {
       friendData,

@@ -1,13 +1,15 @@
-import api from "./api";
+import api from "@/services/api";
 
-const BASE_URL = "/Posts";
+const BASE_URL = "/Groups";
 
-export const postService = {
-  // Post
+export const groupService = {
   get(params) {
     return api.get(BASE_URL, {
       params: params,
     });
+  },
+  getById(id) {
+    return api.get(BASE_URL + `/${id}`);
   },
   create(data) {
     return api.post(BASE_URL, data);
@@ -15,13 +17,13 @@ export const postService = {
   update(id, data) {
     return api.put(`${BASE_URL}/${id}`, data);
   },
-  getById(id) {
-    return api.get(`${BASE_URL}/${id}`);
-  },
   delete(id) {
     return api.delete(`${BASE_URL}/${id}`);
   },
-  sharePost(data) {
-    return api.post(`${BASE_URL}/Share`, data);
+
+  getMedia(id, params) {
+    return api.get(BASE_URL + `/${id}/Medias`, {
+      params: params,
+    });
   },
 };

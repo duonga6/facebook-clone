@@ -42,10 +42,10 @@ export const PostUtils = {
     try {
       let postResponse;
       if (payLoad.type == POST_TYPE.HOME_POST) {
-        postResponse = await postService.get(
-          payLoad.pageSize,
-          payLoad.pageNumber + 1
-        );
+        postResponse = await postService.get({
+          pageSize: payLoad.pageSize,
+          pageNumber: payLoad.pageNumber + 1,
+        });
       } else if (payLoad.type == POST_TYPE.PROFILE_POST) {
         postResponse = await userService.getPost(payLoad.userId, {
           pageSize: payLoad.pageSize,
@@ -56,6 +56,12 @@ export const PostUtils = {
         postResponse = {
           data: [res.data],
         };
+      } else if (payLoad.type == POST_TYPE.GROUP_POST) {
+        postResponse = await postService.get({
+          pageSize: payLoad.pageSize,
+          pageNumber: payLoad.pageNumber + 1,
+          groupId: payLoad.groupId,
+        });
       }
 
       // Map post => get comment, reaction, author

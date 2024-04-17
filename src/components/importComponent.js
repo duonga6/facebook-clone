@@ -13,6 +13,11 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/layouts/DefaultLayout"))
   );
 
+  app.component(
+    "KeyWrapper",
+    defineAsyncComponent(() => import("@/components/Utils/KeyWrapper"))
+  );
+
   // ==== POST
   app.component(
     "CommentComponent",
@@ -41,6 +46,11 @@ export function registerGlobalComponents(app) {
   app.component(
     "PostComponent",
     defineAsyncComponent(() => import("@/components/Post/PostComponent"))
+  );
+
+  app.component(
+    "PostDetailControl",
+    defineAsyncComponent(() => import("@/components/Post/PostDetailControl"))
   );
 
   app.component(
@@ -81,6 +91,11 @@ export function registerGlobalComponents(app) {
   app.component(
     "PostShare",
     defineAsyncComponent(() => import("@/components/Post/PostShareComponent"))
+  );
+
+  app.component(
+    "DragFile",
+    defineAsyncComponent(() => import("@/components/Utils/DragFileComponent"))
   );
 
   // === Home
@@ -127,6 +142,31 @@ export function registerGlobalComponents(app) {
   app.component(
     "CreateGroup",
     defineAsyncComponent(() => import("@/components/Group/CreateGroupComponent"))
+  );
+
+  app.component(
+    "GroupDetails",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupDetailsComponent"))
+  );
+
+  app.component(
+    "GroupHeader",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupHeaderComponent"))
+  );
+
+  app.component(
+    "GroupCreatePostOverlay",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupDiscuss/GroupCreatePostOverlayComponent"))
+  );
+
+  app.component(
+    "GroupCreatePost",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupDiscuss/GroupCreatePostComponent"))
+  );
+
+  app.component(
+    "GroupPost",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupDiscuss/GroupPostComponent"))
   );
 
   app.component("drop-down", Dropdown);

@@ -4,6 +4,7 @@
       :author="post.user"
       :createdAt="new Date(post.createdAt)"
       @onClickEditPost="handleShowEditPost"
+      @onClickDeletePost="handleDeletePost"
     ></PostHeader>
     <PostContent :data="post.content"></PostContent>
     <PostMedia :data="post.postMedias" :postId="post.id"></PostMedia>
@@ -123,7 +124,7 @@
     <PostComment
       :comment="post.comment"
       :postId="post.id"
-      :storeName="'homePost'"
+      :storeName="storeName"
     ></PostComment>
     <div class="create-comment-container">
       <div class="user-avatar">
@@ -416,6 +417,7 @@ export default {
           content: payLoad.data.content,
           mediasDelete: postMediasRemove,
           mediasAdd: postMediasAdd,
+          access: payLoad.data.access,
         };
 
         store
@@ -432,18 +434,10 @@ export default {
       }
     }
 
-    // Post media process
-
-    function generateClassMedias(totalItems, index = null) {
-      if (index == null) {
-        return `grid-cols-2`;
-      }
-
-      if (totalItems % 2 == 1 && index == 0) {
-        return "col-span-2";
-      }
-
-      return "col-span-1";
+    function handleDeletePost() {
+      store.dispatch(`${props.storeName}/deletePost`, {
+        id: props.post.id,
+      });
     }
 
     return {
@@ -474,9 +468,22 @@ export default {
       onClosePostEditor,
       handleShowEditPost,
       handleSharePost,
+      handleDeletePost,
     };
   },
 };
+
+function generateClassMedias(totalItems, index = null) {
+  if (index == null) {
+    return `grid-cols-2`;
+  }
+
+  if (totalItems % 2 == 1 && index == 0) {
+    return "col-span-2";
+  }
+
+  return "col-span-1";
+}
 </script>
 
 <style lang="scss" scoped>

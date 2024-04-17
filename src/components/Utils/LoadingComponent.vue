@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex justify-center">
     <svg
       class="animate-spin duration-1000 -ml-1 mr-3 text-white"
       :class="classCss"

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { commentReactionService } from "@/services/comment-reaction.service";
 import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
@@ -41,7 +40,6 @@ const createModule = () => ({
         commit("addPostSuccess", postData);
 
         return Promise.resolve();
-
       } catch (error) {
         toastAlert.error(error);
       }
@@ -57,9 +55,18 @@ const createModule = () => ({
         commit("updatePostSuccess", updatePostRes.data);
 
         return Promise.resolve();
-
       } catch (err) {
         toastAlert.error(err);
+      }
+    },
+
+    async deletePost({ commit }, payLoad) {
+      try {
+        await postService.delete(payLoad.id);
+        commit("deletePostSuccess", payLoad.id);
+      } catch (err) {
+        toastAlert.error("Có lỗi khi xóa post");
+        console.error(err);
       }
     },
 
@@ -87,9 +94,8 @@ const createModule = () => ({
         };
 
         commit("addPostSuccess", postData);
-
       } catch (err) {
-        toastAlert.error(err)
+        toastAlert.error(err);
       }
     },
 
@@ -146,9 +152,8 @@ const createModule = () => ({
         commit("createCommentReactionSuccess", {
           path: payLoad.path,
           postId: payLoad.postId,
-          data: res.data
+          data: res.data,
         });
-
       } catch (err) {
         toastAlert.error(err);
       }
@@ -169,7 +174,11 @@ const createModule = () => ({
 
     async updateCommentReaction({ commit }, payLoad) {
       try {
-        const res = await commentReactionService.update(payLoad.commentReactionId, payLoad.data);
+        console.log(payLoad);
+        const res = await commentReactionService.update(
+          payLoad.commentReactionId,
+          payLoad.data
+        );
         commit("updateCommentReactionSuccess", {
           postId: payLoad.postId,
           path: payLoad.path,
@@ -195,7 +204,6 @@ const createModule = () => ({
         });
 
         return Promise.resolve();
-
       } catch (error) {
         toastAlert.error(error);
       }
@@ -206,7 +214,6 @@ const createModule = () => ({
     },
 
     // #endregion
-
 
     reset({ commit }) {
       commit("reset");
@@ -229,12 +236,146 @@ const createModule = () => ({
       if (post) {
         post.content = payLoad.content;
         post.postMedias = payLoad.postMedias;
+        post.access = payLoad.access;
       }
+    },
+
+    deletePostSuccess(state, payLoad) {
+      state.data = state.data.filter((x) => x.id != payLoad);
     },
 
     reset(state) {
       state.data = [];
       state._isFetched = false;
+    },
+
+    // #endregion
+
+    // #region COMMENT REACTION
+
+    createCommentReactionSuccess(state, payLoad) {
+      const path = payLoad.path;
+      const postId = payLoad.postId;
+      const newReaction = payLoad.data;
+
+      const post = state.data.find((x) => x.id == postId);
+      if (post) {
+        let commentTarget = post.comment.comments.find((x) => x.id == path[0]);
+
+        for (let i = 1; i < path.length; i++) {
+          commentTarget = commentTarget.childComment.comments.find(
+            (x) => x.id == path[i]
+          );
+        }
+
+        // Check xem có reaction này trong reaction comment chưa
+        // có rồi thì thêm số lượng
+        // chưa có thì tạo mới
+        const commentReaction = commentTarget.reaction.reactions.find(
+          (x) => x.reactionId == newReaction.reactionId
+        );
+
+        if (commentReaction) {
+          commentReaction.total++;
+        } else {
+          commentTarget.reaction.reactions = [
+            ...commentTarget.reaction.reactions,
+            {
+              reactionId: newReaction.reactionId,
+              total: 1,
+            },
+          ];
+        }
+
+        // Thêm user reacted
+        commentTarget.reaction.userReacted = newReaction;
+      }
+    },
+    deleteCommentReactionSuccess(state, payLoad) {
+      const path = payLoad.path;
+      const postId = payLoad.postId;
+      const reactionIdDeleted = payLoad.reactionId;
+
+      const post = state.data.find((x) => x.id == postId);
+
+      if (post) {
+        let commentTarget = post.comment.comments.find((x) => x.id == path[0]);
+
+        for (let i = 1; i < path.length; i++) {
+          commentTarget = commentTarget.childComment.comments.find(
+            (x) => x.id == path[i]
+          );
+        }
+
+        // Giảm số lượng reaction, nếu nó = 1 thì xóa luôn
+        const commentReaction = commentTarget.reaction.reactions.find(
+          (x) => x.reactionId == reactionIdDeleted
+        );
+        if (commentReaction.total > 1) {
+          commentReaction.total--;
+        } else {
+          commentTarget.reaction.reactions =
+            commentTarget.reaction.reactions.filter(
+              (x) => x.reactionId != reactionIdDeleted
+            );
+        }
+
+        commentTarget.reaction.userReacted = null;
+      }
+    },
+
+    updateCommentReactionSuccess(state, payLoad) {
+      const postId = payLoad.postId;
+      const path = payLoad.path;
+      const reactionIdOld = payLoad.reactionIdOld;
+      const newReaction = payLoad.data;
+
+      const post = state.data.find((x) => x.id == postId);
+
+      if (post) {
+        let commentTarget = post.comment.comments.find((x) => x.id == path[0]);
+
+        for (let i = 1; i < path.length; i++) {
+          commentTarget = commentTarget.childComment.comments.find(
+            (x) => x.id == path[i]
+          );
+        }
+
+        // Giảm số lượng reaction, nếu nó = 1 thì xóa luôn
+        const commentReactionOld = commentTarget.reaction.reactions.find(
+          (x) => x.reactionId == reactionIdOld
+        );
+        if (commentReactionOld.total > 1) {
+          commentReactionOld.total--;
+        } else {
+          commentTarget.reaction.reactions =
+            commentTarget.reaction.reactions.filter(
+              (x) => x.reactionId != reactionIdOld
+            );
+        }
+
+        // Check xem có reaction này trong reaction comment chưa
+        // có rồi thì thêm số lượng
+        // chưa có thì tạo mới
+        const commentReactionNew = commentTarget.reaction.reactions.find(
+          (x) => x.reactionId == newReaction.reactionId
+        );
+
+        if (commentReactionNew) {
+          commentReactionNew.total++;
+        } else {
+          commentTarget.reaction.reactions = [
+            ...commentTarget.reaction.reactions,
+            {
+              reactionId: newReaction.reactionId,
+              total: 1,
+            },
+          ];
+        }
+
+        // Cập nhật user reacted
+        commentTarget.reaction.userReacted = newReaction;
+      }
     },
 
     // #endregion
@@ -271,23 +412,32 @@ const createModule = () => ({
       if (post) {
         post.reaction.userReacted = newUserReaction;
 
-        const postReactionItemOld = post.reaction.reactions.find(x => x.reactionId == payLoad.oldReactionId);
+        const postReactionItemOld = post.reaction.reactions.find(
+          (x) => x.reactionId == payLoad.oldReactionId
+        );
         if (postReactionItemOld) {
           if (postReactionItemOld.total > 1) {
             postReactionItemOld.total--;
           } else {
-            post.reaction.reactions = post.reaction.reactions.filter(x => x.reactionId != payLoad.oldReactionId);
+            post.reaction.reactions = post.reaction.reactions.filter(
+              (x) => x.reactionId != payLoad.oldReactionId
+            );
           }
         }
 
-        const postReactionItemNew = post.reaction.reactions.find(x => x.reactionId == newUserReaction.reactionId);
+        const postReactionItemNew = post.reaction.reactions.find(
+          (x) => x.reactionId == newUserReaction.reactionId
+        );
         if (postReactionItemNew) {
           postReactionItemNew.total++;
         } else {
-          post.reaction.reactions = [...post.reaction.reactions, {
-            reactionId: newUserReaction.reactionId,
-            total: 1
-          }];
+          post.reaction.reactions = [
+            ...post.reaction.reactions,
+            {
+              reactionId: newUserReaction.reactionId,
+              total: 1,
+            },
+          ];
         }
       }
     },
@@ -319,7 +469,7 @@ const createModule = () => ({
     // #region COMMENT
 
     createCommentSuccess(state, payLoad) {
-      const post = state.data.find(x => x.id == payLoad.data.postId);
+      const post = state.data.find((x) => x.id == payLoad.data.postId);
 
       if (post) {
         post.comment.totalComment++;
@@ -341,9 +491,13 @@ const createModule = () => ({
 
         // Có path là comment nằm trong comment khác, ngược lại là comment của post
         if (path) {
-          let commentParent = post.comment.comments.find(x => x.id == path[0]);
+          let commentParent = post.comment.comments.find(
+            (x) => x.id == path[0]
+          );
           for (let i = 1; i < path.length; i++) {
-            commentParent = commentParent.childComment.comments.find(x => x.id == path[i]);
+            commentParent = commentParent.childComment.comments.find(
+              (x) => x.id == path[i]
+            );
           }
 
           if (commentParent.childComment.comments.length == 0) {
@@ -352,14 +506,11 @@ const createModule = () => ({
 
           commentParent.childComment.comments = [
             ...commentParent.childComment.comments,
-            newComment
+            newComment,
           ];
           commentParent.childComment.total++;
         } else {
-          post.comment.comments = [
-            ...post.comment.comments,
-            newComment
-          ];
+          post.comment.comments = [...post.comment.comments, newComment];
           post.comment.total++;
         }
       }
@@ -370,13 +521,17 @@ const createModule = () => ({
       const postId = payLoad.postId;
       const commentData = payLoad.data;
 
-      const post = state.data.find(x => x.id == postId);
+      const post = state.data.find((x) => x.id == postId);
 
       if (post) {
         if (path) {
-          let commentTarget = post.comment.comments.find(x => x.id == path[0]);
+          let commentTarget = post.comment.comments.find(
+            (x) => x.id == path[0]
+          );
           for (let i = 1; i < path.length; i++) {
-            commentTarget = commentTarget.childComment.comments.find(x => x.id == path[i]);
+            commentTarget = commentTarget.childComment.comments.find(
+              (x) => x.id == path[i]
+            );
           }
 
           commentTarget.childComment.comments = [
@@ -400,119 +555,6 @@ const createModule = () => ({
     },
 
     // #endregion
-
-    // #region COMMENT REACTION
-
-    createCommentReactionSuccess(state, payLoad) {
-      const path = payLoad.path;
-      const postId = payLoad.postId;
-      const newReaction = payLoad.data;
-
-      const post = state.data.find(x => x.id == postId);
-
-      if (post) {
-        let commentTarget = post.comment.comments.find(x => x.id == path[0]);
-
-        for (let i = 1; i < path.length; i++) {
-          commentTarget = commentTarget.childComment.comments.find(x => x.id == path[i]);
-        }
-
-        // Check xem có reaction này trong reaction comment chưa
-        // có rồi thì thêm số lượng
-        // chưa có thì tạo mới
-        const commentReaction = commentTarget.reaction.reactions.find(x => x.reactionId == newReaction.reactionId);
-
-        if (commentReaction) {
-          commentReaction.total++;
-        } else {
-          commentTarget.reaction.reactions = [
-            ...commentTarget.reaction.reactions,
-            {
-              reactionId: newReaction.reactionId,
-              total: 1,
-            }
-          ];
-        }
-
-        // Thêm user reacted
-        commentTarget.reaction.userReacted = newReaction;
-      }
-    },
-    deleteCommentReactionSuccess(state, payLoad) {
-      const path = payLoad.path;
-      const postId = payLoad.postId;
-      const reactionIdDeleted = payLoad.reactionId;
-
-      const post = state.data.find(x => x.id == postId);
-
-      if (post) {
-        let commentTarget = post.comment.comments.find(x => x.id == path[0]);
-
-        for (let i = 1; i < path.length; i++) {
-          commentTarget = commentTarget.childComment.comments.find(x => x.id == path[i]);
-        }
-
-        // Giảm số lượng reaction, nếu nó = 1 thì xóa luôn
-        const commentReaction = commentTarget.reaction.reactions.find(x => x.reactionId == reactionIdDeleted);
-        if (commentReaction.total > 1) {
-          commentReaction.total--;
-        } else {
-          commentTarget.reaction.reactions = commentTarget.reaction.reactions.filter(x => x.reactionId != reactionIdDeleted);
-        }
-
-        commentTarget.reaction.userReacted = null;
-
-      }
-    },
-
-    updateCommentReactionSuccess(state, payLoad) {
-      const postId = payLoad.postId;
-      const path = payLoad.path;
-      const reactionIdOld = payLoad.reactionIdOld;
-      const newReaction = payLoad.data;
-
-      const post = state.data.find(x => x.id == postId);
-
-      if (post) {
-        let commentTarget = post.comment.comments.find(x => x.id == path[0]);
-
-        for (let i = 1; i < path.length; i++) {
-          commentTarget = commentTarget.childComment.comments.find(x => x.id == path[i]);
-        }
-
-        // Giảm số lượng reaction, nếu nó = 1 thì xóa luôn
-        const commentReactionOld = commentTarget.reaction.reactions.find(x => x.reactionId == reactionIdOld);
-        if (commentReactionOld.total > 1) {
-          commentReactionOld.total--;
-        } else {
-          commentTarget.reaction.reactions = commentTarget.reaction.reactions.filter(x => x.reactionId != reactionIdOld);
-        }
-
-        // Check xem có reaction này trong reaction comment chưa
-        // có rồi thì thêm số lượng
-        // chưa có thì tạo mới
-        const commentReactionNew = commentTarget.reaction.reactions.find(x => x.reactionId == newReaction.reactionId);
-
-        if (commentReactionNew) {
-          commentReactionNew.total++;
-        } else {
-          commentTarget.reaction.reactions = [
-            ...commentTarget.reaction.reactions,
-            {
-              reactionId: newReaction.reactionId,
-              total: 1,
-            }
-          ];
-        }
-
-        // Cập nhật user reacted
-        commentTarget.reaction.userReacted = newReaction;
-
-      }
-    }
-
-    // #endregion
-
   },
   getters: {
     // #region POST
@@ -522,7 +564,7 @@ const createModule = () => ({
 
     getFecthStatus(state) {
       return state._isFetched;
-    }
+    },
 
     // #endregion
   },

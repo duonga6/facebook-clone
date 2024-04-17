@@ -4,6 +4,7 @@ export const POST_TYPE = {
   HOME_POST: "Home Post",
   PROFILE_POST: "Profile Post",
   SINGLE_POST: "Single Post",
+  GROUP_POST: "Group Post",
 };
 
 export const FRIEND_TYPE = {
@@ -39,4 +40,11 @@ export const NOTIFICATION_TYPE = {
   FRIEND_REQUEST: "FRIEND_REQUEST",
   SHARE_POST: "SHARE_POST",
   COMMENT_REACTION: "COMMENT_REACTION",
+};
+
+export const GROUP_TYPE = {
+  ALL: 0,
+  JOINED_GROUP: 1,
+  MANAGE_BY_ME: 2,
+  BOTH_JOINED_MANAGED: 3,
 };

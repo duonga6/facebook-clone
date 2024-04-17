@@ -35,7 +35,6 @@ export default {
         window.innerHeight + window.scrollY >=
         document.documentElement.offsetHeight
       ) {
-        console.log("ABC");
         if (
           postData.state.pageNumber != 0 &&
           postData.state.pageSize * postData.state.pageNumber <

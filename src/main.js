@@ -8,6 +8,7 @@ import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import { clickOutside } from "./utilities/clickOutSide";
+import { scrollToBottom, scrollToBottomWindow } from "@/utilities/scrollEnd";
 import Lara from "@/presets/lara";
 
 const app = createApp(App);
@@ -20,4 +21,6 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.directive("click-outside", clickOutside);
+app.directive("scroll-bottom", scrollToBottom);
+app.directive("scroll-bottom-window", scrollToBottomWindow);
 app.mount("#app");

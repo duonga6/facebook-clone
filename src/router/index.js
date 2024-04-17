@@ -1,4 +1,4 @@
-import { FRIEND_TYPE } from "@/constants";
+import { FRIEND_TYPE, GROUP_TYPE } from "@/constants";
 import { createRouter, createWebHistory, useRouter } from "vue-router";
 
 const routes = [
@@ -49,14 +49,14 @@ const routes = [
   },
   {
     path: "/friends/request",
-    name: "friend-request",
+    name: "friends-request",
     meta: {
       requiresAuth: true,
       layout: "default",
     },
     component: () =>
       import(
-        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+        /* webpackChunkName: "friend-request" */ "../views/Friend/FriendDetailsView.vue"
       ),
     props: {
       friendType: FRIEND_TYPE.PENDING_OTHER,
@@ -71,7 +71,7 @@ const routes = [
     },
     component: () =>
       import(
-        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+        /* webpackChunkName: "friend-suggest" */ "../views/Friend/FriendDetailsView.vue"
       ),
     props: {
       friendType: FRIEND_TYPE.NOT_FRIEND,
@@ -86,7 +86,7 @@ const routes = [
     },
     component: () =>
       import(
-        /* webpackChunkName: "friendsuggest" */ "../views/Friend/FriendDetailsView.vue"
+        /* webpackChunkName: "friend-list" */ "../views/Friend/FriendDetailsView.vue"
       ),
     props: {
       friendType: FRIEND_TYPE.ACCEPTED,
@@ -101,8 +101,34 @@ const routes = [
     },
     component: () =>
       import(
-        /* webpackChunkName: "friendsuggest" */ "../views/PostDetailView.vue"
+        /* webpackChunkName: "post-detail" */ "../views/PostDetailView.vue"
       ),
+  },
+  {
+    path: "/group/:id",
+    name: "group-details",
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "group-details" */ "@/views/Group/GroupDetailsView.vue"
+      ),
+    children: [
+      {
+        path: "",
+        name: "group-details-post",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-details-post" */ "@/components/Group/Details/GroupDiscuss/GroupDiscussComponent.vue"
+          ),
+      },
+    ],
   },
   {
     path: "/groups",
@@ -112,7 +138,70 @@ const routes = [
       layout: "default",
     },
     component: () =>
-      import(/* webpackChunkName: "friend" */ "@/views/GroupView.vue"),
+      import(/* webpackChunkName: "group" */ "@/views/Group/GroupView.vue"),
+    children: [
+      {
+        path: "joined",
+        name: "group-joined",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-joind" */ "@/components/Group/GroupJoinedComponent.vue"
+          ),
+      },
+      {
+        path: "search",
+        name: "group-search",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-search" */ "@/components/Group/GroupSearchComponent.vue"
+          ),
+      },
+      {
+        path: "group-manage",
+        name: "group-manage",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-manage" */ "@/components/Group/GroupJoinedComponent.vue"
+          ),
+        props: {
+          groupType: GROUP_TYPE.MANAGE_BY_ME,
+        },
+      },
+      {
+        path: "feed",
+        name: "group-feed",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-feed" */ "@/components/Group/FeedComponent.vue"
+          ),
+      },
+    ],
+  },
+  {
+    path: "/not-found",
+    name: "not-found",
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+    },
+    component: () =>
+      import(/* webpackChunkName: "not-found" */ "../views/NotFoundView.vue"),
   },
 ];
 

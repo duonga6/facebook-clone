@@ -47,7 +47,13 @@
         </router-link>
       </li>
       <li>
-        <div class="navigation-item">
+        <router-link
+          :to="{
+            name: 'group',
+            params: null,
+          }"
+          class="navigation-item"
+        >
           <div class="navigation-img">
             <i
               data-visualcompletion="css-img"
@@ -64,7 +70,7 @@
             ></i>
           </div>
           <div class="navigation-text">Nhóm</div>
-        </div>
+        </router-link>
       </li>
       <li>
         <div class="navigation-item">

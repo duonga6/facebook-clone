@@ -1,5 +1,9 @@
 <template>
-  <div class="notification-container" @click="handleToggleShowNoti">
+  <div
+    class="notification-container"
+    @click="handleToggleShowNoti"
+    v-click-outside="() => (isShowNotify = false)"
+  >
     <div class="notification-icon">
       <svg viewBox="0 0 24 24" width="20" height="20" class="text-gray-950">
         <path
@@ -12,13 +16,13 @@
       :class="isShowNotify ? 'opacity-100 visible' : 'opacity-0 invisible'"
     >
       <div class="notify-header">Thông báo</div>
-      <div class="notify-list">
-        <router-link
-          :to="noti.router"
+      <div class="notify-list" v-scroll-bottom="onScrollBottom">
+        <div
           class="notify-item"
           v-for="noti in notiData.data"
           :key="noti.id"
           :class="{ readed: noti.readAt }"
+          @click="handleClickNotification(noti.id)"
         >
           <div class="from-user-avatar">
             <img :src="noti.fromUser.avatarUrl" alt="" />
@@ -33,7 +37,7 @@
           <div class="notify-read-status">
             <div class="notify-read-icon"></div>
           </div>
-        </router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -47,6 +51,8 @@ import { convertDateDisplay } from "@/utilities/dateUtils";
 import NotificationAlert from "@/components/Notification/NotificationAlertComponent.vue";
 import { generateNotificationUrl } from "@/utilities/notification";
 import eventBus from "@/common/EventBus";
+import { toastAlert } from "@/utilities/toastAlert";
+import router from "@/router";
 
 export default {
   components: {
@@ -58,7 +64,7 @@ export default {
     const notiData = reactive({
       data: [],
       endCursor: null,
-      pageSize: 10,
+      pageSize: 15,
       hasNext: true,
       total: 0,
     });
@@ -73,10 +79,29 @@ export default {
       eventBus.remove("NewNotificaiton");
     });
 
-    await getNotifications(notiData, true);
+    await getNotifications(notiData);
 
     function handleToggleShowNoti() {
       isShowNotify.value = !isShowNotify.value;
+    }
+
+    async function handleClickNotification(notiId) {
+      const notification = notiData.data.find((x) => x.id == notiId);
+      if (notification) {
+        try {
+          const res = await notificatonService.seen(notiId);
+          notification.readAt = res.data.readAt;
+        } catch (err) {
+          console.error(err);
+          toastAlert.error("Có lỗi khi đọc thông báo");
+        } finally {
+          router.push(notification.router);
+        }
+      }
+    }
+
+    async function onScrollBottom() {
+      await getNotifications(notiData);
     }
 
     return {
@@ -84,34 +109,37 @@ export default {
       notiData,
       handleToggleShowNoti,
       convertDateDisplay,
+      handleClickNotification,
+      onScrollBottom,
     };
   },
 };
 
 async function getNotifications(notiData) {
-  try {
-    const res = await notificatonService.get({
-      pageSize: notiData.pageSize,
-      endCursor: notiData.endCursor,
-      getNext: true,
-    });
+  if (notiData.hasNext) {
+    try {
+      const res = await notificatonService.get({
+        pageSize: notiData.pageSize,
+        endCursor: notiData.endCursor,
+        getNext: true,
+      });
 
-    res.data = await Promise.all(
-      res.data.map(async (item) => {
-        item.jsonDetail = JSON.parse(item.jsonDetail);
-        item.router = await generateNotificationUrl(item);
-        return item;
-      })
-    );
+      res.data = await Promise.all(
+        res.data.map(async (item) => {
+          item.jsonDetail = JSON.parse(item.jsonDetail);
+          item.router = await generateNotificationUrl(item);
+          return item;
+        })
+      );
 
-    // console.log(res);
-
-    notiData.total = res.totalItems;
-    notiData.data = [...notiData.data, ...res.data];
-    notiData.endCursor = res.endCursor;
-    notiData.hasNext = res.hasNext;
-  } catch (err) {
-    console.log(err);
+      notiData.total = res.totalItems;
+      notiData.data = [...notiData.data, ...res.data];
+      notiData.endCursor = res.endCursor;
+      notiData.hasNext = res.hasNextPage;
+    } catch (err) {
+      console.error(err);
+      toastAlert.error("Có lỗi khi tải thông báo");
+    }
   }
 }
 </script>
@@ -124,14 +152,27 @@ async function getNotifications(notiData) {
   }
 
   .notify-tab {
-    @apply absolute top-9 -right-14 w-90 bg-white shadow-custom-sm rounded-lg py-2 transition-all;
+    max-height: 80vh;
+    @apply absolute top-9 -right-14 w-90 bg-white shadow-custom-sm rounded-lg py-2 transition-all flex flex-col;
 
     .notify-header {
       @apply text-2xl font-bold px-4;
     }
 
     .notify-list {
-      @apply px-2 mt-4;
+      @apply px-2 mt-4 flex-1 overflow-y-auto;
+
+      &::-webkit-scrollbar {
+        @apply w-2;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        @apply rounded-lg bg-gray-300;
+      }
+
+      &::-webkit-scrollbar-track {
+        @apply hidden;
+      }
 
       .notify-item {
         @apply p-2 flex items-start space-x-2 rounded-lg hover:bg-gray-100 transition-all;
@@ -176,7 +217,7 @@ async function getNotifications(notiData) {
           }
 
           .notify-read-status {
-            .notification-icon {
+            .notify-read-icon {
               @apply bg-transparent;
             }
           }

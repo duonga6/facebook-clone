@@ -2,11 +2,12 @@ import { createStore } from "vuex";
 import { auth } from "./auth.module";
 import { user } from "./user.module";
 import { mediaType } from "./mediaType.module";
-import { post } from "./post.module";
 import { reaction } from "./reaction.module";
 import { profile } from "@/store/profile.module";
+import { group } from "@/store/group.module";
 import createModule from "./postModuleFactory";
 
+const groupPost = createModule();
 const homePost = createModule();
 const profilePost = createModule();
 const singlePost = createModule();
@@ -24,13 +25,14 @@ export default createStore({
   },
   modules: {
     auth,
+    groupPost,
     user,
     mediaType,
-    post,
     reaction,
     homePost,
     profilePost,
     singlePost,
     profile,
+    group,
   },
 });

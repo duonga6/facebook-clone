@@ -29,7 +29,7 @@
             {{ user?.firstName + " " + user?.lastName }}
           </p>
           <drop-down
-            v-model="selectedAccessRange"
+            v-model="postData.access"
             :options="dataAccessRange"
             optionLabel="name"
             :pt="{
@@ -143,11 +143,33 @@ export default {
     const user = tokenService.getUser();
     const postEditorType = { ...props }.action;
 
+    const dataAccessRange = ref([
+      {
+        name: "Công khai",
+        value: 2,
+        icon: "",
+      },
+      {
+        name: "Bạn bè",
+        value: 1,
+        icon: "",
+      },
+      {
+        name: "Chỉ mình tôi",
+        value: 0,
+        icon: "",
+      },
+    ]);
+
     const postData = reactive({
       content: null,
       postMedias: [],
       sharePostId: null,
       sharePostData: null,
+      access:
+        props.data?.access == null
+          ? dataAccessRange.value[0]
+          : dataAccessRange.value.find((x) => x.value == props.data.access),
     });
 
     switch (postEditorType) {
@@ -168,6 +190,9 @@ export default {
         break;
     }
 
+    console.log(props.data);
+    console.log(postData);
+
     const isCanSubmit = computed(() => {
       if (
         !postData.content &&
@@ -184,26 +209,6 @@ export default {
       return true;
     });
 
-    const dataAccessRange = ref([
-      {
-        name: "Công khai",
-        value: 1,
-        icon: "",
-      },
-      {
-        name: "Bạn bè",
-        value: 2,
-        icon: "",
-      },
-      {
-        name: "Chỉ mình tôi",
-        value: 3,
-        icon: "",
-      },
-    ]);
-
-    const selectedAccessRange = ref(dataAccessRange.value[0]);
-
     function handleCloseCreatePost() {
       emit("closePostEditor");
     }
@@ -211,7 +216,10 @@ export default {
     function handleSubmitForm() {
       emit("submittedForm", {
         action: postEditorType,
-        data: postData,
+        data: {
+          ...postData,
+          access: postData.access.value,
+        },
       });
     }
 
@@ -266,7 +274,6 @@ export default {
     return {
       user,
       postData,
-      selectedAccessRange,
       isCanSubmit,
       dataAccessRange,
       POST_EDITOR_TYPE,

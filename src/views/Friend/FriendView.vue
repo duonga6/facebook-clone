@@ -29,7 +29,7 @@
         </li>
         <router-link
           :to="{
-            name: 'friend-request',
+            name: 'friends-request',
             params: null,
           }"
           class="navbar-item"

@@ -108,6 +108,7 @@ export default {
         .dispatch("homePost/createPost", {
           content: payLoad.data.content,
           postMedias: postMediaFilter,
+          access: payLoad.data.access,
         })
         .then(() => {
           isShowCreatePost.value = false;

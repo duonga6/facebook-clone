@@ -53,6 +53,7 @@ module.exports = {
         15: "15px",
         11: "11px",
         12: "12px",
+        28: "28px",
       },
       maxWidth: {
         "news-width": "680px",

@@ -6,11 +6,24 @@
       </div>
       <div class="group-navbar-search">
         <i class="navbar-search-icon pi pi-search"></i>
-        <input class="navbar-search-input" placeholder="Tìm kiếm nhóm" />
+        <form @submit.prevent="onSubmitSearch">
+          <input
+            v-model="searchString"
+            class="navbar-search-input"
+            placeholder="Tìm kiếm nhóm"
+          />
+        </form>
       </div>
       <div class="navbar-scroll-container">
         <div class="group-navbar-list">
-          <div class="group-navbar-item active">
+          <router-link
+            :to="{
+              name: 'group-feed',
+              params: null,
+            }"
+            class="group-navbar-item"
+            :class="{ active: route.name == 'group-feed' }"
+          >
             <div class="navbar-item-icon">
               <i
                 data-visualcompletion="css-img"
@@ -28,8 +41,15 @@
               ></i>
             </div>
             <div class="navbar-item-text">Bảng feed của bạn</div>
-          </div>
-          <div class="group-navbar-item">
+          </router-link>
+          <router-link
+            :to="{
+              name: 'group-joined',
+              params: null,
+            }"
+            class="group-navbar-item"
+            :class="{ active: route.name == 'group-joined' }"
+          >
             <div class="navbar-item-icon">
               <i
                 data-visualcompletion="css-img"
@@ -47,33 +67,39 @@
               ></i>
             </div>
             <div class="navbar-item-text">Nhóm của bạn</div>
-          </div>
+          </router-link>
         </div>
         <div class="group-create">
-          <button class="group-create-btn">
+          <button class="group-create-btn" @click="isShowCreatePost = true">
             <i class="group-btn-icon pi pi-plus"></i>
             Tạo nhóm mới
           </button>
         </div>
-        <div class="group-joined-container">
+        <div class="group-joined-container" v-if="managedGroup.totalItems > 0">
           <div class="group-joined-header">
             <div class="grp-joined-header-text">Nhóm do bạn quản lý</div>
-            <div class="grp-joined-link">Xem tất cả</div>
+            <router-link
+              :to="{
+                name: 'group-manage',
+                params: null,
+              }"
+              class="grp-joined-link"
+              v-if="managedGroup.totalItems > managedGroup.data.length"
+            >
+              Xem tất cả
+            </router-link>
           </div>
           <div class="group-joined-list">
             <div
               class="group-joined-item"
-              v-for="(item, index) in 2"
-              :key="index"
+              v-for="group in managedGroup.data"
+              :key="group.id"
             >
               <div class="group-joined-image">
-                <img
-                  src="https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png"
-                  alt=""
-                />
+                <img :src="group.coverImage" alt="" />
               </div>
               <div class="group-joined-name">
-                Ngọc Rồng Online 7sv Thảo Luận - Mua Bán - Trao Đổi Gr Quang Huy
+                {{ group.name }}
               </div>
             </div>
           </div>
@@ -81,42 +107,141 @@
         <div class="group-joined-container">
           <div class="group-joined-header">
             <div class="grp-joined-header-text">Nhóm bạn đã tham gia</div>
-            <div class="grp-joined-link">Xem tất cả</div>
+            <router-link
+              :to="{
+                name: 'group-joined',
+                params: null,
+              }"
+              class="grp-joined-link"
+              v-if="joinedGroup.totalItems > joinedGroup.data.length"
+            >
+              Xem tất cả
+            </router-link>
           </div>
           <div class="group-joined-list">
             <div
               class="group-joined-item"
-              v-for="(item, index) in 10"
-              :key="index"
+              v-for="group in joinedGroup.data"
+              :key="group.id"
             >
               <div class="group-joined-image">
-                <img
-                  src="https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png"
-                  alt=""
-                />
+                <img :src="group.coverImage" alt="" />
               </div>
               <div class="group-joined-name">
-                Ngọc Rồng Online 7sv Thảo Luận - Mua Bán - Trao Đổi Gr Quang Huy
+                {{ group.name }}
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="group-content"></div>
+    <div class="group-content scroll">
+      <router-view :key="route.fullPath"></router-view>
+    </div>
   </div>
-  <CreateGroup @onSubmit="onSubmitCreateGroup"></CreateGroup>
+  <CreateGroup
+    v-if="isShowCreatePost"
+    @onSubmit="onSubmitCreateGroup"
+    @onClose="isShowCreatePost = false"
+  ></CreateGroup>
 </template>
 
 <script>
+import { onMounted, reactive, ref } from "vue";
+import { groupService } from "@/services/group.service";
+import { GROUP_TYPE } from "@/constants";
+import { toastAlert } from "@/utilities/toastAlert";
+import { useRoute, useRouter } from "vue-router";
 export default {
   setup() {
-    function onSubmitCreateGroup(data) {
-      console.log(data);
+    const isShowCreatePost = ref(false);
+    const route = useRoute();
+    const searchString = ref(null);
+    const router = useRouter();
+
+    const joinedGroup = reactive({
+      data: [],
+      pageSize: 10,
+      pageNumber: 0,
+      totalItems: 0,
+    });
+
+    const managedGroup = reactive({
+      data: [],
+      pageSize: 5,
+      pageNumber: 0,
+      totalItems: 0,
+    });
+
+    async function onSubmitCreateGroup(data) {
+      try {
+        const createGroupRes = await groupService.create(data);
+        managedGroup.data.unshift(createGroupRes.res);
+        managedGroup.totalItems++;
+      } catch (err) {
+        toastAlert.error(err);
+      } finally {
+        isShowCreatePost.value = false;
+        console.log(data);
+      }
     }
 
+    async function getJoinedGroup() {
+      try {
+        const res = await groupService.get({
+          pageSize: joinedGroup.pageSize,
+          pageNumber: joinedGroup.pageNumber + 1,
+          type: GROUP_TYPE.JOINED_GROUP,
+        });
+
+        joinedGroup.data = res.data;
+        joinedGroup.pageNumber++;
+        joinedGroup.totalItems = res.totalItems;
+      } catch (err) {
+        toastAlert.error(err);
+      }
+    }
+
+    async function getManageGroup() {
+      try {
+        const res = await groupService.get({
+          pageSize: managedGroup.pageSize,
+          pageNumber: managedGroup.pageNumber + 1,
+          type: GROUP_TYPE.MANAGE_BY_ME,
+        });
+
+        managedGroup.data = res.data;
+        managedGroup.pageNumber++;
+        managedGroup.totalItems = res.totalItems;
+      } catch (err) {
+        toastAlert.error(err);
+      }
+    }
+
+    function onSubmitSearch() {
+      if (searchString.value && searchString.value.trim()) {
+        router.push({
+          name: "group-search",
+          query: {
+            s: searchString.value.trim(),
+          },
+        });
+      }
+    }
+
+    onMounted(async () => {
+      await getJoinedGroup();
+      await getManageGroup();
+    });
+
     return {
+      joinedGroup,
+      searchString,
+      managedGroup,
+      isShowCreatePost,
+      route,
       onSubmitCreateGroup,
+      onSubmitSearch,
     };
   },
 };
@@ -124,7 +249,8 @@ export default {
 
 <style lang="scss" scoped>
 .group-container {
-  @apply pt-14 h-screen;
+  @apply pt-14 h-screen flex;
+
   .group-navbar {
     @apply w-90 shadow-md h-full flex flex-col;
     .group-navbar-header {
@@ -140,12 +266,12 @@ export default {
         @apply absolute left-6 top-1/2 -translate-y-1/2 text-15 text-gray-400;
       }
       .navbar-search-input {
-        @apply rounded-full bg-gray-100 text-15 px-8 py-1 w-full;
+        @apply rounded-full bg-gray-100 text-15 px-8 py-1.5 w-full outline-none border-none;
       }
     }
 
     .navbar-scroll-container {
-      @apply flex-1 overflow-y-auto;
+      @apply flex-1 overflow-y-auto mt-2;
 
       &::-webkit-scrollbar {
         @apply w-2 left-0;
@@ -224,6 +350,10 @@ export default {
         }
       }
     }
+  }
+
+  .group-content {
+    @apply bg-gray-100 flex-1 h-full;
   }
 }
 </style>

@@ -24,16 +24,7 @@ const setup = (store) => {
   // Thiết lập interceptors cho response
   axiosInstance.interceptors.response.use(
     // response không lỗi => response
-    (res) => {
-      if (res.data.success) {
-        return res.data;
-      } else {
-        if (res.data.errors) {
-          return Promise.reject(res.data.errors);
-        }
-        return Promise.reject(res);
-      }
-    },
+    (res) => res.data,
     // response có lỗi
     async (err) => {
       // Lưu lại config ban đầu
@@ -74,7 +65,7 @@ const setup = (store) => {
       }
 
       // Các lỗi khác
-      return Promise.reject(err);
+      return Promise.reject(err.response.data);
     }
   );
 };

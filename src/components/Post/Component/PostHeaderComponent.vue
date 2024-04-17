@@ -71,6 +71,14 @@
           <i class="post-more-icon pi pi-pencil"></i>
           <p class="post-more-text">Chỉnh sửa bài viết</p>
         </li>
+        <li
+          v-show="user.id == author.id"
+          class="post-more-item"
+          @click="handleDeletePost"
+        >
+          <i class="post-more-icon pi pi-trash"></i>
+          <p class="post-more-text">Xóa bài viết</p>
+        </li>
       </ul>
     </div>
   </div>
@@ -94,7 +102,7 @@ export default {
       default: false,
     },
   },
-  emits: ["onClickEditPost"],
+  emits: ["onClickEditPost", "onClickDeletePost"],
   setup(_, { emit }) {
     const user = tokenService.getUser();
     const isShowPostMore = ref(false);
@@ -108,12 +116,18 @@ export default {
       emit("onClickEditPost");
     }
 
+    function handleDeletePost() {
+      isShowPostMore.value = false;
+      emit("onClickDeletePost");
+    }
+
     return {
       isShowPostMore,
       user,
       handleClickShowPostMore,
       handleShowEditPost,
       convertDatePostDisplay,
+      handleDeletePost,
     };
   },
 };

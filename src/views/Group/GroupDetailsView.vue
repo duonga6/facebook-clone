@@ -1,18 +1,15 @@
 <template>
-  <PostDetailControl :key="postId" :postId="postId"></PostDetailControl>
+  <GroupDetails :key="groupId" :id="groupId"></GroupDetails>
 </template>
 
 <script>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-
 export default {
   setup() {
     const route = useRoute();
-    const postId = computed(() => route.params.id);
-
     return {
-      postId,
+      groupId: computed(() => route.params.id),
     };
   },
 };
