@@ -128,6 +128,42 @@ const routes = [
             /* webpackChunkName: "group-details-post" */ "@/components/Group/Details/GroupDiscuss/GroupDiscussComponent.vue"
           ),
       },
+      {
+        path: "member",
+        name: "group-details-member",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-details-member" */ "@/components/Group/Details/GroupMember/GroupMemberComponent.vue"
+          ),
+      },
+      {
+        path: "media",
+        name: "group-details-media",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-details-member" */ "@/components/Group/Details/GroupMedia/GroupMediaComponent.vue"
+          ),
+      },
+      {
+        path: "manager",
+        name: "group-details-manager",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-details-managner" */ "@/components/Group/Details/GroupManager/GroupManagerComponent.vue"
+          ),
+      },
     ],
   },
   {
@@ -190,6 +226,32 @@ const routes = [
           import(
             /* webpackChunkName: "group-feed" */ "@/components/Group/FeedComponent.vue"
           ),
+      },
+      {
+        path: ":id",
+        name: "group-details-preview",
+        meta: {
+          requiresAuth: true,
+          layout: "default",
+        },
+        component: () =>
+          import(
+            /* webpackChunkName: "group-details-preview" */ "@/views/Group/GroupDetailsView.vue"
+          ),
+        children: [
+          {
+            path: "",
+            name: "group-details-preview-post",
+            meta: {
+              requiresAuth: true,
+              layout: "default",
+            },
+            component: () =>
+              import(
+                /* webpackChunkName: "group-details-preview-post" */ "@/components/Group/Details/GroupDiscuss/GroupDiscussComponent.vue"
+              ),
+          },
+        ],
       },
     ],
   },

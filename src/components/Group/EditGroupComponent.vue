@@ -3,8 +3,8 @@
     <form @submit.prevent="handleSubmitForm" class="create-group-form">
       <div class="group-header">
         <div class=""></div>
-        <span class="group-header-text">Tạo nhóm</span>
-        <button @click.prevent="handleCloseGroupCreate" class="group-close-btn">
+        <span class="group-header-text">Cập nhật nhóm</span>
+        <button @click.prevent="handleCloseGroupEdit" class="group-close-btn">
           <i class="group-close-icon pi pi-times"></i>
         </button>
       </div>
@@ -84,7 +84,7 @@
           <template v-if="isUploading">
             <LoadingComponent :classCss="'w-6 h-6'"></LoadingComponent>
           </template>
-          <template v-else> Tạo </template>
+          <template v-else> Lưu </template>
         </button>
       </div>
     </form>
@@ -95,9 +95,17 @@
 import { computed, reactive, ref } from "vue";
 import { uploadFileService } from "@/services/upload-file.service";
 import { toastAlert } from "@/utilities/toastAlert";
+import { useStore } from "vuex";
 export default {
+  props: {
+    data: {
+      type: Object,
+      required: true,
+    },
+  },
   emits: ["onSubmit", "onClose"],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const store = useStore();
     const isCanSubmit = computed(() => groupData.name?.trim());
     const isUploading = ref(false);
     let fileUpload = null;
@@ -114,11 +122,11 @@ export default {
     ]);
 
     const groupData = reactive({
-      name: null,
-      description: null,
-      coverImage: null,
-      isPublic: accessRange.value[0],
-      preCensored: false,
+      name: props.data.name,
+      description: props.data.description,
+      coverImage: props.data.coverImage,
+      isPublic: accessRange.value.find((x) => x.value == props.data.isPublic),
+      preCensored: props.data.preCensored,
     });
 
     async function handleSubmitForm() {
@@ -132,17 +140,19 @@ export default {
           );
           groupData.coverImage = uploadRes.data.url;
         } catch (ex) {
-          toastAlert.error(ex);
-          handleCloseGroupCreate();
-        } finally {
+          toastAlert.error("Có lỗi khi upload ảnh bìa");
+          handleCloseGroupEdit();
           isUploading.value = false;
         }
       }
 
-      emit("onSubmit", {
+      await store.dispatch("group/updateGroupInfo", {
         ...groupData,
         isPublic: groupData.isPublic.value,
       });
+
+      isUploading.value = false;
+      handleCloseGroupEdit();
     }
 
     function handleOpenSelectCoverImage() {
@@ -168,7 +178,7 @@ export default {
       groupData.coverImage = null;
     }
 
-    function handleCloseGroupCreate() {
+    function handleCloseGroupEdit() {
       emit("onClose");
     }
 
@@ -180,7 +190,7 @@ export default {
       handleOpenSelectCoverImage,
       handleSubmitForm,
       handleRemoveCoverImage,
-      handleCloseGroupCreate,
+      handleCloseGroupEdit,
     };
   },
 };

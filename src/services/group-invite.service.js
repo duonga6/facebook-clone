@@ -8,6 +8,11 @@ export const groupInviteService = {
       params: params,
     });
   },
+  getCursor(params) {
+    return api.get(`${BASE_URL}/Cursor`, {
+      params: params,
+    });
+  },
   create(data) {
     return api.post(BASE_URL, data);
   },
@@ -19,5 +24,11 @@ export const groupInviteService = {
   },
   accept(id) {
     return api.put(BASE_URL + `/${id}`);
+  },
+  getById(id) {
+    return api.get(BASE_URL + `/${id}`);
+  },
+  getByUIDandGrID(groupId, userId) {
+    return api.get(BASE_URL + `/${groupId}/${userId}`);
   },
 };

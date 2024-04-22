@@ -24,7 +24,9 @@ const setup = (store) => {
   // Thiết lập interceptors cho response
   axiosInstance.interceptors.response.use(
     // response không lỗi => response
-    (res) => res.data,
+    (res) => {
+      return res.data;
+    },
     // response có lỗi
     async (err) => {
       // Lưu lại config ban đầu

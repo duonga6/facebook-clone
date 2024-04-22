@@ -78,10 +78,13 @@ import { uploadFileService } from "@/services/upload-file.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import tokenService from "@/services/token.service";
 import { useStore } from "vuex";
+import { useRoute } from "vue-router";
 export default {
-  emits: ["onSubmitedPost", "onCloseCreatePost"],
+  emits: ["onCloseCreatePost"],
   setup(_, { emit }) {
     const store = useStore();
+    const route = useRoute();
+    const groupId = route.params.id;
     const user = tokenService.getUser();
     const isPublic = computed(
       () => store.getters["group/getGroupInfo"]?.isPublic
@@ -137,10 +140,19 @@ export default {
           );
         }
 
-        emit("onSubmitedPost", {
-          content: postData.content,
-          postMedias: mediaUploaded,
-        });
+        try {
+          await store.dispatch("groupPost/createPost", {
+            groupId: groupId,
+            access: 3,
+            content: postData.content,
+            postMedias: mediaUploaded,
+          });
+        } catch (err) {
+          console.log(err);
+          toastAlert.error("Có lỗi khi tạo bài viết");
+        }
+
+        handleCloseCreatePost();
       }
     }
 

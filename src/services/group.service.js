@@ -26,4 +26,9 @@ export const groupService = {
       params: params,
     });
   },
+  getPostFeed(params) {
+    return api.get(BASE_URL + "/Feed", {
+      params: params,
+    });
+  },
 };

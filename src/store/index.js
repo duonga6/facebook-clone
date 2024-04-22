@@ -11,6 +11,7 @@ const groupPost = createModule();
 const homePost = createModule();
 const profilePost = createModule();
 const singlePost = createModule();
+const feedPost = createModule();
 
 export default createStore({
   state: {},
@@ -34,5 +35,6 @@ export default createStore({
     singlePost,
     profile,
     group,
+    feedPost,
   },
 });

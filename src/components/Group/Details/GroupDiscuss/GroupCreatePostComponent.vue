@@ -36,7 +36,6 @@
   </div>
   <GroupCreatePostOverlay
     v-if="isShowCreatePost"
-    @onSubmitedPost="onSubmitedCreatePost"
     @onCloseCreatePost="isShowCreatePost = false"
   ></GroupCreatePostOverlay>
 </template>
@@ -44,36 +43,14 @@
 <script>
 import tokenService from "@/services/token.service";
 import { ref } from "vue";
-import { useRoute } from "vue-router";
-import { useStore } from "vuex";
-import { toastAlert } from "@/utilities/toastAlert";
 export default {
   setup() {
     const user = tokenService.getUser();
     const isShowCreatePost = ref(false);
-    const route = useRoute();
-    const store = useStore();
-    const groupId = route.params.id;
-
-    async function onSubmitedCreatePost(data) {
-      try {
-        await store.dispatch("groupPost/createPost", {
-          ...data,
-          groupId: groupId,
-          access: 3,
-        });
-
-        isShowCreatePost.value = false;
-      } catch (err) {
-        console.error(err);
-        toastAlert.error("Có lỗi khi tạo bài viết");
-      }
-    }
 
     return {
       user,
       isShowCreatePost,
-      onSubmitedCreatePost,
     };
   },
 };

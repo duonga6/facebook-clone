@@ -182,7 +182,7 @@ async function getGroupData(groupData, type) {
           }
 
           .group-item-desc {
-            @apply text-13 leading-15;
+            @apply text-13 leading-15 line-clamp-2;
           }
         }
       }

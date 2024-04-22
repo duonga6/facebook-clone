@@ -58,6 +58,11 @@ body {
   @apply bg-gray-300 text-dark;
 }
 
+.divider-gray-200 {
+  height: 1px;
+  @apply bg-gray-200;
+}
+
 /* 
 &::-webkit-scrollbar {
   @apply w-1 left-0;

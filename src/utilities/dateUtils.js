@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export const days = Array.from({ length: 31 }, (_, i) => i + 1);
 export const months = [
   {
@@ -141,4 +142,11 @@ export function convertDatePostDisplay(date) {
   } else {
     return "1 phút";
   }
+}
+
+export function convertDateStringToDateDisplay(dateString) {
+  const date = new Date(dateString);
+  const dateConverted = (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + "/" + (date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1)
+    + "/" + date.getFullYear();
+  return dateConverted;
 }

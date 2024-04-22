@@ -7,4 +7,22 @@ function generateUUID() {
   );
 }
 
-export { generateUUID };
+function deepCopy(src) {
+  if (src === null || typeof src !== "object") {
+    return src;
+  }
+
+  const target = Array.isArray(src) ? [] : {};
+
+  for (const key in src) {
+    if (typeof src[key] === "function") {
+      target[key] = src[key];
+    } else {
+      target[key] = deepCopy(src[key]);
+    }
+  }
+
+  return target;
+}
+
+export { generateUUID, deepCopy };

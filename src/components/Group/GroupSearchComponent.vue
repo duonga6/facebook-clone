@@ -8,7 +8,7 @@
       >
         <router-link
           :to="{
-            name: 'group-details',
+            name: 'group-details-post',
             params: {
               id: group.id,
             },
@@ -20,7 +20,7 @@
         <div class="group-item-info">
           <router-link
             :to="{
-              name: 'group-details',
+              name: 'group-details-post',
               params: {
                 id: group.id,
               },
@@ -40,12 +40,23 @@
           </div>
         </div>
         <div class="group-item-action">
-          <button class="group-action-btn btn--access" v-if="group.isJoined">
+          <router-link
+            :to="{
+              name: 'group-details-post',
+              params: {
+                id: group.id,
+              },
+            }"
+            class="group-action-btn btn--access"
+            v-if="group.currentMember"
+          >
             Truy cập
-          </button>
+          </router-link>
           <button
             class="group-action-btn btn--access"
-            v-else-if="group.isWaitingAccept"
+            v-else-if="
+              group.currentInvite && !group.currentInvite.adminAccepted
+            "
             @click="handleCancelRequestJoin(group.id)"
           >
             Đang chờ
@@ -76,6 +87,8 @@ import { toastAlert } from "@/utilities/toastAlert";
 import { groupService } from "@/services/group.service";
 import { GROUP_TYPE } from "@/constants";
 import { groupInviteService } from "@/services/group-invite.service";
+import { grMemberService } from "@/services/group-member.service";
+import tokenService from "@/services/token.service";
 
 export default {
   setup() {
@@ -104,10 +117,10 @@ export default {
 
         switch (res.message.substring(0, 4)) {
           case "GA01":
-            group.isWaitingAccept = true;
+            group.currentInvite = res.data;
             break;
           case "GA02":
-            group.isJoined = true;
+            group.currentMember = true;
             break;
           case "GF01":
             toastAlert.error("Bạn đã gửi yêu cầu tham gia rồi");
@@ -127,7 +140,7 @@ export default {
         await groupInviteService.deleteByGroupId(groupId);
 
         const group = groupData.data.find((x) => x.id == groupId);
-        group.isWaitingAccept = false;
+        group.currentInvite = null;
       } catch (err) {
         console.error(err);
         toastAlert.error("Có lỗi khi hủy yêu cầu");
@@ -162,9 +175,49 @@ async function getGroupData(groupData, searchString) {
         searchString,
       });
 
+      const userId = tokenService.getUser().id;
+
+      const groupResMapped = await Promise.all(
+        res.data.map(async (item) => {
+          try {
+            const currentMemberRes = await grMemberService.getByGrIdAndUserId(
+              item.id,
+              userId
+            );
+            item.currentMember = currentMemberRes.data;
+          } catch (err) {
+            if (err.status != 404) {
+              console.error(err);
+              toastAlert.error("Có lỗi khi tải trạng thái member");
+            }
+
+            item.currentMember = null;
+          }
+
+          try {
+            const currentInviteRes = await groupInviteService.getByUIDandGrID(
+              item.id,
+              userId
+            );
+            item.currentInvite = currentInviteRes.data;
+          } catch (err) {
+            if (err.status != 404) {
+              console.error(err);
+              toastAlert.error("Có lỗi khi tải trạng thái member");
+            }
+
+            item.currentInvite = null;
+          }
+
+          return item;
+        })
+      );
+
+      console.log(groupResMapped);
+
       groupData.total = res.totalItems;
       groupData._isFetched = true;
-      groupData.data = [...groupData.data, ...res.data];
+      groupData.data = [...groupData.data, ...groupResMapped];
       groupData.pageNumber++;
     } catch (err) {
       console.error(err);

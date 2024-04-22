@@ -5,6 +5,7 @@ export const POST_TYPE = {
   PROFILE_POST: "Profile Post",
   SINGLE_POST: "Single Post",
   GROUP_POST: "Group Post",
+  GROUP_FEED: "Group feed post",
 };
 
 export const FRIEND_TYPE = {
@@ -47,4 +48,11 @@ export const GROUP_TYPE = {
   JOINED_GROUP: 1,
   MANAGE_BY_ME: 2,
   BOTH_JOINED_MANAGED: 3,
+};
+
+export const MEMBER_TYPE = {
+  ALL: 0,
+  ADMIN_ONLY: 1,
+  SUPER_ADMIN: 2,
+  NORMAL: 3,
 };

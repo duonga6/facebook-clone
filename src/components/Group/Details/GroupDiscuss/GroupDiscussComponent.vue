@@ -1,90 +1,125 @@
 <template>
-  <div class="group-discuss-bg">
-    <div class="group-discuss-container">
-      <div class="group-discuss-post">
-        <GroupCreatePost></GroupCreatePost>
-        <GroupPost></GroupPost>
-      </div>
-      <div class="group-discuss-info" v-if="groupInfo">
-        <div class="group-introduce">
-          <div class="group-introduce-heading">Giới thiệu</div>
-          <div class="group-introduce-name">{{ groupInfo.name }}</div>
-          <div class="group-introduce-type">
-            <i class="group-type-icon pi pi-globe"></i>
-            <div class="group-type-info" v-if="groupInfo.isPublic">
-              <div class="group-type-name">Công khai</div>
-              <div class="group-type-desc">
-                Bất kỳ ai cũng có thể nhìn thấy mọi người trong nhóm và những gì
-                họ đăng.
-              </div>
-            </div>
-            <div class="group-type-info" v-else>
-              <div class="group-type-name">Riêng tư</div>
-              <div class="group-type-desc">
-                Chỉ thành viên mới nhìn thấy mọi người trong nhóm và những gì họ
-                đăng.
-              </div>
+  <div class="group-discuss-container">
+    <div class="group-discuss-post">
+      <GroupCreatePost
+        v-if="groupInfo && groupInfo.currentMember"
+      ></GroupCreatePost>
+      <GroupPost></GroupPost>
+    </div>
+    <div class="group-discuss-info" v-if="groupInfo">
+      <div class="group-introduce">
+        <div class="group-introduce-heading">
+          <div class="introduce-heading-text">Giới thiệu</div>
+          <div
+            class="introduce-heading-action"
+            v-if="groupInfo.currentMember?.isSuperAdmin"
+          >
+            <button class="introduce-action-btn" @click="handleShowEditGroup">
+              <i class="introduce-action-icon pi pi-pencil" />
+            </button>
+          </div>
+        </div>
+        <div class="group-introduce-name">{{ groupInfo.name }}</div>
+        <div class="group-introduce-type" v-if="groupInfo.isPublic">
+          <i class="group-type-icon pi pi-globe"></i>
+          <div class="group-type-info">
+            <div class="group-type-name">Công khai</div>
+            <div class="group-type-desc">
+              Bất kỳ ai cũng có thể nhìn thấy mọi người trong nhóm và những gì
+              họ đăng.
             </div>
           </div>
         </div>
-        <div class="group-new-media">
-          <div class="new-media-heading">File phương tiện mới đây</div>
-          <div class="new-media-list">
-            <router-link
-              :to="{
-                name: 'post-detail',
-                params: {
-                  id: media.postId,
-                },
-                query: {
-                  mediaId: media.id,
-                },
-              }"
-              class="new-media-item"
-              v-for="media in mediaNew.data.slice(0, 4)"
-              :key="media.id"
-            >
-              <img v-if="media.mediaTypeId == 2" :src="media.url" alt="" />
-              <video v-if="media.mediaTypeId == 3" :src="media.url"></video>
-            </router-link>
+        <div class="group-introduce-type" v-else>
+          <i class="group-type-icon pi pi-lock"></i>
+          <div class="group-type-info">
+            <div class="group-type-name">Riêng tư</div>
+            <div class="group-type-desc">
+              Chỉ thành viên mới nhìn thấy mọi người trong nhóm và những gì họ
+              đăng.
+            </div>
           </div>
+        </div>
+      </div>
+      <div class="group-new-media">
+        <div class="new-media-heading">File phương tiện mới đây</div>
+        <div class="new-media-list">
           <router-link
-            to="#"
-            v-if="mediaNew.total > 4"
-            class="new-media-show-more btn"
+            :to="{
+              name: 'post-detail',
+              params: {
+                id: media.postId,
+              },
+              query: {
+                mediaId: media.id,
+              },
+            }"
+            class="new-media-item"
+            v-for="media in mediaNew.data.slice(0, 4)"
+            :key="media.id"
           >
-            Xem tất cả
+            <img v-if="media.mediaTypeId == 2" :src="media.url" alt="" />
+            <video v-if="media.mediaTypeId == 3" :src="media.url"></video>
           </router-link>
         </div>
+        <router-link
+          to="#"
+          v-if="mediaNew.total > 4"
+          class="new-media-show-more btn"
+        >
+          Xem tất cả
+        </router-link>
       </div>
     </div>
   </div>
+  <EditGroup
+    v-if="isShowEditGroup"
+    :data="groupInfo"
+    @onClose="prehandleCloseEditGroup"
+    @onSubmit="onSubmitedEditGroup"
+  ></EditGroup>
 </template>
 
 <script>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 export default {
   setup() {
     const store = useStore();
     const groupInfo = computed(() => store.getters["group/getGroupInfo"]);
     const mediaNew = computed(() => store.getters["group/getMediaState"]);
+    const isShowEditGroup = ref(false);
+
+    function handleShowEditGroup() {
+      if (groupInfo.value) {
+        isShowEditGroup.value = true;
+      }
+    }
+
+    function prehandleCloseEditGroup() {
+      isShowEditGroup.value = false;
+    }
+
+    function onSubmitedEditGroup(data) {
+      console.log(data);
+    }
 
     return {
       groupInfo,
       mediaNew,
+      isShowEditGroup,
+      handleShowEditGroup,
+      prehandleCloseEditGroup,
+      onSubmitedEditGroup,
     };
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.group-discuss-bg {
-  @apply bg-gray-200;
-}
 .group-discuss-container {
   max-width: 1250px;
-  @apply px-8 pt-4 mx-auto grid grid-cols-10 gap-4 bg-gray-200;
+  @apply px-8 mx-auto grid grid-cols-10 gap-4 bg-gray-200;
 
   .group-discuss-post {
     @apply col-span-6;
@@ -97,10 +132,25 @@ export default {
       @apply p-4 rounded-lg border bg-white;
 
       .group-introduce-heading {
-        @apply font-semibold text-17;
+        @apply flex items-center justify-between;
+
+        .introduce-heading-text {
+          @apply font-semibold text-17;
+        }
+
+        .introduce-heading-action {
+          .introduce-action-btn {
+            @apply w-8 h-8 flex items-center justify-center;
+
+            .introduce-action-icon {
+              @apply text-15 font-semibold;
+            }
+          }
+        }
       }
+
       .group-introduce-name {
-        @apply text-15 mt-4;
+        @apply text-15 mt-2;
       }
 
       .group-introduce-type {

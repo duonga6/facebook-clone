@@ -1,15 +1,12 @@
 <template>
-  <div class="group-header-container">
+  <div class="group-header-container" v-if="groupInfo">
     <div class="group-header-main">
       <div class="group-header-cover">
-        <img
-          src="https://www.facebook.com/images/groups/groups-default-cover-photo-2x.png"
-          alt=""
-        />
+        <img :src="groupInfo.coverImage" alt="" />
       </div>
       <div class="group-header-info">
         <div class="group-header-name">
-          {{ data.name }}
+          {{ groupInfo.name }}
         </div>
         <div class="group-header-more">
           <div class="group-header-member">
@@ -17,22 +14,31 @@
               <div class="group-header-type">
                 <i class="group-type-icon pi pi-globe"></i>
                 <span class="group-type-text"
-                  >Nhóm {{ data.isPublic ? "Công khai" : "Riêng tư" }}</span
+                  >Nhóm
+                  {{ groupInfo.isPublic ? "Công khai" : "Riêng tư" }}</span
                 >
               </div>
               <div class="group-status-split pi pi-circle-fill"></div>
               <div class="group-header-total">
-                {{ data.totalMember }} thành viên
+                {{ groupInfo.totalMember }} thành viên
               </div>
             </div>
-            <div class="group-header-member">
+            <div class="group-header-member" v-if="groupHeaderMember">
               <ul class="member-list">
-                <li class="member-item" v-for="i in 5" :key="i">
+                <li
+                  class="member-item"
+                  v-for="(member, index) in groupHeaderMember"
+                  :key="index"
+                  :style="
+                    index > 0
+                      ? `transform: translateX(-${index * 5}px); z-index: ${
+                          groupHeaderMember.length - index
+                        }`
+                      : `z-index: ${groupHeaderMember.length}`
+                  "
+                >
                   <div class="member-avatar">
-                    <img
-                      src="https://i.pinimg.com/736x/bf/eb/a8/bfeba832a872fef7b0426e3c314041d9.jpg"
-                      alt=""
-                    />
+                    <img :src="member.user.avatarUrl" alt="" />
                   </div>
                 </li>
               </ul>
@@ -40,12 +46,17 @@
           </div>
           <div class="group-header-action">
             <div class="group-join">
-              <button class="group-join-btn btn btn-dark" v-if="data.isJoined">
+              <div
+                class="group-join-btn btn btn-dark"
+                v-if="groupInfo.currentMember"
+              >
                 Đã tham gia
-              </button>
+              </div>
               <button
                 class="group-join-btn btn btn-dark"
-                v-else-if="data.isWaitingAccept"
+                v-else-if="
+                  groupInfo.currentInvite && !group.currentInvite.adminAccepted
+                "
                 @click="handleCancelRequestInvite"
               >
                 Đang chờ
@@ -63,9 +74,55 @@
       </div>
       <div class="group-header-navbar">
         <div class="group-header-nav">
-          <div class="group-nav-item active">Thảo luận</div>
-          <div class="group-nav-item">Mọi người</div>
-          <div class="group-nav-item">File phương tiện</div>
+          <router-link
+            :to="{
+              name: 'group-details-post',
+              params: {
+                id: groupInfo.id,
+              },
+            }"
+            class="group-nav-item"
+            :class="{
+              active:
+                currentRouteName == 'group-details-post' ||
+                currentRouteName == 'group-details-preview-post',
+            }"
+            >Thảo luận</router-link
+          >
+          <router-link
+            :to="{
+              name: 'group-details-member',
+              params: {
+                id: groupInfo.id,
+              },
+            }"
+            class="group-nav-item"
+            :class="{ active: currentRouteName == 'group-details-member' }"
+            >Thành viên</router-link
+          >
+          <router-link
+            :to="{
+              name: 'group-details-media',
+              params: {
+                id: groupInfo.id,
+              },
+            }"
+            class="group-nav-item"
+            :class="{ active: currentRouteName == 'group-details-media' }"
+            >File phương tiện</router-link
+          >
+          <router-link
+            v-if="groupInfo.currentMember?.isAdmin"
+            :to="{
+              name: 'group-details-manager',
+              params: {
+                id: groupInfo.id,
+              },
+            }"
+            class="group-nav-item"
+            :class="{ active: currentRouteName == 'group-details-manager' }"
+            >Quản lý</router-link
+          >
         </div>
         <div class="group-nav-action">
           <button class="group-nav-search btn">
@@ -80,15 +137,13 @@
 <script>
 import { toastAlert } from "@/utilities/toastAlert";
 import { groupInviteService } from "@/services/group-invite.service";
+import { useRoute } from "vue-router";
+import { computed } from "vue";
+import { useStore } from "vuex";
 export default {
-  props: {
-    data: {
-      type: Object,
-      required: true,
-    },
-  },
-  emits: ["onCancelRequestInvite", "onSentRequestInvite"],
   setup(props, { emit }) {
+    const store = useStore();
+    const route = useRoute();
     async function handleCancelRequestInvite() {
       try {
         await groupInviteService.deleteByGroupId(props.data.id);
@@ -112,6 +167,9 @@ export default {
     }
 
     return {
+      currentRouteName: computed(() => route.name),
+      groupHeaderMember: computed(() => store.getters["group/getHeaderMember"]),
+      groupInfo: computed(() => store.getters["group/getGroupInfo"]),
       handleCancelRequestInvite,
       handleSendRequestInvite,
     };
@@ -121,7 +179,7 @@ export default {
 
 <style lang="scss" scoped>
 .group-header-container {
-  @apply pt-14;
+  @apply bg-white;
 
   .group-header-main {
     max-width: 1250px;

@@ -64,6 +64,11 @@ export function registerGlobalComponents(app) {
   );
 
   app.component(
+    "CreateComment",
+    defineAsyncComponent(() => import("@/components/Post/Component/CreateCommentComponent"))
+  );
+
+  app.component(
     "PostHeader",
     defineAsyncComponent(() => import("@/components/Post/Component/PostHeaderComponent"))
   );
@@ -145,6 +150,11 @@ export function registerGlobalComponents(app) {
   );
 
   app.component(
+    "EditGroup",
+    defineAsyncComponent(() => import("@/components/Group/EditGroupComponent"))
+  );
+
+  app.component(
     "GroupDetails",
     defineAsyncComponent(() => import("@/components/Group/Details/GroupDetailsComponent"))
   );
@@ -167,6 +177,11 @@ export function registerGlobalComponents(app) {
   app.component(
     "GroupPost",
     defineAsyncComponent(() => import("@/components/Group/Details/GroupDiscuss/GroupPostComponent"))
+  );
+
+  app.component(
+    "GroupManager",
+    defineAsyncComponent(() => import("@/components/Group/Details/GroupManager/GroupManagerComponent"))
   );
 
   app.component("drop-down", Dropdown);

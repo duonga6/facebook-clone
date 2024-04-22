@@ -291,7 +291,7 @@ export default {
           },
           (error) => {
             messagesLogin.length = 0;
-            messagesLogin.push(...error);
+            messagesLogin.push(...error.errors);
           }
         )
         .finally(() => {

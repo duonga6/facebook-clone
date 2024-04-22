@@ -1,9 +1,11 @@
 import { POST_TYPE } from "@/constants";
 import { commentReactionService } from "@/services/comment-reaction.service";
+import { groupService } from "@/services/group.service";
 import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { userService } from "@/services/user.service";
+import { toastAlert } from "@/utilities/toastAlert";
 
 export const PostUtils = {
   async getCommentChild(postId, pageSize, endCursor = null, parentId = null) {
@@ -92,6 +94,57 @@ export const PostUtils = {
       return Promise.resolve(postResponse);
     } catch (error) {
       console.log(error);
+    }
+  },
+
+  async getPostCursorWithDependent(payLoad) {
+    try {
+      let postResponse;
+
+      switch (payLoad.type) {
+        case POST_TYPE.GROUP_FEED:
+          postResponse = await groupService.getPostFeed({
+            cursor: payLoad.cursor,
+            pageSize: payLoad.pageSize,
+          });
+          break;
+      }
+
+      // Map to get comment, reaction
+
+      postResponse.data = await Promise.all(
+        postResponse.data.map(async (post) => {
+          const reactionsRes = await postReactionService.getOverview(post.id);
+          const commentsRes = await PostUtils.getCommentChild(
+            post.id,
+            // Math.floor(Math.random() * 2) + 1
+            3
+          );
+          const totalCommentCount = await postCommentService.getCount(post.id);
+          post.comment = {
+            comments: commentsRes.data,
+            pageSize: 5,
+            endCursor: commentsRes.endCursor,
+            total: commentsRes.totalItems,
+            hasNextPage: commentsRes.hasNextPage,
+            totalComment: totalCommentCount.data,
+          };
+
+          post.reaction = reactionsRes.data;
+
+          return post;
+        })
+      );
+
+      return postResponse;
+    } catch (error) {
+      console.error(error);
+      toastAlert.error("Có lỗi khi tải bài viết");
+      return {
+        data: [],
+        hasNextPage: false,
+        endCursor: null,
+      };
     }
   },
 };

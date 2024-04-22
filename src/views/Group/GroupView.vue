@@ -90,7 +90,13 @@
             </router-link>
           </div>
           <div class="group-joined-list">
-            <div
+            <router-link
+              :to="{
+                name: 'group-details-preview-post',
+                params: {
+                  id: group.id,
+                },
+              }"
               class="group-joined-item"
               v-for="group in managedGroup.data"
               :key="group.id"
@@ -101,7 +107,7 @@
               <div class="group-joined-name">
                 {{ group.name }}
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
         <div class="group-joined-container">
@@ -119,7 +125,13 @@
             </router-link>
           </div>
           <div class="group-joined-list">
-            <div
+            <router-link
+              :to="{
+                name: 'group-details-preview-post',
+                params: {
+                  id: group.id,
+                },
+              }"
               class="group-joined-item"
               v-for="group in joinedGroup.data"
               :key="group.id"
@@ -130,12 +142,12 @@
               <div class="group-joined-name">
                 {{ group.name }}
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
     </div>
-    <div class="group-content scroll">
+    <div class="group-content">
       <router-view :key="route.fullPath"></router-view>
     </div>
   </div>
@@ -176,10 +188,11 @@ export default {
     async function onSubmitCreateGroup(data) {
       try {
         const createGroupRes = await groupService.create(data);
-        managedGroup.data.unshift(createGroupRes.res);
+        managedGroup.data.unshift(createGroupRes.data);
         managedGroup.totalItems++;
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi tạo nhóm");
       } finally {
         isShowCreatePost.value = false;
         console.log(data);
@@ -252,7 +265,7 @@ export default {
   @apply pt-14 h-screen flex;
 
   .group-navbar {
-    @apply w-90 shadow-md h-full flex flex-col;
+    @apply w-90 shadow-md h-full flex flex-col border-r border-gray-100;
     .group-navbar-header {
       @apply px-4 py-2;
       .navbar-header-text {
@@ -353,7 +366,7 @@ export default {
   }
 
   .group-content {
-    @apply bg-gray-100 flex-1 h-full;
+    @apply bg-gray-100 flex-1 h-full overflow-y-auto;
   }
 }
 </style>

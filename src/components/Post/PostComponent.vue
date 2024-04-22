@@ -88,7 +88,7 @@
             data-visualcompletion="css-img"
             class="x1b0d499 x1d69dk1"
             style="
-              background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yM/r/hkTW1TGOL4u.png?_nc_eui2=AeGkMalMnnCuQjq8wSweaCGhK0oghgF2B60rSiCGAXYHrf3usIKQVB_Hb0JAAS9ieq067UAb5z7pJNRlrypKAvUe');
+              background-image: url('https://ik.imagekit.io/duonga6/hkTW1TGOL4u.png');
               background-position: 0px -550px;
               background-size: auto;
               width: 20px;
@@ -105,10 +105,8 @@
       <div class="post-action-item action-share" @click="handleSharePost">
         <div class="post-action-icon">
           <i
-            data-visualcompletion="css-img"
-            class="x1b0d499 x1d69dk1"
             style="
-              background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yM/r/hkTW1TGOL4u.png?_nc_eui2=AeGkMalMnnCuQjq8wSweaCGhK0oghgF2B60rSiCGAXYHrf3usIKQVB_Hb0JAAS9ieq067UAb5z7pJNRlrypKAvUe');
+              background-image: url('https://ik.imagekit.io/duonga6/hkTW1TGOL4u.png');
               background-position: 0px -886px;
               background-size: auto;
               width: 20px;
@@ -126,36 +124,7 @@
       :postId="post.id"
       :storeName="storeName"
     ></PostComment>
-    <div class="create-comment-container">
-      <div class="user-avatar">
-        <img class="" :src="user?.avatarUrl" alt="" />
-      </div>
-      <div class="post-comment-input">
-        <div class="flex">
-          <textarea
-            @input="onCommentChange"
-            rows="1"
-            placeholder="Viết bình luận công khai..."
-            class="comment-input"
-            id="create-comment-input"
-            v-model="commentInput"
-            ref="commentInputEl"
-          />
-        </div>
-        <div class="post-send-btn">
-          <button
-            class="button-send"
-            :disabled="!commentInput"
-            @click="createComment"
-          >
-            <i
-              class="pi pi-send text-md"
-              :class="commentInput ? 'text-primary' : 'text-gray-400'"
-            ></i>
-          </button>
-        </div>
-      </div>
-    </div>
+    <CreateComment :storeName="storeName" :postId="post.id"></CreateComment>
   </div>
   <PostEditor
     v-if="isShowPostEditor"
@@ -238,12 +207,12 @@ export default {
     const postDate = new Date(props.post.createdAt);
 
     // Timer show reaction
-    let timerHover;
+    let timerHoverReaction;
 
     // Hiện chọn reaction khi hover nút like
     function onHoverReaction() {
       if (!isShowReaction.value) {
-        timerHover = setTimeout(() => {
+        timerHoverReaction = setTimeout(() => {
           isShowReaction.value = true;
         }, 500);
       }
@@ -251,7 +220,7 @@ export default {
 
     // Ẩn chọn reaction
     function onCloseReaction() {
-      clearTimeout(timerHover);
+      clearTimeout(timerHoverReaction);
       setTimeout(() => {
         isShowReaction.value = false;
       }, 200);
@@ -270,7 +239,7 @@ export default {
 
     // User chọn reaction khi hover nút like
     function handleSelectReaction(id) {
-      clearTimeout(timerHover);
+      clearTimeout(timerHoverReaction);
       isShowReaction.value = false;
 
       // User chưa reaction ? thêm : cập nhật | xóa
@@ -287,7 +256,6 @@ export default {
     }
 
     // ---- Reaction CRUD
-
     function createReaction(id = 1) {
       store.dispatch(`${props.storeName}/createUserReaction`, {
         postId: props.post.id,
