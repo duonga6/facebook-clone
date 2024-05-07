@@ -1,61 +1,59 @@
 <template>
-  <div class="user-post-list space-y-4">
+  <div
+    class="user-post-list space-y-4"
+    v-scroll-near-bottom-window="onScrollEnd"
+  >
     <PostComponent
-      v-for="post in postData.data"
+      v-for="post in post.data"
       :key="post.id"
       :post="post"
       :storeName="'profilePost'"
     ></PostComponent>
   </div>
-  <div
-    class="empty-post"
-    v-if="!postData.data.length && postData.state.isFetched"
-  >
+  <div class="empty-post" v-if="!post.data.length && !post.hasNextPage">
     Chưa có bài viết nào
   </div>
 </template>
 <script>
-import { computed, onMounted, onUnmounted, reactive } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useStore } from "vuex";
+import { POST_TYPE } from "@/constants";
 export default {
   props: {
     userId: {
       type: String,
     },
   },
-  async setup() {
+  async setup(props) {
     const store = useStore();
-    const postData = reactive({
-      data: computed(() => store.getters["profilePost/getPosts"]),
-      state: computed(() => store.getters["profile/getPostState"]),
-    });
+    const isFetching = ref(false);
+    const post = computed(() => store.getters["profilePost/getPosts"]);
 
-    function handleScrollWindow() {
-      if (
-        window.innerHeight + window.scrollY >=
-        document.documentElement.offsetHeight
-      ) {
-        if (
-          postData.state.pageNumber != 0 &&
-          postData.state.pageSize * postData.state.pageNumber <
-            postData.state.total
-        ) {
-          store.dispatch("profile/getPost");
-        }
+    async function onScrollEnd() {
+      if (!isFetching.value && post.value.hasNextPage) {
+        isFetching.value = true;
+        await store.dispatch("profilePost/getPost");
+        isFetching.value = false;
       }
     }
 
-    onMounted(() => {
-      console.log(postData);
-      window.addEventListener("scroll", handleScrollWindow);
-    });
+    onMounted(async () => {
+      if (!post.value.postType) {
+        store.dispatch("profilePost/initStore", {
+          postType: POST_TYPE.PROFILE_POST,
+          userId: props.userId,
+          pageSize: 5,
+        });
+      }
 
-    onUnmounted(() => {
-      window.removeEventListener("scroll", handleScrollWindow);
+      if (post.value.hasNextPage) {
+        await store.dispatch("profilePost/getPost");
+      }
     });
 
     return {
-      postData,
+      post,
+      onScrollEnd,
     };
   },
 };

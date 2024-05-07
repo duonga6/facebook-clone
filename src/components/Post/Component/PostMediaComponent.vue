@@ -73,10 +73,10 @@ export default {
 .post-media {
   .post-media-list {
     .post-media-item {
-      @apply relative;
+      @apply relative aspect-square;
 
       .image {
-        @apply w-full h-62 object-cover cursor-pointer;
+        @apply w-full h-full object-cover cursor-pointer;
       }
 
       .video {

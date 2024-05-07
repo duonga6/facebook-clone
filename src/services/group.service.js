@@ -31,4 +31,9 @@ export const groupService = {
       params: params,
     });
   },
+  getPostCursor(id, params) {
+    return api.get(BASE_URL + `/${id}/Posts/Cursor`, {
+      params: params,
+    });
+  },
 };

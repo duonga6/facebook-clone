@@ -9,6 +9,11 @@ export const postService = {
       params: params,
     });
   },
+  getCursor(params) {
+    return api.get(BASE_URL + "/Cursor", {
+      params: params,
+    });
+  },
   create(data) {
     return api.post(BASE_URL, data);
   },

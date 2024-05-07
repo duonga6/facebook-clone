@@ -224,7 +224,7 @@ const routes = [
         },
         component: () =>
           import(
-            /* webpackChunkName: "group-feed" */ "@/components/Group/FeedComponent.vue"
+            /* webpackChunkName: "group-feed" */ "@/components/Group/Feed/FeedComponent.vue"
           ),
       },
       {
@@ -254,6 +254,18 @@ const routes = [
         ],
       },
     ],
+  },
+  {
+    path: "/search",
+    name: "search",
+    meta: {
+      requiresAuth: true,
+      layout: "default",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "search-component" */ "../views/SearchView.vue"
+      ),
   },
   {
     path: "/not-found",

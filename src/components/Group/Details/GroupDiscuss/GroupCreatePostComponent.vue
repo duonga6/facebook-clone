@@ -21,7 +21,9 @@
             alt=""
           />
         </div>
-        <div class="post-option-text">Bài viết ẩn danh</div>
+        <div class="post-option-text" @click="isShowCreatePost = true">
+          Bài viết ẩn danh
+        </div>
       </div>
       <div class="post-option-item">
         <div class="post-option-icon">
@@ -30,27 +32,41 @@
             alt=""
           />
         </div>
-        <div class="post-option-text">Ảnh/Video</div>
+        <div class="post-option-text" @click="isShowCreatePost = true">
+          Ảnh/Video
+        </div>
       </div>
     </div>
   </div>
-  <GroupCreatePostOverlay
+  <PostEditor
     v-if="isShowCreatePost"
-    @onCloseCreatePost="isShowCreatePost = false"
-  ></GroupCreatePostOverlay>
+    @closePostEditor="isShowCreatePost = false"
+    @submittedForm="onSubmitPost"
+  ></PostEditor>
 </template>
 
 <script>
 import tokenService from "@/services/token.service";
 import { ref } from "vue";
+import { POST_EDITOR_TYPE } from "@/constants";
+import { useStore } from "vuex";
 export default {
   setup() {
     const user = tokenService.getUser();
+    const store = useStore();
     const isShowCreatePost = ref(false);
+
+    async function onSubmitPost(payLoad) {
+      await store.dispatch("groupPost/createPost", payLoad.data).then(() => {
+        isShowCreatePost.value = false;
+      });
+    }
 
     return {
       user,
       isShowCreatePost,
+      POST_EDITOR_TYPE,
+      onSubmitPost,
     };
   },
 };

@@ -32,6 +32,9 @@ export const postCommentService = {
   delete(commetId) {
     return api.delete(`${BASE_URL}/${commetId}`);
   },
+  update(commentId, data) {
+    return api.put(`${BASE_URL}/${commentId}`, data);
+  },
   getById(id) {
     return api.get(`${BASE_URL}/${id}`);
   }

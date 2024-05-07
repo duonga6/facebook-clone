@@ -2,7 +2,13 @@
   <div class="add-post__form">
     <form class="form-container" @submit.prevent="handleSubmitForm">
       <div class="form-heading">
-        <p class="form-heading__title">Tạo bài viết</p>
+        <p class="form-heading__title">
+          <span v-if="action == POST_EDITOR_TYPE.CREATE">Tạo bài viết</span>
+          <span v-else-if="action == POST_EDITOR_TYPE.UPDATE"
+            >Cập nhật bài viết</span
+          >
+          <span v-else>Chia sẻ bài viết</span>
+        </p>
         <div
           class="form-heading__icon-container"
           @click="handleCloseCreatePost"
@@ -22,13 +28,14 @@
       <hr />
       <div class="user-info-container">
         <div class="avatar-container">
-          <img class="avatar-img" :src="user?.avatarUrl" alt="" />
+          <img class="avatar-img" :src="user.avatarUrl" alt="" />
         </div>
         <div class="user-info">
           <p class="user-info__name">
-            {{ user?.firstName + " " + user?.lastName }}
+            {{ user.firstName + " " + user.lastName }}
           </p>
           <drop-down
+            v-if="!groupInfo"
             v-model="postData.access"
             :options="dataAccessRange"
             optionLabel="name"
@@ -40,28 +47,43 @@
             }"
           >
           </drop-down>
+          <div class="post-access" v-else>
+            <template v-if="groupInfo.isPublic">
+              <div class="post-access-icon">
+                <AccessIcon :value="3"></AccessIcon>
+              </div>
+              <div class="post-access-text">Nhóm công khai</div>
+            </template>
+            <template v-else>
+              <div class="post-access-icon">
+                <AccessIcon :value="4"></AccessIcon>
+              </div>
+              <div class="post-access-text">Nhóm riêng tư</div>
+            </template>
+          </div>
         </div>
       </div>
-      <!-- show share post -->
-      <template v-if="action == POST_EDITOR_TYPE.SHARE">
+      <div class="post-scroll-container">
         <div class="post-content">
           <textarea
             class="post-content__text"
             :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
             v-model="postData.content"
+            rows="2"
+            :class="postContentTextSize"
+            @input="onContentChange"
           />
         </div>
-        <PostShare :post="data"></PostShare>
-      </template>
-      <template v-else>
-        <div class="post-content">
-          <textarea
-            class="post-content__text"
-            :placeholder="`${user?.lastName} ơi, bạn đang nghĩ gì thế?`"
-            v-model="postData.content"
-          />
-        </div>
-        <div class="post-media-container" v-if="postData.postMedias.length > 0">
+        <PostShare
+          v-if="action == POST_EDITOR_TYPE.SHARE || data?.sharePost"
+          :post="data.sharePost ? data.sharePost : data"
+        ></PostShare>
+        <div
+          class="post-media-container"
+          v-if="
+            postData.postMedias.length > 0 && action != POST_EDITOR_TYPE.SHARE
+          "
+        >
           <ul
             class="post-media-list grid gap-1"
             :class="generateClassMedias(postData.postMedias.length)"
@@ -100,8 +122,14 @@
             </li>
           </ul>
         </div>
-        <drag-file @DragedFile="onDragedFile"></drag-file>
-      </template>
+        <DragFile
+          v-if="
+            action == POST_EDITOR_TYPE.CREATE ||
+            (action == POST_EDITOR_TYPE.UPDATE && !data?.sharePost)
+          "
+          @DragedFile="onDragedFile"
+        ></DragFile>
+      </div>
       <div class="add-post-btn p-4">
         <button
           class="w-full rounded-lg p-2 font-semibold transition-all"
@@ -121,27 +149,54 @@
 
 <script>
 import { computed, reactive, ref } from "vue";
-import DragFile from "../Utils/DragFileComponent.vue";
-import LoadingComponent from "../Utils/LoadingComponent.vue";
 import { uploadFileService } from "@/services/upload-file.service";
 import { generateUUID } from "@/utilities";
 import tokenService from "@/services/token.service";
 import { POST_EDITOR_TYPE } from "@/constants";
+import { useStore } from "vuex";
+import { toastAlert } from "@/utilities/toastAlert";
+import { groupService } from "@/services/group.service";
 export default {
-  components: { DragFile, LoadingComponent },
   props: {
     data: {
       type: Object,
+    },
+    postId: {
+      type: String,
     },
     action: {
       type: Number,
       default: POST_EDITOR_TYPE.CREATE,
     },
+    groupShareId: {
+      type: String,
+    },
   },
   emits: ["closePostEditor", "submittedForm"],
-  setup(props, { emit }) {
+  async setup(props, { emit }) {
+    const store = useStore();
+    const groupShareData = ref(null);
+    const groupInfo = computed(() =>
+      props.groupShareId
+        ? groupShareData.value
+        : store.getters["group/getGroupInfo"]
+    );
     const user = tokenService.getUser();
     const postEditorType = { ...props }.action;
+    const postContentTextSize = computed(() => {
+      if (postData.postMedias.length || props.groupShareId) return "text-15";
+      return "text-2xl";
+    });
+
+    if (props.groupShareId) {
+      try {
+        const groupRes = await groupService.getById(props.groupShareId);
+        groupShareData.value = groupRes.data;
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi lấy dữ liệu nhóm chia sẻ");
+      }
+    }
 
     const dataAccessRange = ref([
       {
@@ -164,12 +219,19 @@ export default {
     const postData = reactive({
       content: null,
       postMedias: [],
+      groupId: null,
       sharePostId: null,
       sharePostData: null,
-      access:
-        props.data?.access == null
+      access: computed(() => {
+        if (groupInfo.value && groupInfo.value.isPublic)
+          return {
+            value: 3,
+          };
+
+        return props.data?.access == null
           ? dataAccessRange.value[0]
-          : dataAccessRange.value.find((x) => x.value == props.data.access),
+          : dataAccessRange.value.find((x) => x.value == props.data.access);
+      }),
     });
 
     switch (postEditorType) {
@@ -187,11 +249,9 @@ export default {
       case POST_EDITOR_TYPE.SHARE:
         postData.sharePostId = { ...props.data }.id;
         postData.sharePostData = { ...props.data };
+        postData.groupId = { ...props }.groupShareId;
         break;
     }
-
-    console.log(props.data);
-    console.log(postData);
 
     const isCanSubmit = computed(() => {
       if (
@@ -214,12 +274,24 @@ export default {
     }
 
     function handleSubmitForm() {
+      const postDataMapped = {
+        ...postData,
+        access: postData.access.value,
+        postMedias: postData.postMedias.map((media) => {
+          return {
+            id: media.id,
+            mediaTypeId: media.mediaTypeId,
+            url: media.url,
+            title: media.title,
+          };
+        }),
+      };
+
+      delete postDataMapped.sharePostData;
+
       emit("submittedForm", {
         action: postEditorType,
-        data: {
-          ...postData,
-          access: postData.access.value,
-        },
+        data: postDataMapped,
       });
     }
 
@@ -271,17 +343,26 @@ export default {
       return "col-span-1";
     }
 
+    function onContentChange(e) {
+      const textareaElement = e.target;
+      textareaElement.style.height = 0;
+      textareaElement.style.height = textareaElement.scrollHeight + "px";
+    }
+
     return {
       user,
+      groupInfo,
       postData,
       isCanSubmit,
       dataAccessRange,
+      postContentTextSize,
       POST_EDITOR_TYPE,
       deleteUploadedImage,
       onDragedFile,
       generateClassMedias,
       handleCloseCreatePost,
       handleSubmitForm,
+      onContentChange,
     };
   },
 };
@@ -292,15 +373,9 @@ export default {
   @apply fixed top-0 left-0 bottom-0 right-0 bg-gray-100 bg-opacity-80 z-10 flex justify-center items-center transition-all;
 
   .form-container {
-    @apply bg-white w-500px rounded-lg shadow-lg row-end-auto relative overflow-hidden;
-
-    .bg-overlay-drag-file {
-      @apply absolute top-0 left-0 right-0 bottom-0 bg-gray-100 bg-opacity-75 z-50 flex items-center justify-center;
-
-      .overlay-drag-text {
-        @apply text-xl;
-      }
-    }
+    @apply bg-white rounded-lg shadow-lg row-end-auto relative overflow-hidden flex flex-col;
+    max-height: 90vh;
+    width: 600px;
 
     .form-heading {
       @apply relative;
@@ -339,25 +414,55 @@ export default {
         .user-info__name {
           @apply font-semibold text-15;
         }
+
+        .post-access {
+          @apply flex items-center space-x-1 bg-gray-100 rounded-md p-2 py-0.5;
+
+          .post-access-icon {
+          }
+          .post-access-text {
+            @apply text-13 font-semibold text-gray-600 leading-18;
+          }
+        }
+      }
+    }
+
+    .post-scroll-container {
+      @apply flex-1 overflow-y-auto mt-4;
+
+      &::-webkit-scrollbar {
+        @apply w-2;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        @apply rounded-lg bg-gray-300;
+      }
+
+      &::-webkit-scrollbar-track {
+        @apply hidden;
       }
     }
 
     .post-content {
-      @apply p-4;
+      @apply p-4 pt-0;
 
       .post-content__text {
-        @apply text-2xl placeholder:text-gray-600 outline-none w-full;
+        @apply placeholder:text-gray-600 outline-none w-full resize-none;
       }
     }
 
     .post-media-container {
       @apply m-4 border border-gray-200 rounded-lg p-2 relative;
+
       .post-media-list {
-        @apply max-h-96 overflow-y-auto;
+        @apply overflow-y-auto;
+
         .post-media-item {
           @apply w-auto;
+
           .post-media-type {
             @apply w-full h-full rounded-md overflow-hidden relative;
+
             .image {
               @apply object-cover w-full h-full max-h-56 min-h-32;
             }
@@ -374,6 +479,7 @@ export default {
 
             .remove-uploaded-image {
               @apply hidden absolute top-1 right-1 w-7 h-7 items-center justify-center rounded-full bg-gray-100 hover:bg-red-500 hover:text-white transition-all cursor-pointer;
+
               .remove-icon {
                 @apply text-12;
               }
@@ -398,6 +504,7 @@ export default {
 
       .post-media-close {
         @apply w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 absolute -top-2 -right-2;
+
         .close-icon {
           @apply text-gray-500 font-semibold;
         }
@@ -406,6 +513,7 @@ export default {
 
     .additional-container {
       @apply m-4 mb-0 px-4 py-2 flex items-center justify-between
+      
         border border-gray-300 rounded-lg;
 
       .additional-text {

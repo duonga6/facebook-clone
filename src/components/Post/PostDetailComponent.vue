@@ -11,8 +11,7 @@
       :class="isMediaExist ? 'col-span-2' : 'col-start-2 col-span-1 rounded-lg'"
     >
       <PostHeader
-        :author="post.user"
-        :createdAt="new Date(post.createdAt)"
+        :data="post"
         @onClickEditPost="handleShowEditPost"
       ></PostHeader>
       <PostContent :data="post.content"></PostContent>

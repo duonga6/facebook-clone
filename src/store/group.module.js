@@ -13,9 +13,9 @@ const defaultState = () => {
     post: {
       data: [],
       pageSize: 10,
-      pageNumber: 0,
+      endCursor: null,
       total: 0,
-      isFetched: false,
+      hasNextPage: true,
     },
     media: {
       data: [],
@@ -61,14 +61,17 @@ export const group = {
   namespaced: true,
   state: defaultState,
   actions: {
-    async initGroupStore({ dispatch }, payLoad) {
+    async initGroupStore({ dispatch, state }, payLoad) {
       await dispatch("getGroupInfo", payLoad);
       await dispatch("getPost");
       await dispatch("getMedia");
       await dispatch("getMember");
-      await dispatch("getInviteMember", {
-        searchString: null,
-      });
+
+      if (state.info.currentMember?.isAdmin) {
+        await dispatch("getInviteMember", {
+          searchString: null,
+        });
+      }
     },
 
     async getGroupInfo({ commit, dispatch }, payLoad) {
@@ -111,15 +114,21 @@ export const group = {
     },
 
     async getPost({ commit, state, dispatch }) {
-      const postRes = await PostUtils.getPostWithDependent({
-        type: POST_TYPE.GROUP_POST,
-        pageSize: state.post.pageSize,
-        pageNumber: state.post.pageNumber,
-        groupId: state.info.id,
-      });
+      if (!state.post.hasNextPage) return;
+      try {
+        const postRes = await PostUtils.getPostCursorWithDependent({
+          type: POST_TYPE.GROUP_POST,
+          pageSize: state.post.pageSize,
+          groupId: state.info.id,
+          cursor: state.post.endCursor,
+        });
 
-      commit("getPostSuccess", postRes);
-      dispatch("groupPost/setPosts", postRes.data, { root: true });
+        commit("getPostSuccess", postRes);
+        dispatch("groupPost/setPosts", postRes.data, { root: true });
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi tải bài viết");
+      }
     },
 
     async getMedia({ commit, state }) {
@@ -222,6 +231,29 @@ export const group = {
       });
     },
 
+    async sendRequestInvite({ commit, state }) {
+      try {
+        const inviteRes = await groupInviteService.create({
+          groupId: state.info.id,
+        });
+
+        commit("sentInviteRequest", inviteRes);
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi yêu cầu tham gia");
+      }
+    },
+
+    async cancelRequestInvite({ commit, state }) {
+      try {
+        await groupInviteService.delete(state.info.currentInvite.id);
+        commit("cancelledRequestInvite");
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi hủy yêu cầu");
+      }
+    },
+
     async acceptInvite({ commit }, payLoad) {
       try {
         const acceptRes = await groupInviteService.accept(payLoad.id);
@@ -230,26 +262,30 @@ export const group = {
             inviteId: payLoad.id,
             memberData: acceptRes.data,
           });
-        } else {
-          commit("inviteAcceptedOrRefused", {
-            inviteId: payLoad.id,
-          });
         }
       } catch (err) {
         console.error(err);
         toastAlert.error("Có lỗi khi chấp nhận yêu cầu tham gia");
+      } finally {
+        commit("inviteAcceptedOrRefused", {
+          inviteId: payLoad.id,
+        });
       }
     },
 
     async refuseInvite({ commit }, payLoad) {
       try {
         await groupInviteService.delete(payLoad.id);
+      } catch (error) {
+        console.error(error);
+        if (error.status == 404) {
+          commit("remo");
+        }
+        toastAlert.error("Có lỗi khi từ chối yêu cầu");
+      } finally {
         commit("inviteAcceptedOrRefused", {
           inviteId: payLoad.id,
         });
-      } catch (error) {
-        console.error(error);
-        toastAlert.error("Có lỗi khi từ chối yêu cầu");
       }
     },
 
@@ -270,6 +306,15 @@ export const group = {
       } catch (error) {
         console.error(error);
         toastAlert.error("Có lỗi khi thu hồi quyền quản trị");
+      }
+    },
+
+    async deleteGroup({ state }) {
+      try {
+        await groupService.delete(state.info.id);
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi xóa nhóm");
       }
     },
 
@@ -297,8 +342,8 @@ export const group = {
 
     getPostSuccess(state, payLoad) {
       state.post.total = payLoad.totalItems;
-      state.post.pageNumber++;
-      state.post.isFetched = true;
+      state.post.endCursor = payLoad.endCursor;
+      state.post.hasNextPage = payLoad.hasNextPage;
     },
 
     getMediaSuccess(state, payLoad) {
@@ -359,6 +404,14 @@ export const group = {
       state.memberInvite.total--;
     },
 
+    sentInviteRequest(state, payLoad) {
+      state.info.currentInvite = payLoad.data;
+    },
+
+    cancelledRequestInvite(state) {
+      state.info.currentInvite = null;
+    },
+
     addedOrRemovedAdminRole(state, payLoad) {
       const member = state.member.data.find((x) => x.id == payLoad.id);
       member.isAdmin = payLoad.isAdmin;
@@ -391,6 +444,7 @@ export const group = {
     getMediaState: (state) => state.media,
     getSearchMember: (state) => state.memberSearch,
     getInviteMember: (state) => state.memberInvite,
+    getInviteMemberCount: (state) => state.memberInvite.total,
     getInviteMemberSearch: (state) => state.memberInviteSearch,
     getMember: (state) => state.member,
     getHeaderMember: (state) => state.member.data.slice(0, 5),

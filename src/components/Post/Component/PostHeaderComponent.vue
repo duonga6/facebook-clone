@@ -1,26 +1,53 @@
 <template>
-  <div class="post-header">
+  <div class="post-header" v-if="data.user">
     <div class="post-author">
-      <div class="author-img" :class="isSharedPost ? 'w-8 h-8' : 'w-10 h-10'">
-        <img :src="author.avatarUrl" alt="" />
+      <div class="author-image">
+        <div
+          class="author-img image--user"
+          :class="isSharedPost ? 'w-8 h-8' : 'w-10 h-10'"
+          v-if="!data.group"
+        >
+          <img :src="data.user.avatarUrl" alt="" />
+        </div>
+        <div class="author-img image--group" v-else>
+          <img class="group-img" :src="data.group.coverImage" alt="" />
+          <img class="user-img" :src="data.user.avatarUrl" alt="" />
+        </div>
       </div>
-      <div class="author-info">
+      <div
+        class="author-info"
+        v-if="data.group && data.group.name && !isInGroup"
+      >
         <p class="author-name">
-          {{ author.firstName + " " + author.lastName }}
+          {{ data.group.name }}
+        </p>
+        <div class="date-post">
+          <span class="author-name">{{
+            data.user.firstName + " " + data.user.lastName
+          }}</span>
+          <DotSplit></DotSplit>
+          <div class="post-time">
+            {{ convertDatePostDisplay(new Date(data.createdAt)) }}
+          </div>
+          <DotSplit></DotSplit>
+          <AccessIcon :value="data.access"></AccessIcon>
+        </div>
+      </div>
+      <div class="author-info" v-else>
+        <p class="author-name">
+          {{ data.user.firstName + " " + data.user.lastName }}
         </p>
         <div class="date-post">
           <div class="post-time">
-            {{ convertDatePostDisplay(createdAt) }}
+            {{ convertDatePostDisplay(new Date(data.createdAt)) }}
           </div>
-          <div class="">.</div>
+          <DotSplit></DotSplit>
           <svg
             viewBox="0 0 16 16"
             width="12"
             height="12"
             fill="currentColor"
             title="Đã chia sẻ với Công khai"
-            class="x19dipnz x1lliihq x1k90msu x2h7rmj x1qfuztq"
-            style="--color: var(--secondary-icon)"
           >
             <title>Đã chia sẻ với Công khai</title>
             <g fill-rule="evenodd" transform="translate(-448 -544)">
@@ -44,7 +71,11 @@
         </div>
       </div>
     </div>
-    <div class="post-more" v-if="!isSharedPost">
+    <div
+      class="post-more"
+      v-if="!isSharedPost"
+      v-click-outside="() => (isShowPostMore = false)"
+    >
       <button
         class="post-more-btn"
         :class="isShowPostMore ? 'bg-gray-100' : ''"
@@ -64,7 +95,7 @@
           <path d="M8 20.695l7.997-11.39L24 20.695z" />
         </svg>
         <li
-          v-show="user.id == author.id"
+          v-show="user.id == data.user.id"
           class="post-more-item"
           @click="handleShowEditPost"
         >
@@ -72,7 +103,7 @@
           <p class="post-more-text">Chỉnh sửa bài viết</p>
         </li>
         <li
-          v-show="user.id == author.id"
+          v-show="user.id == data.user.id"
           class="post-more-item"
           @click="handleDeletePost"
         >
@@ -85,17 +116,16 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import tokenService from "@/services/token.service";
 import { convertDatePostDisplay } from "@/utilities/dateUtils";
+import { useStore } from "vuex";
 
 export default {
   props: {
-    author: {
+    data: {
       type: Object,
-    },
-    createdAt: {
-      type: Date,
+      required: true,
     },
     isSharedPost: {
       type: Boolean,
@@ -106,6 +136,9 @@ export default {
   setup(_, { emit }) {
     const user = tokenService.getUser();
     const isShowPostMore = ref(false);
+    const store = useStore();
+
+    const isInGroup = computed(() => store.getters["group/getGroupInfo"]);
 
     function handleClickShowPostMore() {
       isShowPostMore.value = !isShowPostMore.value;
@@ -124,6 +157,7 @@ export default {
     return {
       isShowPostMore,
       user,
+      isInGroup,
       handleClickShowPostMore,
       handleShowEditPost,
       convertDatePostDisplay,
@@ -136,21 +170,47 @@ export default {
 <style lang="scss" scoped>
 .post-header {
   @apply px-4 flex justify-between;
+
   .post-author {
     @apply flex items-center;
-    .author-img {
-      @apply rounded-full border border-gray-200;
-      img {
-        @apply w-full h-full object-cover rounded-full;
+
+    .author-image {
+      .author-img {
+        &.image--user {
+          @apply rounded-full border border-gray-200 overflow-hidden;
+
+          img {
+            @apply w-full h-full object-cover;
+          }
+        }
+
+        &.image--group {
+          @apply relative;
+
+          .group-img {
+            @apply w-10 h-10 rounded-lg object-cover;
+          }
+
+          .user-img {
+            @apply absolute -bottom-1 -right-1 w-6 h-6 rounded-full border border-gray-50;
+          }
+        }
       }
     }
+
     .author-info {
       @apply ms-2;
+
       .author-name {
-        @apply text-15 font-semibold;
+        @apply text-15 font-semibold leading-5;
       }
+
       .date-post {
-        @apply text-13 text-gray-500 flex items-center space-x-1;
+        @apply text-13 text-gray-500 flex items-center space-x-1 leading-17;
+
+        .author-name {
+          @apply text-13 leading-17;
+        }
       }
     }
   }

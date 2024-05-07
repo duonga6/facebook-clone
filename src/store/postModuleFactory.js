@@ -37,7 +37,7 @@ const createModule = () => ({
           userReacted: null,
         };
 
-        commit("addPostSuccess", postData);
+        commit("createPostSuccess", postData);
 
         return Promise.resolve();
       } catch (error) {
@@ -93,9 +93,10 @@ const createModule = () => ({
           userReacted: null,
         };
 
-        commit("addPostSuccess", postData);
+        commit("createPostSuccess", postData);
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi tạo bài viết");
       }
     },
 
@@ -112,7 +113,8 @@ const createModule = () => ({
           data: createRes.data,
         });
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -125,7 +127,8 @@ const createModule = () => ({
           oldReactionId: payLoad.oldReactionId,
         });
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -138,7 +141,8 @@ const createModule = () => ({
           reactionId: payLoad.reactionId,
         });
       } catch (error) {
-        toastAlert.error(error);
+        console.error(error);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -155,7 +159,8 @@ const createModule = () => ({
           data: res.data,
         });
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -168,7 +173,8 @@ const createModule = () => ({
           reactionId: payLoad.reactionId,
         });
       } catch (error) {
-        toastAlert.error(error);
+        console.error(error);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -186,7 +192,8 @@ const createModule = () => ({
           data: res.data,
         });
       } catch (error) {
-        toastAlert.error(error);
+        console.error(error);
+        toastAlert.error("Có lỗi khi bày tỏ cảm xúc");
       }
     },
 
@@ -205,7 +212,19 @@ const createModule = () => ({
 
         return Promise.resolve();
       } catch (error) {
-        toastAlert.error(error);
+        console.error(error);
+        toastAlert.error("Có lỗi khi tạo bình luận");
+      }
+    },
+
+    async deleteComment({ commit }, payLoad) {
+      try {
+        await postCommentService.delete(payLoad.commentId);
+
+        commit("deleteCommentSuccess", payLoad);
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Cõ lỗi khi xóa bình luận");
       }
     },
 
@@ -227,7 +246,7 @@ const createModule = () => ({
       state._isFetched = true;
     },
 
-    addPostSuccess(state, payLoad) {
+    createPostSuccess(state, payLoad) {
       state.data = [payLoad, ...state.data];
     },
 
@@ -291,6 +310,7 @@ const createModule = () => ({
         commentTarget.reaction.userReacted = newReaction;
       }
     },
+
     deleteCommentReactionSuccess(state, payLoad) {
       const path = payLoad.path;
       const postId = payLoad.postId;
@@ -550,6 +570,34 @@ const createModule = () => ({
           post.comment.hasNextPage = commentData.hasNextPage;
           post.comment.endCursor = commentData.endCursor;
           post.comment.total = commentData.totalItems;
+        }
+      }
+    },
+
+    deleteCommentSuccess(state, payLoad) {
+      const post = state.data.find((x) => x.id == payLoad.postId);
+      const path = payLoad.path;
+
+      if (post && payLoad.path) {
+        if (path.length == 1) {
+          post.comment.comments = post.comment.comments.filter(
+            (x) => x.id != payLoad.commentId
+          );
+        } else {
+          let commentTarget = post.comment.comments.find(
+            (x) => x.id == payLoad.commentId
+          );
+
+          for (let i = 1; i < payLoad.path.length - 1; i++) {
+            commentTarget = commentTarget.childComment.comments.find(
+              (x) => x.id == path[i]
+            );
+          }
+
+          commentTarget.childComment.comments =
+            commentTarget.childComment.comments.filter(
+              (x) => x.id != payLoad.commentId
+            );
         }
       }
     },

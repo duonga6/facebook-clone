@@ -156,23 +156,19 @@
               >Ảnh</router-link
             >
           </li>
-          <li class="user-navbar-item">Video</li>
+          <!-- <li class="user-navbar-item">Video</li> -->
         </ul>
       </div>
     </div>
     <div class="bottom-section">
       <div class="bottom-section-container">
-        <template v-if="currentTab == 'photo'">
-          <div class="col-span-10">
-            <ProfilePhoto></ProfilePhoto>
-          </div>
-        </template>
-        <template v-else-if="currentTab == 'friend'">
-          <div class="col-span-10">
-            <ProfileFriend></ProfileFriend>
-          </div>
-        </template>
-        <template v-else>
+        <div class="col-span-10" v-show="currentTab == 'photo'">
+          <ProfilePhoto></ProfilePhoto>
+        </div>
+        <div class="col-span-10" v-show="currentTab == 'friend'">
+          <ProfileFriend></ProfileFriend>
+        </div>
+        <div class="bottom-section-container" v-show="!currentTab">
           <div class="bottom-left col-span-4">
             <div class="user-introduce user-data-section">
               <div class="user-data-title">
@@ -279,7 +275,7 @@
           <div class="bottom-right col-span-6">
             <ProfilePost :userId="userId"></ProfilePost>
           </div>
-        </template>
+        </div>
       </div>
     </div>
   </div>
@@ -299,11 +295,12 @@ export default {
     const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
-    const availableTab = ["photo", "friend", "video"];
+    const availableTab = ["photo", "friend"];
     const currentTab = computed(() => {
       const tabName = route.query.tab;
       return availableTab.includes(tabName) ? tabName : null;
     });
+
     const currentRoute = {
       name: route.name,
       params: route.params,
@@ -502,7 +499,7 @@ async function checkFriendStatus(requestId, targetId) {
       .user-navbar-list {
         @apply flex items-center mx-8;
         .user-navbar-item {
-          @apply my-1 px-4 py-3 font-semibold text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-all;
+          @apply my-1 px-4 py-3 block font-semibold text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer transition-all;
 
           &.active {
             @apply text-primary relative;

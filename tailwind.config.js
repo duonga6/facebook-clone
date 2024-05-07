@@ -62,6 +62,8 @@ module.exports = {
       lineHeight: {
         18: "18px",
         15: "15px",
+        16: "16px",
+        17: "17px",
         13: "13px",
       },
       scale: {
@@ -71,10 +73,14 @@ module.exports = {
         85: "85%",
       },
       boxShadow: {
-        "custom-sm": "0 5px 15px 0px rgba(0, 0, 0, 0.2)",
+        "custom-sm": "0 3px 10px 0px rgba(0, 0, 0, 0.15)",
+        "custom-sm-overlay": "0 3px 10px 0px rgba(0, 0, 0, 0.05)",
+        "custom-md": "0 3px 20px 0px rgba(0, 0, 0, 0.2)",
+        "custom-md-overlay": "0 3px 20px 0px rgba(0, 0, 0, 0.1)",
       },
       zIndex: {
         1: 1,
+        11: 11,
       },
     },
   },

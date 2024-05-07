@@ -1,7 +1,10 @@
 <template>
-  <div class="post-list flex flex-col mt-4">
+  <div
+    class="post-list flex flex-col mt-4"
+    v-scroll-near-bottom-window="onScrollEnd"
+  >
     <PostComponent
-      v-for="post in postData.posts"
+      v-for="post in post.data"
       :key="post.id"
       :post="post"
       :storeName="'homePost'"
@@ -11,42 +14,36 @@
 
 <script>
 import { useStore } from "vuex";
-import { computed, onMounted, reactive } from "vue";
-import { POST_TYPE } from "@/constants";
-import { PostUtils } from "@/store/postUtils";
+import { computed, onMounted, ref } from "vue";
 
 export default {
   async setup() {
     const store = useStore();
+    const isFetching = ref(false);
 
-    const postData = reactive({
-      total: 0,
-      posts: computed(() => store.getters["homePost/getPosts"]),
-      pageSize: 20,
-      pageNumber: 0,
-      _isFetched: computed(() => store.getters["homePost/getFecthStatus"]),
-    });
+    const post = computed(() => store.getters["homePost/getPosts"]);
 
-    async function getPosts() {
-      const postRes = await PostUtils.getPostWithDependent({
-        type: POST_TYPE.HOME_POST,
-        pageSize: postData.pageSize,
-        pageNumber: postData.pageNumber,
-      });
-
-      store.dispatch("homePost/setPosts", postRes.data);
-      postData.pageNumber++;
-      postData.total = postRes.totalItems;
+    async function onScrollEnd() {
+      if (!isFetching.value && post.value.hasNextPage) {
+        isFetching.value = true;
+        await store.dispatch("homePost/getPost");
+        isFetching.value = false;
+      }
     }
 
     onMounted(async () => {
-      if (!postData._isFetched) {
-        await getPosts();
+      if (!post.value.postType) {
+        store.dispatch("homePost/initStore");
+      }
+
+      if (post.value.hasNextPage && !post.value.isFetched) {
+        store.dispatch("homePost/getPost");
       }
     });
 
     return {
-      postData,
+      post,
+      onScrollEnd,
     };
   },
 };

@@ -3,17 +3,51 @@ import { postCommentService } from "@/services/post-comment.service";
 import { postReactionService } from "@/services/post-reaction.service";
 import { postService } from "@/services/post.service";
 import { toastAlert } from "@/utilities/toastAlert";
+import { PostUtils } from "./postUtils";
+import { POST_TYPE } from "@/constants";
+import { deepCopy } from "@/utilities";
 
-const createModule = () => ({
-  namespaced: true,
-  state: {
+const defaultState = () => {
+  return {
     data: [],
-  },
+    endCursor: null,
+    hasNextPage: true,
+    total: 0,
+    pageSize: 10,
+    postType: null,
+    // for group post
+    groupId: null,
+    // for post profile
+    userId: null,
+    // for single post,
+    postId: null,
+    isFetched: false,
+  };
+};
+
+const createModuleCursor = () => ({
+  namespaced: true,
+  state: defaultState,
   actions: {
     // #region POST
 
-    setPosts({ commit }, payLoad) {
-      commit("setPosts", payLoad);
+    initStore({ commit }, payLoad) {
+      commit("initStore", payLoad);
+    },
+
+    async getPost({ commit, state }) {
+      if (state.hasNextPage) {
+        const postRes = await PostUtils.getPostCursorWithDependent({
+          type: state.postType,
+          cursor: state.endCursor,
+          pageSize: state.pageSize,
+          groupId: state.groupId,
+          userId: state.userId,
+          postId: state.postId,
+        });
+
+        commit("getPostSuccess", postRes);
+      }
     },
 
     async createPost({ commit }, payLoad) {
@@ -208,6 +242,33 @@ const createModule = () => ({
       }
     },
 
+    async updateComment({ commit }, payLoad) {
+      try {
+        const updateRes = await postCommentService.update(payLoad.commentId, {
+          content: payLoad.content,
+        });
+
+        commit("updateCommentSuccess", {
+          ...updateRes.data,
+          path: payLoad.path,
+        });
+      } catch (err) {
+        console.log(err);
+        toastAlert.error("Có lỗi khi chỉnh sửa bình luận");
+      }
+    },
+
+    async deleteComment({ commit }, payLoad) {
+      try {
+        await postCommentService.delete(payLoad.commentId);
+
+        commit("deleteCommentSuccess", payLoad);
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Cõ lỗi khi xóa bình luận");
+      }
+    },
+
     setComments({ commit }, payLoad) {
       commit("setComments", payLoad);
     },
@@ -222,11 +283,29 @@ const createModule = () => ({
   mutations: {
     // #region POST
 
-    setPosts(state, payLoad) {
+    initStore(
+      state,
+      {
+        pageSize = 10,
+        groupId = null,
+        userId = null,
+        postId = null,
+        postType = POST_TYPE.HOME_POST,
+      } = {}
+    ) {
+      state.pageSize = pageSize || 10;
+      state.groupId = groupId || null;
+      state.userId = userId || null;
+      state.postId = postId || null;
+      state.postType = postType || POST_TYPE.HOME_POST;
+    },
+
+    getPostSuccess(state, payLoad) {
       state.data.push(...payLoad.data);
       state.endCursor = payLoad.endCursor;
       state.hasNextPage = payLoad.hasNextPage;
-      state.total = payLoad.total;
+      state.total = payLoad.totalItems;
+      state.isFetched = true;
     },
 
     addPostSuccess(state, payLoad) {
@@ -247,8 +326,8 @@ const createModule = () => ({
     },
 
     reset(state) {
-      state.data = [];
-      state._isFetched = false;
+      const newState = deepCopy(defaultState());
+      Object.assign(state, newState);
     },
 
     // #endregion
@@ -293,6 +372,7 @@ const createModule = () => ({
         commentTarget.reaction.userReacted = newReaction;
       }
     },
+
     deleteCommentReactionSuccess(state, payLoad) {
       const path = payLoad.path;
       const postId = payLoad.postId;
@@ -518,6 +598,50 @@ const createModule = () => ({
       }
     },
 
+    updateCommentSuccess(state, payLoad) {
+      const post = state.data.find((x) => x.id == payLoad.postId);
+      const path = payLoad.path;
+      if (post && path) {
+        let commentTarget = post.comment.comments.find((x) => x.id == path[0]);
+
+        for (let i = 1; i < path.length; i++) {
+          commentTarget = commentTarget.childComment.comments.find(
+            (x) => x.id == path[i]
+          );
+        }
+
+        commentTarget.content = payLoad.content;
+      }
+    },
+
+    deleteCommentSuccess(state, payLoad) {
+      const post = state.data.find((x) => x.id == payLoad.postId);
+      const path = payLoad.path;
+
+      if (post && payLoad.path) {
+        if (path.length == 1) {
+          post.comment.comments = post.comment.comments.filter(
+            (x) => x.id != payLoad.commentId
+          );
+        } else {
+          let commentTarget = post.comment.comments.find(
+            (x) => x.id == payLoad.commentId
+          );
+
+          for (let i = 1; i < payLoad.path.length - 1; i++) {
+            commentTarget = commentTarget.childComment.comments.find(
+              (x) => x.id == path[i]
+            );
+          }
+
+          commentTarget.childComment.comments =
+            commentTarget.childComment.comments.filter(
+              (x) => x.id != payLoad.commentId
+            );
+        }
+      }
+    },
+
     setComments(state, payLoad) {
       const path = payLoad.path;
       const postId = payLoad.postId;
@@ -561,15 +685,13 @@ const createModule = () => ({
   getters: {
     // #region POST
     getPosts(state) {
-      return state.data;
+      return state;
     },
 
-    getFecthStatus(state) {
-      return state._isFetched;
-    },
+    getPostById: (state) => (id) => state.data.find((item) => item.id === id),
 
     // #endregion
   },
 });
 
-export default createModule;
+export default createModuleCursor;

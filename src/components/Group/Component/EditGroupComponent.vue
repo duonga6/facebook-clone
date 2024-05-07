@@ -60,7 +60,7 @@
             <input
               type="checkbox"
               id="group-info-checkbox"
-              class="cursor-pointer"
+              class="cursor-pointer accent-primary"
               v-model="groupData.preCensored"
             />
             <label for="group-info-checkbox" class="cursor-pointer"

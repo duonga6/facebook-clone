@@ -1,7 +1,5 @@
 import { userService } from "@/services/user.service";
 import { toastAlert } from "@/utilities/toastAlert";
-import { PostUtils } from "./postUtils";
-import { POST_TYPE } from "@/constants";
 
 export const profile = {
   namespaced: true,
@@ -29,13 +27,6 @@ export const profile = {
       total: 0,
       _isFetched: false,
     },
-    post: {
-      data: [],
-      total: 0,
-      pageSize: 10,
-      pageNumber: 0,
-      _isFetched: false,
-    },
   },
   actions: {
     async initStore({ commit, state, dispatch }, payLoad) {
@@ -47,11 +38,11 @@ export const profile = {
 
           await dispatch("getPhoto");
           await dispatch("getFriend");
-          await dispatch("getPost");
 
           return Promise.resolve();
         } catch (error) {
-          toastAlert.error("profile/initStore: " + error);
+          console.error(error);
+          toastAlert.error("Có lỗi khi tải trang cá nhân");
         }
       }
     },
@@ -68,17 +59,6 @@ export const profile = {
         pageNumber: state.friend.pageNumber + 1,
       });
       commit("getFriendSuccess", friendRes);
-    },
-    async getPost({ commit, state, dispatch }) {
-      const postRes = await PostUtils.getPostWithDependent({
-        type: POST_TYPE.PROFILE_POST,
-        pageSize: state.post.pageSize,
-        pageNumber: state.post.pageNumber,
-        userId: state.userId,
-      });
-
-      commit("getPostSuccess", postRes);
-      dispatch("profilePost/setPosts", postRes.data, { root: true });
     },
     reset({ commit, dispatch }) {
       commit("reset");
@@ -103,11 +83,6 @@ export const profile = {
       state.friend.pageNumber++;
       state.friend.total = payLoad.totalItems;
       state.photo._isFetched = true;
-    },
-    getPostSuccess(state, payLoad) {
-      state.post.total = payLoad.totalItems;
-      state.post.pageNumber++;
-      state.post._isFetched = true;
     },
     reset(state) {
       state.userId = null;

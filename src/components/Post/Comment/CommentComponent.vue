@@ -3,7 +3,7 @@
     <div :class="isChild ? 'w-7 h-7' : 'w-8 h-8'" class="user-avatar">
       <img :src="comment.user.avatarUrl" alt="" />
     </div>
-    <div class="main-comment">
+    <div class="main-comment" v-if="!isShowEditComment">
       <div
         class="comment-content"
         @mouseenter="onHoverComment"
@@ -66,8 +66,15 @@
               <path d="M8 20.695l7.997-11.39L24 20.695z" />
             </svg>
             <li
-              v-if="user?.id == comment.user.id"
-              @click.stop="handleDeleteComment"
+              v-if="user.id == comment.user.id"
+              @click="handleEditComment"
+              class="comment-more-item"
+            >
+              Chỉnh sửa
+            </li>
+            <li
+              v-if="user.id == comment.user.id || user.id == post.user.id"
+              @click="handleDeleteComment"
               class="comment-more-item"
             >
               Xóa
@@ -190,6 +197,12 @@
         </div>
       </div>
     </div>
+    <EditComment
+      v-if="isShowEditComment"
+      :data="comment.content"
+      @onSubmitEditComment="onSubmitEditComment"
+      @onCancelEditComment="onCancelEditComment"
+    ></EditComment>
   </div>
 </template>
 
@@ -217,6 +230,9 @@ export default {
   setup(props) {
     const store = useStore();
     const reactions = computed(() => store.getters["reaction/getReactions"]);
+    const post = computed(() =>
+      store.getters[props.storeName + "/getPostById"](props.comment.postId)
+    );
 
     // Status variables
     const isShowReaction = ref(false);
@@ -225,6 +241,7 @@ export default {
     const isShowReplyComment = ref(false);
     const isLoadingChildComment = ref(false);
     const isShowChildComment = ref(false);
+    const isShowEditComment = ref(false);
 
     // Data variables
     const user = tokenService.getUser();
@@ -411,6 +428,24 @@ export default {
       }
     }
 
+    function handleEditComment() {
+      isShowEditComment.value = true;
+    }
+
+    async function onSubmitEditComment(data) {
+      await store.dispatch(props.storeName + "/updateComment", {
+        content: data,
+        commentId: props.comment.id,
+        path: props.comment.path,
+      });
+
+      isShowEditComment.value = false;
+    }
+
+    function onCancelEditComment() {
+      isShowEditComment.value = false;
+    }
+
     // Text area auto height
     function onCommentChange(e) {
       const textareaElement = e.target;
@@ -424,14 +459,6 @@ export default {
         postId: props.comment.postId,
         path: props.comment.path,
       });
-    }
-
-    function onDeleteComment(commentId) {
-      commentsData.childComment.comments =
-        commentsData.childComment.comments.filter(
-          (item) => item.id != commentId
-        );
-      commentsData.childComment.total--;
     }
 
     return {
@@ -455,12 +482,16 @@ export default {
       commentInputEl,
       handleShowReplyComment,
       handleCreateReplyComment,
-      onDeleteComment,
       onCommentChange,
       showChildComment,
       commentReactions,
       userReacted,
       isLoadingChildComment,
+      post,
+      isShowEditComment,
+      onSubmitEditComment,
+      onCancelEditComment,
+      handleEditComment,
     };
   },
 };
@@ -471,7 +502,7 @@ export default {
   @apply flex z-10;
 
   .user-avatar {
-    @apply rounded-full overflow-hidden border border-gray-200;
+    @apply rounded-full overflow-hidden border border-gray-200 me-2;
 
     img {
       @apply w-full h-full object-cover;
@@ -479,7 +510,7 @@ export default {
   }
 
   .main-comment {
-    @apply ms-2 flex-1;
+    @apply flex-1;
 
     .comment-content {
       @apply relative;
@@ -494,7 +525,7 @@ export default {
         left: 100%;
       }
 
-      @apply inline-flex flex-col bg-gray-100 rounded-2xl py-1.5 px-4 pr-5 relative;
+      @apply inline-flex flex-col bg-gray-100 rounded-xl py-1.5 px-3 pr-5 relative;
 
       .user-name {
         @apply text-13 font-semibold leading-15;

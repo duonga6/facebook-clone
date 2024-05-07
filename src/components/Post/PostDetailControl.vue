@@ -1,16 +1,15 @@
 <template>
   <PostDetailComponent
-    v-if="postData.data[0]"
-    :post="postData.data[0]"
+    v-if="post.data[0]"
+    :post="post.data[0]"
     :storeName="'singlePost'"
   />
 </template>
 
 <script>
-import { computed, onMounted, onUnmounted, reactive } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useStore } from "vuex";
 import { POST_TYPE } from "@/constants";
-import { PostUtils } from "@/store/postUtils";
 
 export default {
   props: {
@@ -23,33 +22,28 @@ export default {
     const store = useStore();
     // eslint-disable-next-line vue/no-setup-props-destructure
     const postId = props.postId;
+    const post = computed(() => store.getters["singlePost/getPosts"]);
 
-    const postData = reactive({
-      data: computed(() => store.getters["singlePost/getPosts"]),
-      _isFetched: computed(() => store.getters["singlePost/getFecthStatus"]),
+    onMounted(async () => {
+      if (!post.value.postType) {
+        store.dispatch("singlePost/initStore", {
+          postType: POST_TYPE.SINGLE_POST,
+          postId: postId,
+        });
+      }
+
+      if (post.value.hasNextPage) {
+        await store.dispatch("singlePost/getPost");
+      }
+      //
     });
-
-    async function getPosts() {
-      const posts = await PostUtils.getPostWithDependent({
-        type: POST_TYPE.SINGLE_POST,
-        postId: postId,
-      });
-
-      store.dispatch("singlePost/setPosts", posts.data);
-    }
 
     onUnmounted(() => {
       store.dispatch("singlePost/reset");
     });
 
-    onMounted(async () => {
-      if (!postData._isFetched) {
-        await getPosts();
-      }
-    });
-
     return {
-      postData,
+      post,
     };
   },
 };

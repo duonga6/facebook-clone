@@ -98,9 +98,12 @@ export const PostUtils = {
   },
 
   async getPostCursorWithDependent(payLoad) {
+    let postResponse = {
+      data: [],
+      hasNextPage: false,
+      endCursor: null,
+    };
     try {
-      let postResponse;
-
       switch (payLoad.type) {
         case POST_TYPE.GROUP_FEED:
           postResponse = await groupService.getPostFeed({
@@ -108,6 +111,30 @@ export const PostUtils = {
             pageSize: payLoad.pageSize,
           });
           break;
+        case POST_TYPE.GROUP_POST:
+          postResponse = await groupService.getPostCursor(payLoad.groupId, {
+            pageSize: payLoad.pageSize,
+            cursor: payLoad.cursor,
+            searchString: payLoad.searchString,
+          });
+          break;
+        case POST_TYPE.HOME_POST:
+          postResponse = await postService.getCursor({
+            pageSize: payLoad.pageSize,
+            cursor: payLoad.cursor,
+          });
+          break;
+        case POST_TYPE.PROFILE_POST:
+          postResponse = await userService.getPostCursor(payLoad.userId, {
+            pageSize: payLoad.pageSize,
+            cursor: payLoad.cursor,
+          });
+          break;
+        case POST_TYPE.SINGLE_POST: {
+          const res = await postService.getById(payLoad.postId);
+          postResponse.data = [res.data];
+          break;
+        }
       }
 
       // Map to get comment, reaction
@@ -135,16 +162,10 @@ export const PostUtils = {
           return post;
         })
       );
-
-      return postResponse;
     } catch (error) {
       console.error(error);
       toastAlert.error("Có lỗi khi tải bài viết");
-      return {
-        data: [],
-        hasNextPage: false,
-        endCursor: null,
-      };
     }
+    return postResponse;
   },
 };

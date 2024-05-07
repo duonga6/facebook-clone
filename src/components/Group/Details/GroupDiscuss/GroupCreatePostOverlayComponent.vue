@@ -26,7 +26,7 @@
       <div class="post-content">
         <textarea
           class="post-content-input"
-          rows="5"
+          rows="6"
           placeholder="Bạn viết gì đi..."
           v-model="postData.content"
         ></textarea>
@@ -117,6 +117,7 @@ export default {
 
     async function handleSubmitPost() {
       if (isCanPost.value) {
+        isCanPost.value = false;
         let mediaUploaded = [];
         if (postData.postMedias.length) {
           mediaUploaded = await Promise.all(
@@ -151,7 +152,7 @@ export default {
           console.log(err);
           toastAlert.error("Có lỗi khi tạo bài viết");
         }
-
+        isCanPost.value = true;
         handleCloseCreatePost();
       }
     }
@@ -203,10 +204,10 @@ function generateClassMedias(totalItems, index = null) {
 
       .header-btn {
         .header-btn-close {
-          @apply flex items-center justify-center w-9 h-9 rounded-full overflow-hidden bg-gray-200 hover:bg-gray-300 transition-all;
+          @apply flex items-center justify-center w-8 h-8 rounded-full overflow-hidden bg-gray-200 hover:bg-gray-300 transition-all cursor-pointer;
 
           .header-btn-icon {
-            @apply text-gray-500 font-semibold;
+            @apply text-gray-500 font-semibold text-15;
           }
         }
       }
@@ -237,7 +238,19 @@ function generateClassMedias(totalItems, index = null) {
       @apply px-4;
 
       .post-content-input {
-        @apply text-xl outline-none border-none w-full;
+        @apply text-xl outline-none border-none w-full resize-none;
+
+        &::-webkit-scrollbar {
+          @apply w-2;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          @apply rounded-lg bg-gray-300;
+        }
+
+        &::-webkit-scrollbar-track {
+          @apply hidden;
+        }
       }
     }
     .post-media {

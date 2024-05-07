@@ -1,0 +1,3 @@
+<template>
+  <SearchComponent></SearchComponent>
+</template>

@@ -33,7 +33,7 @@
               data-visualcompletion="css-img"
               class=""
               style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/4GR4KRf3hN2.png?_nc_eui2=AeFIXQPsFYRG66mrN-D5Xqa5iXYVTRy2fzKJdhVNHLZ_MiK6mQKXH64KCTPtj8BVGRImdcUBok2HyccNYz6sVmuN');
+                background-image: url('/src/images/icons/nav-icon.png');
                 background-position: 0 -296px;
                 background-size: auto;
                 width: 36px;
@@ -49,17 +49,15 @@
       <li>
         <router-link
           :to="{
-            name: 'group',
+            name: 'group-feed',
             params: null,
           }"
           class="navigation-item"
         >
           <div class="navigation-img">
             <i
-              data-visualcompletion="css-img"
-              class=""
               style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/4GR4KRf3hN2.png?_nc_eui2=AeFIXQPsFYRG66mrN-D5Xqa5iXYVTRy2fzKJdhVNHLZ_MiK6mQKXH64KCTPtj8BVGRImdcUBok2HyccNYz6sVmuN');
+                background-image: url('/src/images/icons/nav-icon.png');
                 background-position: 0 -37px;
                 background-size: auto;
                 width: 36px;
@@ -76,10 +74,8 @@
         <div class="navigation-item">
           <div class="navigation-img">
             <i
-              data-visualcompletion="css-img"
-              class=""
               style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/4GR4KRf3hN2.png?_nc_eui2=AeFIXQPsFYRG66mrN-D5Xqa5iXYVTRy2fzKJdhVNHLZ_MiK6mQKXH64KCTPtj8BVGRImdcUBok2HyccNYz6sVmuN');
+                background-image: url('/src/images/icons/nav-icon.png');
                 background-position: 0 -518px;
                 background-size: auto;
                 width: 36px;
@@ -92,14 +88,12 @@
           <div class="navigation-text">Video</div>
         </div>
       </li>
-      <li>
+      <!-- <li>
         <div class="navigation-item">
           <div class="navigation-img">
             <i
-              data-visualcompletion="css-img"
-              class=""
               style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/4GR4KRf3hN2.png?_nc_eui2=AeFIXQPsFYRG66mrN-D5Xqa5iXYVTRy2fzKJdhVNHLZ_MiK6mQKXH64KCTPtj8BVGRImdcUBok2HyccNYz6sVmuN');
+                background-image: url('/src/images/icons/nav-icon.png');
                 background-position: 0 -444px;
                 background-size: auto;
                 width: 36px;
@@ -111,15 +105,13 @@
           </div>
           <div class="navigation-text">Kỷ niệm</div>
         </div>
-      </li>
-      <li>
+      </li> -->
+      <!-- <li>
         <div class="navigation-item">
           <div class="navigation-img">
             <i
-              data-visualcompletion="css-img"
-              class=""
               style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yz/r/4GR4KRf3hN2.png?_nc_eui2=AeFIXQPsFYRG66mrN-D5Xqa5iXYVTRy2fzKJdhVNHLZ_MiK6mQKXH64KCTPtj8BVGRImdcUBok2HyccNYz6sVmuN');
+                background-image: url('/src/images/icons/nav-icon.png');
                 background-position: 0 -185px;
                 background-size: auto;
                 width: 36px;
@@ -131,41 +123,7 @@
           </div>
           <div class="navigation-text">Đã lưu</div>
         </div>
-      </li>
-      <template v-if="isShowMore">
-        <li>
-          <div class="navigation-item">
-            <div class="navigation-img">
-              <i
-                data-visualcompletion="css-img"
-                class=""
-                style="
-                  background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yA/r/CXXXUbkUNi7.png?_nc_eui2=AeEB9QwGC5TkpnIKD5xnbKMwBhjYlFUuXDcGGNiUVS5cN3rlavV6s_mYzCmiEi3FKhORTxJRSP_aVwVVQW9sC3fy');
-                  background-position: 0px 0px;
-                  background-size: auto;
-                  width: 36px;
-                  height: 36px;
-                  background-repeat: no-repeat;
-                  display: inline-block;
-                "
-              ></i>
-            </div>
-            <div class="navigation-text">Messenger</div>
-          </div>
-        </li>
-      </template>
-      <li v-if="isShowMore" @click="isShowMore = !isShowMore">
-        <div class="navigation-item">
-          <div class="navigation-img"></div>
-          <div class="navigation-text">Ẩn bớt</div>
-        </div>
-      </li>
-      <li v-else @click="isShowMore = !isShowMore">
-        <div class="navigation-item">
-          <div class="navigation-img"></div>
-          <div class="navigation-text">Xem thêm</div>
-        </div>
-      </li>
+      </li> -->
     </ul>
     <hr class="mt-2 mx-2" />
     <!-- Sub navigation -->

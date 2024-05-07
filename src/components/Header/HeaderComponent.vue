@@ -181,7 +181,7 @@
           </div>
         </li>
         <li>
-          <div class="nav-header-right">
+          <!-- <div class="nav-header-right">
             <svg
               viewBox="0 0 24 24"
               width="20"
@@ -194,16 +194,21 @@
               ></path>
             </svg>
             <div class="count-notification">1</div>
-          </div>
+          </div> -->
+          <Message></Message>
         </li>
         <li>
           <div class="nav-header-right">
-            <notification></notification>
+            <Notification></Notification>
           </div>
         </li>
         <li>
           <div class="relative" v-if="user">
-            <div class="nav-header-right-avatar" @click="handleToggleUserMenu">
+            <div
+              class="nav-header-right-avatar"
+              @click="handleToggleUserMenu"
+              v-click-outside="() => (isShowUserMenu = false)"
+            >
               <img
                 class="object-cover w-full h-full"
                 :src="user.avatarUrl"
@@ -221,11 +226,14 @@
               >
                 <li
                   class="rounded-lg border border-gray-200 shadow-lg p-1 mb-4"
+                  @click="handleToggleUserMenu"
                 >
                   <router-link
                     :to="{
                       name: 'profile',
-                      params: null,
+                      params: {
+                        id: user.id,
+                      },
                     }"
                     @click="isShowUserMenu = false"
                     class="flex items-center p-2 cursor-pointer hover:bg-gray-100 rounded-lg transition-all"
@@ -280,12 +288,14 @@
 import { computed, ref } from "vue";
 import eventBus from "@/common/EventBus";
 import tokenService from "@/services/token.service";
-import Notification from "../Notification/NotificationComponent.vue";
+import Notification from "@/components/Notification/NotificationComponent.vue";
+import Message from "@/components/Messages/MessageComponent.vue";
 import { useRoute } from "vue-router";
 
 export default {
   components: {
     Notification,
+    Message,
   },
   setup() {
     const route = useRoute();

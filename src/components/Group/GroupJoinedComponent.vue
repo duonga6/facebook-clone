@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { groupService } from "@/services/group.service";
 import { GROUP_TYPE } from "@/constants";
@@ -95,7 +95,9 @@ export default {
       getGroupData(groupData, props.groupType);
     }
 
-    getGroupData(groupData, props.groupType);
+    onMounted(async () => {
+      await getGroupData(groupData, props.groupType);
+    });
 
     return {
       route,

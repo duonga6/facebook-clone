@@ -1,5 +1,8 @@
 <template>
-  <div class="group-media-container" v-scroll-bottom-window="onScrollToBottom">
+  <div
+    class="group-media-container"
+    v-scroll-near-bottom-window="onScrollToBottom"
+  >
     <div class="group-media-heading">File phương tiện</div>
     <div class="group-media-list">
       <router-link

@@ -8,7 +8,13 @@ import setupInterceptor from "@/services/setupInterceptor";
 import PrimeVue from "primevue/config";
 import ToastService from "primevue/toastservice";
 import { clickOutside } from "./utilities/clickOutSide";
-import { scrollToBottom, scrollToBottomWindow } from "@/utilities/scrollEnd";
+import {
+  scrollToBottom,
+  scrollToBottomWindow,
+  scrollNearBottom,
+  scrollToNearBottomWindow,
+  scrollToNearTop,
+} from "@/utilities/scrollElement";
 import Lara from "@/presets/lara";
 
 const app = createApp(App);
@@ -22,5 +28,8 @@ app.use(PrimeVue, {
 app.use(ToastService);
 app.directive("click-outside", clickOutside);
 app.directive("scroll-bottom", scrollToBottom);
+app.directive("scroll-near-bottom", scrollNearBottom);
 app.directive("scroll-bottom-window", scrollToBottomWindow);
+app.directive("scroll-near-bottom-window", scrollToNearBottomWindow);
+app.directive("scroll-near-top", scrollToNearTop);
 app.mount("#app");

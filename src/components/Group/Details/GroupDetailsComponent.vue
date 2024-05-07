@@ -1,9 +1,7 @@
 <template>
-  <div class="flex flex-col min-h-screen">
-    <GroupHeader v-if="groupData" :data="groupData"></GroupHeader>
-    <div class="group-details-bg bg-gray-200 py-4 flex-1">
-      <router-view></router-view>
-    </div>
+  <GroupHeader></GroupHeader>
+  <div class="group-details-bg bg-gray-200 py-4 flex-1">
+    <router-view></router-view>
   </div>
 </template>
 

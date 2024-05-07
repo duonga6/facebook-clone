@@ -65,15 +65,10 @@
 </template>
 
 <script>
-/* eslint-disable */
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
-import DragFile from "../Utils/DragFileComponent.vue";
-import LoadingComponent from "../Utils/LoadingComponent.vue";
-import PostEditor from "@/components/Post/PostEditorComponent.vue";
 
 export default {
-  components: { DragFile, LoadingComponent, PostEditor },
   props: {
     type: {
       type: String,
@@ -93,26 +88,10 @@ export default {
       isShowCreatePost.value = false;
     }
 
-    function onSubmittedForm(payLoad) {
-      const postMediaFilter = [...payLoad.data.postMedias]
-        .filter((x) => x.uploaded)
-        .map((x) => {
-          return {
-            title: x.title,
-            mediaTypeId: x.mediaTypeId,
-            url: x.url,
-          };
-        });
-
-      store
-        .dispatch("homePost/createPost", {
-          content: payLoad.data.content,
-          postMedias: postMediaFilter,
-          access: payLoad.data.access,
-        })
-        .then(() => {
-          isShowCreatePost.value = false;
-        });
+    async function onSubmittedForm(payLoad) {
+      await store.dispatch("homePost/createPost", payLoad.data).then(() => {
+        isShowCreatePost.value = false;
+      });
     }
 
     return {

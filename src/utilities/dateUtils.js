@@ -150,3 +150,13 @@ export function convertDateStringToDateDisplay(dateString) {
     + "/" + date.getFullYear();
   return dateConverted;
 }
+
+export function convertDateTitleMessage(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  if (now - date < 24 * 60 * 60 * 1000) {
+    return `${date.getHours()}:${date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()}`;
+  } else {
+    return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }
+}

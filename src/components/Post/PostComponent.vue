@@ -1,8 +1,7 @@
 <template>
   <div class="post-container">
     <PostHeader
-      :author="post.user"
-      :createdAt="new Date(post.createdAt)"
+      :data="post"
       @onClickEditPost="handleShowEditPost"
       @onClickDeletePost="handleDeletePost"
     ></PostHeader>
@@ -31,6 +30,7 @@
         {{ post.comment.totalComment }} bình luận
       </div>
     </div>
+    <div class="mt-4" v-else></div>
     <div class="post-action">
       <div
         class="post-action-item action--reaction"
@@ -85,16 +85,16 @@
       <div class="post-action-item action--comment">
         <div class="post-action-icon">
           <i
-            data-visualcompletion="css-img"
-            class="x1b0d499 x1d69dk1"
             style="
-              background-image: url('https://ik.imagekit.io/duonga6/hkTW1TGOL4u.png');
-              background-position: 0px -550px;
+              background-image: url('/src/images/icons/post-icon.png');
+              background-position: 0px -571px;
               background-size: auto;
               width: 20px;
               height: 20px;
               background-repeat: no-repeat;
               display: inline-block;
+              filter: invert(8%) sepia(10%) saturate(200%) saturate(200%)
+                saturate(166%) hue-rotate(177deg) brightness(104%) contrast(91%);
             "
           ></i>
         </div>
@@ -102,21 +102,78 @@
           Bình luận
         </div>
       </div>
-      <div class="post-action-item action-share" @click="handleSharePost">
+      <!-- <div class="post-action-item action-share" @click="handleSharePost"> -->
+      <div
+        class="post-action-item action-share"
+        @click="isShowShareOptions = !isShowShareOptions"
+        v-click-outside="() => (isShowShareOptions = false)"
+      >
         <div class="post-action-icon">
           <i
             style="
-              background-image: url('https://ik.imagekit.io/duonga6/hkTW1TGOL4u.png');
-              background-position: 0px -886px;
+              background-image: url('/src/images/icons/post-icon.png');
+              background-position: 0px -906px;
               background-size: auto;
               width: 20px;
               height: 20px;
               background-repeat: no-repeat;
-              display: inline-block;
+              display: block;
+              filter: invert(8%) sepia(10%) saturate(200%) saturate(200%)
+                saturate(166%) hue-rotate(177deg) brightness(104%) contrast(91%);
             "
           ></i>
         </div>
         <div class="post-action-text">Chia sẻ</div>
+        <div class="post-share-options" v-if="isShowShareOptions">
+          <TriangleArrow
+            :style="'bottom: calc(100% - 1px); left: 50%;'"
+          ></TriangleArrow>
+          <div class="share-option-item">
+            <div class="share-option-icon">
+              <i
+                style="
+                  background-image: url('/src/images/icons/post-icon.png');
+                  background-position: 0px -592px;
+                  background-size: auto;
+                  width: 20px;
+                  height: 20px;
+                  background-repeat: no-repeat;
+                  display: block;
+                  filter: invert(8%) sepia(10%) saturate(200%) saturate(200%)
+                    saturate(166%) hue-rotate(177deg) brightness(104%)
+                    contrast(91%);
+                "
+              ></i>
+            </div>
+            <div class="share-option-text" @click="handleSharePost">
+              Chia sẻ lên bảng tin
+            </div>
+          </div>
+          <div class="share-option-item">
+            <div class="share-option-icon">
+              <i
+                style="
+                  background-image: url('/src/images/icons/post-icon.png');
+                  background-position: 0px -655px;
+                  background-size: auto;
+                  width: 20px;
+                  height: 20px;
+                  background-repeat: no-repeat;
+                  display: inline-block;
+                  filter: invert(8%) sepia(10%) saturate(200%) saturate(200%)
+                    saturate(166%) hue-rotate(177deg) brightness(104%)
+                    contrast(91%);
+                "
+              ></i>
+            </div>
+            <div
+              class="share-option-text"
+              @click="isShowSelectGroupShare = true"
+            >
+              Chia sẻ lên nhóm
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <PostComment
@@ -129,10 +186,16 @@
   <PostEditor
     v-if="isShowPostEditor"
     :data="post"
-    @closePostEditor="onClosePostEditor"
     :action="actionPostEditor"
+    :groupShareId="groupShareId"
+    @closePostEditor="onClosePostEditor"
     @submittedForm="onSubmitPostEditor"
   ></PostEditor>
+  <SelectGroupShare
+    v-if="isShowSelectGroupShare"
+    @onSeletedGroup="onSeletedGroupShare"
+    @onClose="() => (isShowSelectGroupShare = false)"
+  ></SelectGroupShare>
 </template>
 
 <script>
@@ -163,8 +226,11 @@ export default {
     const isShowReaction = ref(false);
     const isShowPostEditor = ref(false);
     const actionPostEditor = ref(null);
+    const isShowShareOptions = ref(false);
+    const isShowSelectGroupShare = ref(false);
 
     // Data variables
+    const groupShareId = ref(props.post.group?.id);
     const commentInputEl = ref(null);
     const commentInput = ref(null);
     const commentShowOverviewCount = ref(0);
@@ -346,38 +412,22 @@ export default {
       isShowPostEditor.value = true;
     }
 
-    function handleSharePost() {
-      actionPostEditor.value = POST_EDITOR_TYPE.SHARE;
-      isShowPostEditor.value = true;
-    }
-
-    function onSubmitPostEditor(payLoad) {
+    async function onSubmitPostEditor(payLoad) {
       if (payLoad.action == POST_EDITOR_TYPE.SHARE) {
-        store
-          .dispatch("homePost/sharePost", {
-            data: payLoad.data,
-          })
-          .finally(() => {
-            isShowPostEditor.value = false;
-          });
+        await store.dispatch(`${props.storeName}/createPost`, payLoad.data);
+
+        console.log(payLoad);
       } else {
-        const postMediasFilter = payLoad.data.postMedias.map((item) => {
-          return {
-            id: item.id,
-            title: item.title,
-            mediaTypeId: item.mediaTypeId,
-            url: item.url,
-          };
-        });
+        const postMedias = payLoad.data.postMedias;
 
         const currentPostMediasId = props.post.postMedias.map((x) => x.id);
-        const newPostMediasId = postMediasFilter.map((x) => x.id);
+        const newPostMediasId = postMedias.map((x) => x.id);
 
         const postMediasRemove = currentPostMediasId.filter(
           (x) => !newPostMediasId.includes(x)
         );
 
-        const postMediasAdd = postMediasFilter.filter(
+        const postMediasAdd = postMedias.filter(
           (x) => !currentPostMediasId.includes(x.id)
         );
 
@@ -388,18 +438,12 @@ export default {
           access: payLoad.data.access,
         };
 
-        store
-          .dispatch(`${props.storeName}/updatePost`, {
-            id: props.post.id,
-            data: updatePostData,
-          })
-          .catch((err) => {
-            console.log(err);
-          })
-          .finally(() => {
-            isShowPostEditor.value = false;
-          });
+        await store.dispatch(`${props.storeName}/updatePost`, {
+          id: props.post.id,
+          data: updatePostData,
+        });
       }
+      isShowPostEditor.value = false;
     }
 
     function handleDeletePost() {
@@ -408,11 +452,24 @@ export default {
       });
     }
 
+    function onSeletedGroupShare(id) {
+      isShowSelectGroupShare.value = false;
+      groupShareId.value = id;
+      actionPostEditor.value = POST_EDITOR_TYPE.SHARE;
+      isShowPostEditor.value = true;
+    }
+
+    function handleSharePost() {
+      actionPostEditor.value = POST_EDITOR_TYPE.SHARE;
+      isShowPostEditor.value = true;
+    }
+
     return {
       isLoaded,
       isShowReaction,
       isLoadingComment,
       isShowPostEditor,
+      isShowShareOptions,
       postDate,
       userReacted,
       postReactions,
@@ -423,20 +480,23 @@ export default {
       commentShowBelow,
       postMediaShow,
       actionPostEditor,
+      isShowSelectGroupShare,
+      groupShareId,
       onHoverReaction,
       onCloseReaction,
+      onCommentChange,
+      createComment,
       handleSelectReaction,
       handleClickReaction,
-      onCommentChange,
       handleClickShowMoreComment,
-      createComment,
       onSubmitPostEditor,
       handleClickCreateComment,
       generateClassMedias,
       onClosePostEditor,
       handleShowEditPost,
-      handleSharePost,
       handleDeletePost,
+      onSeletedGroupShare,
+      handleSharePost,
     };
   },
 };
@@ -460,6 +520,7 @@ function generateClassMedias(totalItems, index = null) {
 
   .post-reaction-comment {
     @apply mx-4 py-3 flex justify-between items-center;
+
     .post-reaction {
       @apply flex items-center;
 
@@ -477,6 +538,7 @@ function generateClassMedias(totalItems, index = null) {
         @apply text-15 leading-15 text-gray-500 ms-1 cursor-default;
       }
     }
+
     .post-comment-count {
       @apply text-15 text-gray-500;
     }
@@ -484,9 +546,16 @@ function generateClassMedias(totalItems, index = null) {
 
   .post-action {
     @apply mx-4 py-1 border-t border-b;
+
     @apply flex justify-around;
+
     .post-action-item {
-      @apply flex-1 flex items-center justify-center py-0.5 rounded-lg  cursor-pointer text-gray-600 hover:bg-gray-100 transition-all relative;
+      @apply flex-1 flex items-center justify-center py-0.5 rounded-lg  cursor-pointer text-gray-600 transition-all relative;
+
+      &:not(:has(.post-share-options:hover)):hover {
+        @apply bg-gray-100;
+      }
+
       .post-action-icon {
         @apply mt-1;
 
@@ -494,19 +563,37 @@ function generateClassMedias(totalItems, index = null) {
           @apply w-6 h-6 -mt-1;
         }
       }
+
       .post-action-text {
         @apply ms-2 font-semibold;
       }
+
       .post-reaction-create {
         @apply absolute bottom-full left-0;
+      }
+
+      .post-share-options {
+        @apply absolute top-12 right-0 w-52 bg-white rounded-lg shadow-custom-md z-11 p-2;
+
+        .share-option-item {
+          @apply flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 transition-all;
+
+          .share-option-icon {
+          }
+          .share-option-text {
+            @apply text-15 font-semibold;
+          }
+        }
       }
     }
   }
 
   .create-comment-container {
     @apply flex items-center p-2;
+
     .user-avatar {
       @apply w-8 h-8 rounded-full overflow-hidden border border-gray-200;
+
       img {
         @apply w-full h-full object-cover;
       }
@@ -514,12 +601,14 @@ function generateClassMedias(totalItems, index = null) {
 
     .post-comment-input {
       @apply relative ms-2 flex-1;
+
       .comment-input {
         @apply outline-none bg-gray-100 placeholder:text-gray-600 text-15 ps-4 pe-12 py-1.5 rounded-2xl w-full resize-none overflow-hidden;
       }
     }
     .post-send-btn {
       @apply absolute right-2 top-1/2 -translate-y-1/2;
+
       .button-send {
         @apply flex items-center p-1.5;
       }

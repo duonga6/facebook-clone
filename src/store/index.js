@@ -5,13 +5,15 @@ import { mediaType } from "./mediaType.module";
 import { reaction } from "./reaction.module";
 import { profile } from "@/store/profile.module";
 import { group } from "@/store/group.module";
+import { conversation } from "@/store/conversation.module";
 import createModule from "./postModuleFactory";
+import createModuleCursor from "./postCursorModuleFactory";
 
 const groupPost = createModule();
-const homePost = createModule();
-const profilePost = createModule();
-const singlePost = createModule();
 const feedPost = createModule();
+const homePost = createModuleCursor();
+const profilePost = createModuleCursor();
+const singlePost = createModuleCursor();
 
 export default createStore({
   state: {},
@@ -36,5 +38,6 @@ export default createStore({
     profile,
     group,
     feedPost,
+    conversation,
   },
 });

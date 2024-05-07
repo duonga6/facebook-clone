@@ -1,11 +1,11 @@
 export const DEFAULT_LAYOUT = "default";
 
 export const POST_TYPE = {
-  HOME_POST: "Home Post",
-  PROFILE_POST: "Profile Post",
-  SINGLE_POST: "Single Post",
-  GROUP_POST: "Group Post",
-  GROUP_FEED: "Group feed post",
+  HOME_POST: "HOME_POST",
+  PROFILE_POST: "PROFILE_POST",
+  SINGLE_POST: "SINGLE_POST",
+  GROUP_POST: "GROUP_POST",
+  GROUP_FEED: "GROUP_FEED",
 };
 
 export const FRIEND_TYPE = {

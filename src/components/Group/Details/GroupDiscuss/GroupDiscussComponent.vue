@@ -21,7 +21,18 @@
         </div>
         <div class="group-introduce-name">{{ groupInfo.name }}</div>
         <div class="group-introduce-type" v-if="groupInfo.isPublic">
-          <i class="group-type-icon pi pi-globe"></i>
+          <i
+            class="group-type-icon"
+            style="
+              background-image: url('/src/images/icons/group-icon.png');
+              background-position: 0px -361px;
+              background-size: auto;
+              width: 16px;
+              height: 16px;
+              background-repeat: no-repeat;
+              display: block;
+            "
+          ></i>
           <div class="group-type-info">
             <div class="group-type-name">Công khai</div>
             <div class="group-type-desc">
@@ -31,7 +42,18 @@
           </div>
         </div>
         <div class="group-introduce-type" v-else>
-          <i class="group-type-icon pi pi-lock"></i>
+          <i
+            class="group-type-icon"
+            style="
+              background-image: url('/src/images/icons/group-icon2.png');
+              background-position: 0px -271px;
+              background-size: auto;
+              width: 16px;
+              height: 16px;
+              background-repeat: no-repeat;
+              display: block;
+            "
+          ></i>
           <div class="group-type-info">
             <div class="group-type-name">Riêng tư</div>
             <div class="group-type-desc">
@@ -63,7 +85,12 @@
           </router-link>
         </div>
         <router-link
-          to="#"
+          :to="{
+            name: 'group-details-media',
+            params: {
+              id: groupInfo.id,
+            },
+          }"
           v-if="mediaNew.total > 4"
           class="new-media-show-more btn"
         >
@@ -156,10 +183,10 @@ export default {
       .group-introduce-type {
         @apply flex items-start mt-4;
         .group-type-icon {
-          @apply font-semibold leading-6;
+          @apply my-1;
         }
         .group-type-info {
-          @apply ms-3;
+          @apply ms-3 flex-1;
 
           .group-type-name {
             @apply text-17 font-semibold leading-6;

@@ -14,6 +14,11 @@ export const userService = {
       params: params,
     });
   },
+  getPostCursor(id, params) {
+    return api.get(`${BASE_URL}/${id}/Posts/Cursor`, {
+      params: params,
+    });
+  },
   getPhoto(id, params) {
     return api.get(`${BASE_URL}/${id}/GetPhotos`, {
       params: params,

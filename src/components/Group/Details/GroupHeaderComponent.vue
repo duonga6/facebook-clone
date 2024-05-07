@@ -5,9 +5,17 @@
         <img :src="groupInfo.coverImage" alt="" />
       </div>
       <div class="group-header-info">
-        <div class="group-header-name">
+        <router-link
+          :to="{
+            name: 'group-details-post',
+            params: {
+              id: groupInfo.id,
+            },
+          }"
+          class="group-header-name"
+        >
           {{ groupInfo.name }}
-        </div>
+        </router-link>
         <div class="group-header-more">
           <div class="group-header-member">
             <div class="group-header-status">
@@ -46,16 +54,40 @@
           </div>
           <div class="group-header-action">
             <div class="group-join">
-              <div
+              <button
                 class="group-join-btn btn btn-dark"
                 v-if="groupInfo.currentMember"
+                @click="isShowJoinAction = !isShowJoinAction"
+                v-click-outside="
+                  () => (isShowJoinAction ? (isShowJoinAction = false) : _)
+                "
               >
-                Đã tham gia
-              </div>
+                <span>Đã tham gia</span>
+                <div class="group-joined-action" v-show="isShowJoinAction">
+                  <TriangleArrow
+                    :style="'bottom: calc(100% - 1px); left: 50%;'"
+                  ></TriangleArrow>
+                  <button
+                    class="joined-action-item"
+                    v-if="!groupInfo.currentMember?.isSuperAdmin"
+                    @click="handleLeaveGroup"
+                  >
+                    Rời nhóm
+                  </button>
+                  <button
+                    class="joined-action-item"
+                    v-if="groupInfo.currentMember?.isSuperAdmin"
+                    @click="handleDeleteGroup"
+                  >
+                    Xóa nhóm
+                  </button>
+                </div>
+              </button>
               <button
                 class="group-join-btn btn btn-dark"
                 v-else-if="
-                  groupInfo.currentInvite && !group.currentInvite.adminAccepted
+                  groupInfo.currentInvite &&
+                  !groupInfo.currentInvite.adminAccepted
                 "
                 @click="handleCancelRequestInvite"
               >
@@ -119,10 +151,11 @@
                 id: groupInfo.id,
               },
             }"
-            class="group-nav-item"
+            class="group-nav-item relative"
             :class="{ active: currentRouteName == 'group-details-manager' }"
-            >Quản lý</router-link
-          >
+            >Quản lý
+            <Badge v-if="inviteCount > 0" :value="inviteCount"></Badge>
+          </router-link>
         </div>
         <div class="group-nav-action">
           <button class="group-nav-search btn">
@@ -135,43 +168,44 @@
 </template>
 
 <script>
-import { toastAlert } from "@/utilities/toastAlert";
-import { groupInviteService } from "@/services/group-invite.service";
-import { useRoute } from "vue-router";
-import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { computed, ref } from "vue";
 import { useStore } from "vuex";
 export default {
-  setup(props, { emit }) {
+  setup() {
     const store = useStore();
     const route = useRoute();
+    const router = useRouter();
+    const isShowJoinAction = ref(false);
+    const groupInfo = computed(() => store.getters["group/getGroupInfo"]);
+
     async function handleCancelRequestInvite() {
-      try {
-        await groupInviteService.deleteByGroupId(props.data.id);
-        emit("onCancelRequestInvite");
-      } catch (err) {
-        console.error(err);
-        toastAlert.error("Có lỗi khi hủy yêu cầu");
-      }
+      await store.dispatch("group/cancelRequestInvite");
     }
 
     async function handleSendRequestInvite() {
-      try {
-        await groupInviteService.create({
-          groupId: props.data.id,
-        });
-        emit("onSentRequestInvite");
-      } catch (err) {
-        console.error(err);
-        toastAlert.error("Có lỗi khi yêu cầu tham gia nhóm");
-      }
+      await store.dispatch("group/sendRequestInvite");
     }
 
+    async function handleDeleteGroup() {
+      await store.dispatch("group/deleteGroup");
+      router.push({
+        name: "home",
+      });
+    }
+
+    function handleLeaveGroup() {}
+
     return {
+      isShowJoinAction,
       currentRouteName: computed(() => route.name),
       groupHeaderMember: computed(() => store.getters["group/getHeaderMember"]),
-      groupInfo: computed(() => store.getters["group/getGroupInfo"]),
+      groupInfo,
+      inviteCount: computed(() => store.getters["group/getInviteMemberCount"]),
       handleCancelRequestInvite,
       handleSendRequestInvite,
+      handleDeleteGroup,
+      handleLeaveGroup,
     };
   },
 };
@@ -198,7 +232,7 @@ export default {
       @apply px-8;
 
       .group-header-name {
-        @apply text-28 font-bold mt-5;
+        @apply text-28 font-bold mt-5 block;
       }
 
       .group-header-more {
@@ -245,11 +279,21 @@ export default {
         .group-header-action {
           .group-join {
             .group-join-btn {
+              @apply relative;
+
               &.btn-dark {
                 @apply bg-gray-200;
               }
               &.btn-primary {
                 @apply bg-primary;
+              }
+
+              .group-joined-action {
+                @apply absolute top-12 right-0 w-40 z-10 bg-white rounded-lg shadow-custom-md p-2;
+
+                .joined-action-item {
+                  @apply p-2 rounded-lg w-full font-semibold text-15 hover:bg-gray-100 transition-all text-left;
+                }
               }
             }
           }

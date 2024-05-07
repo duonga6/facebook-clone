@@ -1,8 +1,9 @@
 /* eslint-disable */
 import { defineAsyncComponent } from "vue";
 import Dropdown from "primevue/dropdown";
+import Divider from 'primevue/divider';
 export function registerGlobalComponents(app) {
-  // ==== Layout
+  // #region ==== Layout
   app.component(
     "auth-layout",
     defineAsyncComponent(() => import("@/layouts/AuthLayout"))
@@ -18,7 +19,9 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Utils/KeyWrapper"))
   );
 
-  // ==== POST
+  // #endregion
+
+  // #region ==== POST
   app.component(
     "CommentComponent",
     defineAsyncComponent(() =>
@@ -40,7 +43,7 @@ export function registerGlobalComponents(app) {
 
   app.component(
     "PostEditor",
-    defineAsyncComponent(() => import("@/components/Post/PostEditorComponent"))
+    defineAsyncComponent(() => import("@/components/Post/Component/PostEditorComponent"))
   );
 
   app.component(
@@ -60,12 +63,17 @@ export function registerGlobalComponents(app) {
 
   app.component(
     "CreatePost",
-    defineAsyncComponent(() => import("@/components/Post/CreatePostComponent"))
+    defineAsyncComponent(() => import("@/components/Post/Component/CreatePostComponent"))
   );
 
   app.component(
     "CreateComment",
-    defineAsyncComponent(() => import("@/components/Post/Component/CreateCommentComponent"))
+    defineAsyncComponent(() => import("@/components/Post/Comment/CreateCommentComponent"))
+  );
+
+  app.component(
+    "EditComment",
+    defineAsyncComponent(() => import("@/components/Post/Comment/EditCommentComponent"))
   );
 
   app.component(
@@ -103,7 +111,14 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Utils/DragFileComponent"))
   );
 
-  // === Home
+  app.component(
+    "SelectGroupShare",
+    defineAsyncComponent(() => import("@/components/Post/Component/SelectGroupShare"))
+  );
+
+  // #endregion
+
+  // #region === Home
 
   app.component(
     "HomePost",
@@ -115,7 +130,9 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Home/StoryComponent"))
   );
 
-  // === Profile
+  // #endregion
+
+  // #region === Profile
 
   app.component(
     "ProfileView",
@@ -142,16 +159,23 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Profile/ProfileFriendComponent"))
   );
 
-  // === GROUP
+  // #endregion
+
+  // #region === GROUP
+
+  app.component(
+    "GroupMain",
+    defineAsyncComponent(() => import("@/components/Group/GroupMainComponent"))
+  );
 
   app.component(
     "CreateGroup",
-    defineAsyncComponent(() => import("@/components/Group/CreateGroupComponent"))
+    defineAsyncComponent(() => import("@/components/Group/Component/CreateGroupComponent"))
   );
 
   app.component(
     "EditGroup",
-    defineAsyncComponent(() => import("@/components/Group/EditGroupComponent"))
+    defineAsyncComponent(() => import("@/components/Group/Component/EditGroupComponent"))
   );
 
   app.component(
@@ -184,5 +208,49 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Group/Details/GroupManager/GroupManagerComponent"))
   );
 
+  app.component(
+    "PostFeed",
+    defineAsyncComponent(() => import("@/components/Group/Feed/PostFeedComponent"))
+  );
+
+  // #endregion
+
+  // #region === Message
+
+  app.component(
+    "MessageWindow",
+    defineAsyncComponent(() => import("@/components/Messages/MessageWindowComponent"))
+  );
+
+  // #endregion
+
+  // #region === Message
+
+  app.component(
+    "SearchComponent",
+    defineAsyncComponent(() => import("@/components/Search/SearchComponent"))
+  );
+
+  // #endregion
+
+  // #region == PrimeVue
   app.component("drop-down", Dropdown);
+  app.component("Divider", Divider);
+
+  // #endregion
+
+  // #region === Utilities component
+  app.component("DotSplit",
+    defineAsyncComponent(() => import("@/components/Utils/DotSplitComponent")))
+
+  app.component("Badge",
+    defineAsyncComponent(() => import("@/components/Utils/BadgeComponent")))
+
+  app.component("AccessIcon",
+    defineAsyncComponent(() => import("@/components/Utils/AccessIconComponent")))
+
+  app.component("TriangleArrow",
+    defineAsyncComponent(() => import("@/components/Utils/TriangleArrowBorder")))
+
+  // #endregion
 }
