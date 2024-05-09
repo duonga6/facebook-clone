@@ -236,7 +236,7 @@ const routes = [
         },
         component: () =>
           import(
-            /* webpackChunkName: "group-details-preview" */ "@/views/Group/GroupDetailsView.vue"
+            /* webpackChunkName: "group-details-preview" */ "@/components/Group/GroupDetailPreview.vue"
           ),
         children: [
           {

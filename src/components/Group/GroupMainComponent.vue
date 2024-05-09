@@ -162,7 +162,7 @@
 <script>
 import { onMounted, reactive, ref } from "vue";
 import { groupService } from "@/services/group.service";
-import { GROUP_TYPE } from "@/constants";
+import { GROUP_TYPE, POST_TYPE } from "@/constants";
 import { toastAlert } from "@/utilities/toastAlert";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
@@ -248,7 +248,10 @@ export default {
     onMounted(async () => {
       await getJoinedGroup();
       await getManageGroup();
-      store.dispatch("feedPost/reset");
+      await store.dispatch("feedPost/initStore", {
+        postType: POST_TYPE.GROUP_FEED,
+      });
+      await store.dispatch("feedPost/getPost");
     });
 
     return {

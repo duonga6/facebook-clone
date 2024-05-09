@@ -7,7 +7,7 @@
     <div class="message-window-header">
       <div
         class="conversation-info"
-        @click="isShowConversationMore = !isShowConversationMore"
+        @click="handleShowConversationOption"
         v-click-outside="() => (isShowConversationMore = false)"
       >
         <div class="conversation-image">
@@ -31,18 +31,30 @@
     >
       <div
         class="message-item"
-        v-for="message in data.messages.data"
+        v-for="message in messageData"
         :key="message.id"
         :class="{ self: message.user.id == userId }"
       >
         <div class="message-avatar">
-          <img :src="message.user.avatarUrl" alt="" />
+          <img
+            :src="message.user.avatarUrl"
+            alt=""
+            v-if="message.isShowAvatar"
+          />
         </div>
         <div
           class="message-content"
           :title="convertDateTitleMessage(message.createdAt)"
         >
-          {{ message.content }}
+          <div
+            class="message-participant-name"
+            v-if="data.type == 1 && message.isShowContactName"
+          >
+            {{ message.participant.userContactName }}
+          </div>
+          <div class="message-content-main">
+            {{ message.content }}
+          </div>
         </div>
       </div>
     </div>
@@ -170,168 +182,150 @@
           </div>
           <div class="option-item-text">Tên cuộc trò chuyện</div>
         </div>
+        <div
+          class="option-item"
+          v-if="data.type == 1"
+          @click="isShowConversationParticipant = true"
+        >
+          <div class="option-item-icon">
+            <i
+              class="x1b0d499 xep6ejk"
+              style="
+                background-image: url('/src/images/icons/message-icon.png');
+                background-position: 0px -214px;
+                background-size: auto;
+                width: 20px;
+                height: 20px;
+                background-repeat: no-repeat;
+                display: inline-block;
+              "
+            ></i>
+          </div>
+          <div class="option-item-text">Thành viên</div>
+        </div>
+        <div
+          class="option-item"
+          v-if="data.type == 1"
+          @click="isShowAddMember = true"
+        >
+          <div class="option-item-icon">
+            <i
+              class="x1b0d499 xep6ejk"
+              style="
+                background-image: url('/src/images/icons/message-icon2.png');
+                background-position: 0px -147px;
+                background-size: auto;
+                width: 20px;
+                height: 20px;
+                background-repeat: no-repeat;
+                display: inline-block;
+              "
+            ></i>
+          </div>
+          <div class="option-item-text">Thêm người</div>
+        </div>
+        <div class="option-item" @click="isShowLeaveGroup = true">
+          <div class="option-item-icon">
+            <svg
+              viewBox="0 0 20 20"
+              width="20"
+              height="20"
+              fill="currentColor"
+              class="text-gray-700"
+            >
+              <g fill-rule="evenodd" transform="translate(-446 -398)">
+                <g fill-rule="nonzero">
+                  <path
+                    d="M105 220.75v2.855a.9.9 0 0 1-.895.895h-9.71a.9.9 0 0 1-.895-.895v-15.21a.9.9 0 0 1 .895-.895h9.71a.9.9 0 0 1 .895.895v3.355a.75.75 0 1 0 1.5 0v-3.355a2.4 2.4 0 0 0-2.395-2.395h-9.71A2.4 2.4 0 0 0 92 208.395v15.21A2.4 2.4 0 0 0 94.395 226h9.71a2.4 2.4 0 0 0 2.395-2.395v-2.855a.75.75 0 1 0-1.5 0z"
+                    transform="translate(355 192)"
+                  ></path>
+                  <path
+                    d="M102.25 217h7.5a.75.75 0 1 0 0-1.5h-7.5a.75.75 0 1 0 0 1.5z"
+                    transform="translate(355 192)"
+                  ></path>
+                  <path
+                    d="M107.324 218.011a.75.75 0 0 0 1.06 1.06l2.292-2.29a.75.75 0 0 0 0-1.061l-2.292-2.292a.75.75 0 0 0-1.06 1.06l1.761 1.762-1.761 1.761z"
+                    transform="translate(355 192)"
+                  ></path>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="option-item-text">Rời nhóm</div>
+        </div>
+        <div
+          class="option-item"
+          v-if="currentParticipant?.isSuperAdmin || data.type == 0"
+          @click="isShowConfirmDelete = true"
+        >
+          <div class="option-item-icon">
+            <svg
+              viewBox="0 0 20 20"
+              width="20"
+              height="20"
+              fill="currentColor"
+              class="text-gray-700"
+            >
+              <g fill-rule="evenodd" transform="translate(-446 -398)">
+                <g fill-rule="nonzero">
+                  <path
+                    d="m106.523 196.712-2.32-2.256a1.62 1.62 0 0 0-1.13-.456h-3.146a1.62 1.62 0 0 0-1.13.456l-2.32 2.256a.75.75 0 0 0 1.046 1.076l2.32-2.256a.12.12 0 0 1 .084-.032h3.146a.12.12 0 0 1 .084.032l2.32 2.256a.75.75 0 1 0 1.046-1.076zm-5.773 5.788v8a.75.75 0 1 0 1.5 0v-8a.75.75 0 1 0-1.5 0zm3.501-.047-.5 8a.75.75 0 1 0 1.498.094l.5-8a.75.75 0 1 0-1.498-.094zm-7 .094.5 8a.75.75 0 1 0 1.498-.094l-.5-8a.75.75 0 1 0-1.498.094z"
+                    transform="translate(354.5 204)"
+                  ></path>
+                  <path
+                    d="M109.327 196.5H93.673a1.17 1.17 0 0 0-1.173 1.167v1.666a1.17 1.17 0 0 0 1.173 1.167h15.654a1.17 1.17 0 0 0 1.173-1.167v-1.666a1.17 1.17 0 0 0-1.173-1.167zM109 199H94v-1h15v1z"
+                    transform="translate(354.5 204)"
+                  ></path>
+                  <path
+                    d="M108.25 199a.75.75 0 0 1 .747.818l-1.092 12.011a2.387 2.387 0 0 1-2.377 2.171h-8.056a2.386 2.386 0 0 1-2.377-2.17l-1.092-12.012a.75.75 0 0 1 .747-.818h13.5zm-12.679 1.5 1.018 11.194a.887.887 0 0 0 .883.806h8.056c.459 0 .842-.35.883-.806l1.018-11.194H95.57z"
+                    transform="translate(354.5 204)"
+                  ></path>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="option-item-text">Xóa đoạn chat</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div
-    class="create-conversation-group"
+  <CreateConversationGroup
     v-if="isShowCreateConversation"
-    @click="isShowCreateConversation = false"
-  >
-    <div class="create-conversation-form" @click.stop="">
-      <div class="conversation-form-header">
-        <div class="conversation-header-text">Tạo nhóm chat</div>
-        <div class="conversation-header-action">
-          <button
-            class="conversation-action-btn"
-            @click="isShowCreateConversation = false"
-          >
-            <i class="conversation-action-icon pi pi-times"></i>
-          </button>
-        </div>
-      </div>
-      <div class="conversation-to-member">
-        <div class="to-member-text">Đến:</div>
-        <div class="member-selected-list">
-          <div
-            class="member-selected-item"
-            v-for="member in conversationMemberList"
-            :key="member.id"
-          >
-            <div class="member-seleted-name">
-              {{ member.firstName + " " + member.lastName }}
-            </div>
-            <button
-              class="member-action-remove"
-              @click="removeSeletedMember(member.id)"
-            >
-              <i class="member-action-icon pi pi-times"></i>
-            </button>
-          </div>
-          <input
-            class="to-member-search"
-            type="text"
-            placeholder="Tìm kiếm..."
-            v-model="friendSearchInput"
-          />
-        </div>
-      </div>
-      <div
-        class="member-search-list scroll"
-        v-scroll-near-bottom="onGetSearchFriend"
-      >
-        <div
-          class="member-search-item"
-          v-for="member in conversationMemberSearch.data"
-          :key="member.id"
-          @click="addMemberConversation(member)"
-        >
-          <div class="member-item-avatar">
-            <img :src="member.avatarUrl" alt="" />
-          </div>
-          <div class="member-item-name">
-            {{ member.firstName + " " + member.lastName }}
-          </div>
-        </div>
-      </div>
-      <div
-        class="create-conversation-btn"
-        @click="handleSubmitCreateConversation"
-      >
-        Tạo
-      </div>
-    </div>
-  </div>
+    :conversationId="data.id"
+    :defaultUser="userOther"
+    @onClose="isShowCreateConversation = false"
+  ></CreateConversationGroup>
 
-  <div
-    class="conversation-nickname-container"
+  <EditContactName
     v-if="isShowChangeNickName"
-    @click="isShowChangeNickName = false"
-  >
-    <div class="conversation-nickname-tab" @click.stop="">
-      <div class="conversation-nickname-header">
-        <div class=""></div>
-        <div class="nickname-header-text">Biệt danh</div>
-        <button
-          class="nickname-header-btn"
-          @click="isShowChangeNickName = false"
-        >
-          <i class="header-btn-icon pi pi-times"></i>
-        </button>
-      </div>
-      <div class="conversation-nickname-list scroll">
-        <div
-          class="conversation-nickname-item"
-          v-for="participant in participants"
-          :key="participant.id"
-          @click="handleEditNickName(participant.id)"
-        >
-          <div class="user-avatar">
-            <img :src="participant.user.avatarUrl" alt="" />
-          </div>
-          <div class="user-info">
-            <template v-if="!participant.editing">
-              <div class="user-nickname">{{ participant.userContactName }}</div>
-              <div class="user-fullname">
-                {{
-                  participant.user.firstName + " " + participant.user.lastName
-                }}
-              </div>
-            </template>
-            <template v-else>
-              <div class="user-info-edit">
-                <input
-                  class="info-edit-input"
-                  type="text"
-                  :placeholder="participant.userContactName"
-                  v-model="participant.newContactName"
-                />
-              </div>
-            </template>
-          </div>
-          <template v-if="!participant.editing">
-            <button class="edit-nickname-btn">
-              <svg
-                viewBox="0 0 12 13"
-                width="20"
-                height="20"
-                fill="currentColor"
-                class="text-dark"
-              >
-                <g fill-rule="evenodd" transform="translate(-450 -1073)">
-                  <path
-                    d="M450.864 1081.897a1.246 1.246 0 0 0-.364.881l.003 1.903c0 .174.142.315.316.315l1.903.004c.33 0 .648-.13.881-.364l5.47-5.476a.251.251 0 0 0 0-.354l-2.381-2.382a.25.25 0 0 0-.355 0l-5.473 5.473zm10.364-4.893a.938.938 0 0 0 0-1.323l-1.407-1.406a.946.946 0 0 0-1.334 0l-1.086 1.086a.25.25 0 0 0 0 .355l2.38 2.381a.251.251 0 0 0 .355 0l1.092-1.093zm.272 7.996h-6a.501.501 0 0 1-.5-.5c0-.275.225-.5.5-.5h6c.275 0 .5.225.5.5s-.225.5-.5.5"
-                  ></path>
-                </g>
-              </svg>
-            </button>
-          </template>
-          <template v-else>
-            <button
-              class="edit-nickname-btn"
-              @click.stop="handleAcceptChangeNickName(participant.id)"
-            >
-              <svg
-                viewBox="0 0 12 13"
-                width="20"
-                height="20"
-                fill="currentColor"
-                class="text-dark"
-              >
-                <g fill-rule="evenodd" transform="translate(-450 -1073)">
-                  <path
-                    fill-rule="nonzero"
-                    d="M451.78 1079.098a.75.75 0 0 0-1.06 1.06l3.08 3.082a.75.75 0 0 0 1.061 0l6.42-6.42a.75.75 0 0 0-1.061-1.06l-5.889 5.889-2.55-2.55z"
-                  ></path>
-                </g>
-              </svg>
-            </button>
-          </template>
-        </div>
-      </div>
-    </div>
-  </div>
+    :conversationId="data.id"
+    @onClose="isShowChangeNickName = false"
+  ></EditContactName>
+
+  <ConversationParticipant
+    v-if="isShowConversationParticipant"
+    :conversationId="data.id"
+    @onClose="isShowConversationParticipant = false"
+  ></ConversationParticipant>
+
+  <AddParticipant
+    v-if="isShowAddMember"
+    :conversationId="data.id"
+    @onClose="isShowAddMember = false"
+  ></AddParticipant>
+
+  <LeaveConversation
+    v-if="isShowLeaveGroup"
+    @onClose="isShowLeaveGroup = false"
+    @onSubmit="onSubmitLeave"
+  ></LeaveConversation>
+
+  <ConfirmDeleteConversation
+    v-if="isShowConfirmDelete"
+    @onClose="isShowConfirmDelete = false"
+    @onSubmit="onSubmitDelete"
+  ></ConfirmDeleteConversation>
 
   <div
     class="conversation-name-change"
@@ -377,15 +371,13 @@
 </template>
 
 <script>
-import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
 import { convertDateTitleMessage } from "@/utilities/dateUtils";
-import { friendshipService } from "@/services/friendship.service";
-import { toastAlert } from "@/utilities/toastAlert";
-import { FRIEND_TYPE } from "@/constants";
-import { conversationService } from "@/services/conversation.service";
 import eventBus from "@/common/EventBus";
+import { toastAlert } from "@/utilities/toastAlert";
+import { conversationService } from "@/services/conversation.service";
 const userId = tokenService.getUser().id;
 export default {
   props: {
@@ -398,10 +390,8 @@ export default {
   setup(props, { emit }) {
     const store = useStore();
     const messageContent = ref(null);
-    const friendSearchInput = ref(null);
-    const isFetchingMessage = ref(false);
+    const currentParticipant = ref(null);
     const isFirstScroll = ref(false);
-    const isFetchingFriend = ref(false);
     const isCanSendMessage = computed(() => {
       if (!messageContent.value || !messageContent.value.trim()) {
         return false;
@@ -423,6 +413,11 @@ export default {
     const isShowCreateConversation = ref(false);
     const isShowChangeNickName = ref(false);
     const isShowChangeConversationName = ref(false);
+    const isFetchingMessage = ref(false);
+    const isShowConversationParticipant = ref(false);
+    const isShowAddMember = ref(false);
+    const isShowLeaveGroup = ref(false);
+    const isShowConfirmDelete = ref(false);
 
     const conversationName = ref(props.data.name);
 
@@ -437,25 +432,15 @@ export default {
       }
     });
 
-    const participants = reactive(
-      props.data.participants.data.map((item) => {
+    const messageData = computed(() =>
+      props.data.messages.data.map((item, index, arr) => {
         return {
           ...item,
-          editing: false,
-          newContactName: null,
+          isShowAvatar: arr[index].user.id != arr[index + 1]?.user.id,
+          isShowContactName: arr[index - 1]?.user.id != arr[index].user.id,
         };
       })
     );
-
-    const conversationMemberList = reactive([]);
-    const conversationMemberSearch = reactive({
-      pageSize: 10,
-      pageNumber: 0,
-      searchString: null,
-      data: [],
-      total: 0,
-      isFetched: false,
-    });
 
     const inputElement = ref(null);
     const listMessageEl = ref(null);
@@ -476,13 +461,16 @@ export default {
 
     async function onSendMessage() {
       if (isCanSendMessage.value) {
-        await store.dispatch("conversation/sendMessage", {
-          conversationId: props.data.id,
-          content: messageContent.value,
-        });
-
-        messageContent.value = null;
-        scrollBottom(listMessageEl.value);
+        store
+          .dispatch("conversation/sendMessage", {
+            conversationId: props.data.id,
+            content: messageContent.value,
+          })
+          .then((data) => {
+            eventBus.dispatch("NewMessage", data);
+            messageContent.value = null;
+            scrollBottom(listMessageEl.value);
+          });
       }
     }
 
@@ -497,100 +485,11 @@ export default {
     }
 
     function handleCreateConversationGroup() {
-      conversationMemberList.length = 0;
-      conversationMemberList.push(userOther.value);
       isShowCreateConversation.value = true;
-    }
-
-    function removeSeletedMember(id) {
-      const index = conversationMemberList.findIndex((x) => x.id == id);
-      if (index != -1) {
-        conversationMemberList.splice(index, 1);
-      }
-    }
-
-    function addMemberConversation(user) {
-      const findExist = conversationMemberList.find((x) => x.id == user.id);
-      if (!findExist) {
-        conversationMemberList.push(user);
-      }
-
-      friendSearchInput.value = null;
-      resetMemberSearch(conversationMemberSearch);
-    }
-
-    async function handleSubmitCreateConversation() {
-      isShowCreateConversation.value = false;
-      console.log(conversationMemberList);
-
-      if (!conversationMemberList.length) return;
-
-      if (conversationMemberList.length == 1) {
-        const checkPrivateConversation = await conversationService.getByUserId(
-          conversationMemberList[0].id
-        );
-
-        if (checkPrivateConversation.success) {
-          await store.dispatch(
-            "conversation/getConversationByUserId",
-            conversationMemberList[0].id
-          );
-        }
-      } else {
-        store.dispatch(
-          "conversation/createConversation",
-          conversationMemberList
-        );
-      }
     }
 
     function handleClickMessageWindow() {
       eventBus.dispatch("SeenMessage", props.data.id);
-    }
-
-    async function onGetSearchFriend() {
-      if (!isFetchingFriend.value) {
-        isFetchingFriend.value = true;
-        await getMemberSearch(
-          conversationMemberSearch,
-          friendSearchInput.value
-        );
-        isFetchingFriend.value = false;
-      }
-    }
-
-    // Nick Name
-
-    function handleEditNickName(id) {
-      const participant = participants.find((x) => x.id == id);
-      if (participant) {
-        participant.editing = true;
-      }
-    }
-
-    function handleCloseEditNickName(id) {
-      const participant = participants.find((x) => x.id == id);
-      if (participant) {
-        participant.editing = false;
-      }
-    }
-
-    async function handleAcceptChangeNickName(id) {
-      const participant = participants.find((x) => x.id == id);
-      if (participant) {
-        participant.editing = false;
-        if (participant.userContactName != participant.newContactName) {
-          store
-            .dispatch("conversation/changeNickName", {
-              conversationId: props.data.id,
-              participantId: id,
-              name: participant.newContactName,
-            })
-            .then((data) => {
-              eventBus.dispatch("ChangeContactName", data);
-            });
-        }
-      }
     }
 
     async function handleSubmitChangeName() {
@@ -605,6 +504,49 @@ export default {
         });
     }
 
+    async function onSubmitLeave() {
+      isShowLeaveGroup.value = false;
+      try {
+        const participantRes = await conversationService.getParticipantByUserId(
+          props.data.id,
+          userId
+        );
+
+        await conversationService.deleteParticipant(
+          props.data.id,
+          participantRes.data.id
+        );
+
+        store.dispatch("conversation/removeConversation", props.data.id);
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi rời nhóm chat");
+      }
+    }
+
+    async function onSubmitDelete() {
+      try {
+        isShowConfirmDelete.value = false;
+
+        await conversationService.delete(props.data.id);
+        eventBus.dispatch("DeleteConversation", {
+          conversationId: props.data.id,
+        });
+
+        store.dispatch("conversation/removeConversation", props.data.id);
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi xóa đoạn chat");
+      }
+    }
+
+    async function handleShowConversationOption() {
+      if (!isShowConversationMore.value && props.data.type == 1) {
+        await getCurrentParticipant(currentParticipant, props.data.id);
+      }
+      isShowConversationMore.value = !isShowConversationMore.value;
+    }
+
     watch(
       () => props.data.messages.data,
       () => {
@@ -616,39 +558,7 @@ export default {
       { deep: true }
     );
 
-    let timeOutSearch;
-
-    watch(
-      () => friendSearchInput.value,
-      (newVal) => {
-        clearTimeout(timeOutSearch);
-        timeOutSearch = setTimeout(async () => {
-          await getMemberSearch(conversationMemberSearch, newVal);
-        }, 500);
-      }
-    );
-
-    watch(
-      () => props.data.participants.data,
-      (newData) => {
-        participants.splice(
-          0,
-          participants.length,
-          ...newData.map((item) => {
-            return {
-              ...item,
-              editing: false,
-              newContactName: null,
-            };
-          })
-        );
-      },
-      {
-        deep: true,
-      }
-    );
-
-    onMounted(() => {
+    onMounted(async () => {
       inputElement.value.focus();
       scrollBottom(listMessageEl.value);
     });
@@ -664,12 +574,14 @@ export default {
       isShowChangeNickName,
       isShowChangeConversationName,
       isCanChangeName,
-      conversationMemberList,
-      conversationMemberSearch,
-      friendSearchInput,
       isShowCreateConversation,
-      participants,
+      isShowConversationParticipant,
+      isShowConfirmDelete,
       conversationName,
+      messageData,
+      isShowAddMember,
+      isShowLeaveGroup,
+      currentParticipant,
       handleClose,
       handleMinimize,
       onContentChange,
@@ -677,15 +589,11 @@ export default {
       onLoadMessage,
       convertDateTitleMessage,
       handleCreateConversationGroup,
-      removeSeletedMember,
-      addMemberConversation,
-      handleSubmitCreateConversation,
       handleClickMessageWindow,
-      onGetSearchFriend,
-      handleEditNickName,
-      handleCloseEditNickName,
-      handleAcceptChangeNickName,
       handleSubmitChangeName,
+      onSubmitLeave,
+      handleShowConversationOption,
+      onSubmitDelete,
     };
   },
 };
@@ -698,45 +606,16 @@ function scrollBottom(el) {
   });
 }
 
-function resetMemberSearch(data) {
-  data.data = [];
-  data.pageNumber = 0;
-  data.total = 0;
-  data.isFetched = false;
-  data.searchString = null;
-}
-
-async function getMemberSearch(data, searchString) {
-  if (searchString != data.searchString) {
-    resetMemberSearch(data);
-  }
-
-  if (!searchString || (searchString && searchString.trim() == "")) return;
-
-  if (data.pageSize * data.pageNumber < data.total || !data.isFetched) {
-    try {
-      const friendSearch = await friendshipService.get({
-        pageSize: data.pageSize,
-        pageNumber: data.pageNumber + 1,
-        searchString: searchString,
-        type: FRIEND_TYPE.ACCEPTED,
-      });
-
-      data.data.push(
-        ...friendSearch.data.map((item) => {
-          return item.requestUser.id == userId
-            ? item.targetUser
-            : item.requestUser;
-        })
-      );
-      data.pageNumber++;
-      data.isFetched = true;
-      data.total = friendSearch.totalItems;
-      data.searchString = searchString;
-    } catch (err) {
-      console.error(err);
-      toastAlert.error("Có lỗi khi tải bạn bè");
-    }
+async function getCurrentParticipant(data, conversationId) {
+  try {
+    const res = await conversationService.getParticipantByUserId(
+      conversationId,
+      userId
+    );
+    data.value = res.data;
+  } catch (error) {
+    console.error(error);
+    toastAlert.error("Có lỗi khi lấy thông tin thành viên");
   }
 }
 </script>
@@ -794,7 +673,13 @@ async function getMemberSearch(data, searchString) {
         }
 
         .message-content {
-          @apply bg-primary text-white;
+          .message-participant-name {
+            @apply hidden;
+          }
+
+          .message-content-main {
+            @apply bg-primary text-white whitespace-normal;
+          }
         }
       }
 
@@ -807,7 +692,13 @@ async function getMemberSearch(data, searchString) {
       }
 
       .message-content {
-        @apply text-15 px-3 p-1 bg-gray-100 rounded-2xl;
+        .message-participant-name {
+          @apply text-11 text-gray-600 ms-2;
+        }
+
+        .message-content-main {
+          @apply text-15 px-3 p-1 bg-gray-100 rounded-2xl inline-block;
+        }
       }
     }
   }
@@ -847,151 +738,11 @@ async function getMemberSearch(data, searchString) {
         @apply flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-100 transition-all cursor-pointer;
 
         .option-item-icon {
+          @apply flex items-center justify-center;
         }
 
         .option-item-text {
           @apply text-15 font-semibold;
-        }
-      }
-    }
-  }
-}
-
-.create-conversation-group {
-  @apply fixed top-0 bottom-0 right-0 left-0 bg-white bg-opacity-50 flex items-center justify-center z-50;
-
-  .create-conversation-form {
-    @apply w-500px bg-white rounded-lg border border-gray-100 shadow-custom-sm;
-
-    .conversation-form-header {
-      @apply flex items-center justify-between p-2 border-b border-gray-100;
-
-      .conversation-header-text {
-        @apply text-17 font-semibold;
-      }
-      .conversation-header-action {
-        .conversation-action-btn {
-          @apply w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200;
-
-          .conversation-action-icon {
-            @apply text-15 text-gray-500;
-          }
-        }
-      }
-    }
-
-    .conversation-to-member {
-      @apply p-2 flex w-full items-center space-x-2;
-
-      .to-member-text {
-        @apply text-15 font-semibold;
-      }
-
-      .to-member-search {
-        @apply p-1 outline-none border-none;
-      }
-
-      .member-selected-list {
-        @apply flex flex-row flex-wrap;
-
-        .member-selected-item {
-          @apply p-1 px-2 bg-primary bg-opacity-10 rounded-lg flex items-center space-x-2 mb-1 mr-1;
-
-          .member-seleted-name {
-            @apply text-13 font-semibold text-primary;
-          }
-
-          .member-action-remove {
-            .member-action-icon {
-              @apply text-12 text-primary;
-            }
-          }
-        }
-      }
-    }
-
-    .member-search-list {
-      @apply p-2 max-h-60 overflow-y-auto;
-
-      .member-search-item {
-        @apply flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-all cursor-pointer;
-
-        .member-item-avatar {
-          @apply w-10 h-10 rounded-full overflow-hidden;
-
-          img {
-            @apply w-full h-full object-cover;
-          }
-        }
-
-        .member-item-name {
-          @apply text-15;
-        }
-      }
-    }
-
-    .create-conversation-btn {
-      @apply mx-4 m-2 p-2 text-center bg-primary rounded-lg font-semibold text-white cursor-pointer cursor-pointer;
-    }
-  }
-}
-
-.conversation-nickname-container {
-  @apply fixed top-0 left-0 bottom-0 right-0 bg-white bg-opacity-50 flex items-center justify-center;
-  z-index: 50;
-
-  .conversation-nickname-tab {
-    @apply w-700px border bg-white border-gray-100 rounded-lg shadow-custom-sm;
-
-    .conversation-nickname-header {
-      @apply flex items-start justify-between p-2 py-3 border-b border-gray-100;
-
-      .nickname-header-text {
-        @apply font-bold text-lg;
-      }
-      .nickname-header-btn {
-        @apply w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center;
-        .header-btn-icon {
-          @apply text-gray-500;
-        }
-      }
-    }
-    .conversation-nickname-list {
-      @apply p-2 max-h-80;
-
-      .conversation-nickname-item {
-        @apply p-2 flex items-center cursor-pointer;
-
-        .user-avatar {
-          @apply w-12 h-12 rounded-full overflow-hidden;
-
-          img {
-            @apply w-full h-full object-cover;
-          }
-        }
-
-        .user-info {
-          @apply flex flex-col ms-4 flex-1;
-
-          .user-nickname {
-            @apply text-15 font-semibold leading-18;
-          }
-
-          .user-fullname {
-            @apply text-13;
-          }
-
-          .user-info-edit {
-            @apply me-4;
-
-            .info-edit-input {
-              @apply w-full outline-primary p-2;
-            }
-          }
-        }
-
-        .edit-nickname-btn {
-          @apply w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100;
         }
       }
     }

@@ -60,36 +60,18 @@
     </div>
     <ul class="flex flex-col">
       <li>
-        <div class="message-item">
+        <div
+          class="message-item online"
+          v-for="friend in friendContact"
+          :key="friend.id"
+          @click="handleClickContact(friend.id)"
+        >
           <div class="message-img">
-            <img
-              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
-              alt=""
-            />
+            <img :src="friend.avatarUrl" alt="" />
           </div>
-          <div class="message-username">Đặng Khánh</div>
-        </div>
-      </li>
-      <li>
-        <div class="message-item online">
-          <div class="message-img">
-            <img
-              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
-              alt=""
-            />
+          <div class="message-username">
+            {{ friend.firstName + " " + friend.lastName }}
           </div>
-          <div class="message-username">Đặng Khánh</div>
-        </div>
-      </li>
-      <li>
-        <div class="message-item">
-          <div class="message-img">
-            <img
-              src="https://i.postimg.cc/dtsPsk2j/user-default-avt.png"
-              alt=""
-            />
-          </div>
-          <div class="message-username">Đặng Khánh</div>
         </div>
       </li>
     </ul>
@@ -124,6 +106,94 @@
   </div>
 </template>
 
+<script>
+import { onMounted, onUnmounted, reactive } from "vue";
+import eventBus from "@/common/EventBus";
+import { userService } from "@/services/user.service";
+import { friendshipService } from "@/services/friendship.service";
+import { useStore } from "vuex";
+export default {
+  setup() {
+    const store = useStore();
+
+    async function onFriendActive(data, friendContact) {
+      const checkExist = friendContact.find((x) => x.id == data);
+      if (checkExist) return;
+
+      try {
+        const friend = await getUser(data);
+        if (friend) {
+          friendContact.unshift(friend);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function onFriendInActive(data, friendContact) {
+      const index = friendContact.findIndex((x) => x.id == data);
+      if (index != -1) {
+        friendContact.splice(index, 1);
+      }
+    }
+
+    const friendContact = reactive([]);
+
+    function handleClickContact(id) {
+      store.dispatch("conversation/getConversationByUserId", id);
+    }
+
+    onMounted(async () => {
+      eventBus.on("FriendActive", onFriendActive);
+      eventBus.on("FriendInActive", onFriendInActive);
+
+      const users = await getFriendActive();
+      friendContact.push(...users);
+    });
+
+    onUnmounted(() => {
+      eventBus.remove("FriendActive", onFriendActive);
+      eventBus.remove("FriendInActive", onFriendInActive);
+    });
+
+    return {
+      friendContact,
+      handleClickContact,
+    };
+  },
+};
+
+async function getFriendActive() {
+  const users = [];
+  try {
+    const res = await friendshipService.getFriendActive();
+    if (res.data) {
+      const data = await Promise.all(
+        res.data.map(async (id) => {
+          const user = await getUser(id);
+          return user;
+        })
+      );
+
+      users.push(...data);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+  return users;
+}
+
+async function getUser(userId) {
+  try {
+    const res = await userService.getById(userId);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+</script>
+
 <style lang="scss" scoped>
 .message-item {
   @apply flex items-center ps-2 py-2 rounded-md transition-all;
@@ -131,7 +201,7 @@
   .message-img {
     @apply w-9 h-9 flex justify-center items-center relative;
     img {
-      @apply rounded-full;
+      @apply w-full h-full rounded-full object-cover;
     }
   }
   .message-username {

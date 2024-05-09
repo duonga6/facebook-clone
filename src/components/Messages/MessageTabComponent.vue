@@ -19,10 +19,6 @@
         class="message-item"
         v-for="data in sortedConversation"
         :key="data.id"
-        :class="{
-          'not-read':
-            !data.lastMessage.readedAt && data.lastMessage.user.id != user.id,
-        }"
         @click="handleClickMessage(data.id)"
       >
         <div class="message-avatar">
@@ -30,7 +26,7 @@
         </div>
         <div class="message-info">
           <div class="message-user-name">{{ data.name }}</div>
-          <div class="message-last-message">
+          <div class="message-last-message" v-if="data.lastMessage">
             <div class="message-content">{{ data.lastMessage.content }}</div>
             <DotSplit></DotSplit>
             <div class="message-time">
@@ -38,6 +34,15 @@
             </div>
           </div>
         </div>
+        <div
+          class="not-read"
+          :class="{
+            active:
+              data.lastMessage &&
+              !data.lastMessage.readedAt &&
+              data.lastMessage.user.id != user.id,
+          }"
+        ></div>
       </div>
     </div>
     <div
@@ -122,8 +127,7 @@ export default {
 
     const sortedConversation = computed(() => {
       return [...conversationData.data].sort(
-        (a, b) =>
-          new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
+        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
       );
     });
 
@@ -133,6 +137,7 @@ export default {
         const conversation = conversationData.data.find((x) => x.id == id);
         if (
           conversation &&
+          conversation.lastMessage &&
           conversation.lastMessage.user.id != user.id &&
           !conversation.lastMessage.readedAt
         ) {
@@ -192,12 +197,29 @@ export default {
       }
     }
 
+    function handleNewConversationGroup(data) {
+      const conversation = conversationData.data.find(
+        (x) => x.id == data.conversationId
+      );
+      if (!conversation) {
+        conversationData.data.push(data.data);
+      }
+    }
+
+    function handleDeleteConversation(data) {
+      conversationData.data = conversationData.data.filter(
+        (x) => x.id != data.conversationId
+      );
+    }
+
     onMounted(async () => {
       await getConversation(conversationData);
       eventBus.on("NewMessage", handleNewMessage);
       eventBus.on("SeenMessage", handleClickMessage);
       eventBus.on("ChangeContactName", handleChangeContactName);
       eventBus.on("ChangeConversationName", handleChangeConversationName);
+      eventBus.on("NewGroupConversation", handleNewConversationGroup);
+      eventBus.on("DeleteConversation", handleDeleteConversation);
     });
 
     onUnmounted(() => {
@@ -205,6 +227,8 @@ export default {
       eventBus.remove("SeenMessage", handleClickMessage);
       eventBus.remove("ChangeContactName", handleChangeContactName);
       eventBus.remove("ChangeConversationName", handleChangeConversationName);
+      eventBus.remove("NewGroupConversation", handleNewConversationGroup);
+      eventBus.remove("DeleteConversation", handleDeleteConversation);
     });
 
     return {
@@ -310,27 +334,10 @@ async function getConversation(conversationData) {
     @apply mt-2;
 
     .message-item {
-      @apply flex items-center p-2 hover:bg-gray-100 rounded-lg transition-all cursor-pointer;
-
-      &.not-read {
-        @apply relative;
-
-        .message-info {
-          .message-last-message {
-            .message-content {
-              @apply font-semibold text-dark;
-            }
-          }
-        }
-
-        &::before {
-          content: "";
-          @apply absolute right-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-primary;
-        }
-      }
+      @apply flex items-center p-2 hover:bg-gray-100 rounded-lg transition-all cursor-pointer flex-shrink-0;
 
       .message-avatar {
-        @apply w-14 h-14 rounded-full overflow-hidden border border-gray-50;
+        @apply min-w-14 min-h-14 w-14 h-14 rounded-full overflow-hidden border border-gray-50;
 
         img {
           @apply w-full h-full object-cover;
@@ -339,6 +346,7 @@ async function getConversation(conversationData) {
 
       .message-info {
         @apply flex flex-col ms-2;
+        max-width: 70%;
 
         .message-user-name {
           @apply text-15 font-semibold;
@@ -348,9 +356,19 @@ async function getConversation(conversationData) {
           @apply text-13 text-gray-500 flex items-center space-x-1;
 
           .message-content {
+            @apply truncate;
+            max-width: 80%;
           }
           .message-time {
           }
+        }
+      }
+
+      .not-read {
+        @apply ms-auto w-2 h-2 rounded-full flex-shrink-0;
+
+        &.active {
+          @apply bg-primary;
         }
       }
     }

@@ -50,6 +50,31 @@ export default {
 
         store.dispatch("conversation/changeConversationNameWithoutFetch", data);
       });
+
+      connection.on("NewGroupConversation", (data) => {
+        eventBus.dispatch("NewGroupConversation", {
+          conversationId: data.id,
+          data: data,
+        });
+
+        store.dispatch("conversation/getConversationById", data.id);
+      });
+
+      connection.on("DeleteConversation", (data) => {
+        eventBus.dispatch("DeleteConversation", {
+          conversationId: data,
+        });
+
+        store.dispatch("conversation/removeConversation", data);
+      });
+
+      connection.on("FriendIsActive", (data) => {
+        eventBus.dispatch("FriendActive", data);
+      });
+
+      connection.on("FriendInActive", (data) => {
+        eventBus.dispatch("FriendInActive", data);
+      });
     });
   },
 };

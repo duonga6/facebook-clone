@@ -37,4 +37,7 @@ export const friendshipService = {
       params: params,
     });
   },
+  getFriendActive() {
+    return api.get(BASE_URL + "/Active");
+  },
 };

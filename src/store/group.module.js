@@ -63,9 +63,18 @@ export const group = {
   actions: {
     async initGroupStore({ dispatch, state }, payLoad) {
       await dispatch("getGroupInfo", payLoad);
-      await dispatch("getPost");
       await dispatch("getMedia");
       await dispatch("getMember");
+      await dispatch(
+        "groupPost/initStore",
+        {
+          groupId: payLoad,
+          postType: POST_TYPE.GROUP_POST,
+        },
+        { root: true }
+      );
+
+      await dispatch("groupPost/getPost", null, { root: true });
 
       if (state.info.currentMember?.isAdmin) {
         await dispatch("getInviteMember", {

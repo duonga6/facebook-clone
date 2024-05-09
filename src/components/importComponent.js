@@ -222,6 +222,36 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Messages/MessageWindowComponent"))
   );
 
+  app.component(
+    "CreateConversationGroup",
+    defineAsyncComponent(() => import("@/components/Messages/Component/CreateConversationComponent"))
+  );
+
+  app.component(
+    "EditContactName",
+    defineAsyncComponent(() => import("@/components/Messages/Component/EditContactNameComponent"))
+  );
+
+  app.component(
+    "ConversationParticipant",
+    defineAsyncComponent(() => import("@/components/Messages/Component/ConversationParticipantComponent"))
+  );
+
+  app.component(
+    "AddParticipant",
+    defineAsyncComponent(() => import("@/components/Messages/Component/AddParticipantComponent"))
+  );
+
+  app.component(
+    "LeaveConversation",
+    defineAsyncComponent(() => import("@/components/Messages/Component/LeaveGroupComponent"))
+  );
+
+  app.component(
+    "ConfirmDeleteConversation",
+    defineAsyncComponent(() => import("@/components/Messages/Component/ConfirmDeleteConversationComponent"))
+  );
+
   // #endregion
 
   // #region === Message

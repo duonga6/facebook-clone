@@ -8,14 +8,14 @@ export const conversation = {
     data: [],
   },
   actions: {
-    async getConversationByUserId({ commit, state, dispatch }, payLoad) {
+    async getConversationByUserId({ state, dispatch }, payLoad) {
       try {
         const conversationRes = await conversationService.getByUserId(payLoad);
         const checkExist = state.data.find(
           (x) => x.id == conversationRes.data.id
         );
         if (!checkExist) {
-          commit("getConversationSuccess", conversationRes);
+          dispatch("getConversationById", conversationRes.data.id);
         } else {
           dispatch("showConversation", conversationRes.data.id);
         }
@@ -136,6 +136,8 @@ export const conversation = {
           conversationId: payLoad.conversationId,
           data: sendRes.data,
         });
+
+        return Promise.resolve(sendRes.data);
       } catch (err) {
         console.error(err);
         toastAlert.error("Có lỗi khi gửi tin nhắn");
@@ -240,6 +242,9 @@ export const conversation = {
     },
     changeConversationNameWithoutFetch({ commit }, payLoad) {
       commit("updateConversationNameSuccess", payLoad);
+    },
+    reset({ commit }) {
+      commit("reset");
     },
   },
   mutations: {
@@ -352,15 +357,23 @@ export const conversation = {
         const participant = conversation.participants.data.find(
           (x) => x.id == payLoad.participantId
         );
+
         if (participant) {
           participant.userContactName = payLoad.data.userContactName;
         }
+
         if (
           conversation.type == 0 &&
           participant.user.id != tokenService.getUser().id
         ) {
           conversation.name = payLoad.data.userContactName;
         }
+
+        conversation.messages.data.forEach((item) => {
+          if (item.participant.id == payLoad.participantId) {
+            item.participant.userContactName = payLoad.data.userContactName;
+          }
+        });
       }
     },
     updateConversationNameSuccess(state, payLoad) {
@@ -368,6 +381,9 @@ export const conversation = {
       if (conversation) {
         conversation.name = payLoad.name;
       }
+    },
+    reset(state) {
+      state.data = [];
     },
   },
   getters: {

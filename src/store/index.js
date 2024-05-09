@@ -6,11 +6,10 @@ import { reaction } from "./reaction.module";
 import { profile } from "@/store/profile.module";
 import { group } from "@/store/group.module";
 import { conversation } from "@/store/conversation.module";
-import createModule from "./postModuleFactory";
 import createModuleCursor from "./postCursorModuleFactory";
 
-const groupPost = createModule();
-const feedPost = createModule();
+const groupPost = createModuleCursor();
+const feedPost = createModuleCursor();
 const homePost = createModuleCursor();
 const profilePost = createModuleCursor();
 const singlePost = createModuleCursor();
@@ -24,6 +23,7 @@ export default createStore({
       commit("user/reset");
       commit("auth/logout");
       commit("homePost/reset");
+      commit("conversation/reset");
     },
   },
   modules: {

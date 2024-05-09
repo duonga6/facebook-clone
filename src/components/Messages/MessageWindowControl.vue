@@ -100,7 +100,7 @@ export default {
     @apply relative cursor-pointer;
 
     .massage-mini-img {
-      @apply w-12 h-12 rounded-full;
+      @apply w-12 h-12 rounded-full object-cover;
     }
 
     .message-close-btn {

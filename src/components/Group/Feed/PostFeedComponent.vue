@@ -1,7 +1,7 @@
 <template>
   <div class="user-post-list space-y-4">
     <PostComponent
-      v-for="post in postData"
+      v-for="post in postData.data"
       :key="post.id"
       :post="post"
       :storeName="'feedPost'"

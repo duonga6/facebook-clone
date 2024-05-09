@@ -688,7 +688,7 @@ const createModuleCursor = () => ({
       return state;
     },
 
-    getPostById: (state) => (id) => state.data.find((item) => item.id === id),
+    getPostById: (state) => (id) => state.data.find((item) => item.id == id),
 
     // #endregion
   },
