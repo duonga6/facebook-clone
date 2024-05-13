@@ -7,4 +7,10 @@ export const toastAlert = {
       message: message,
     });
   },
+  success(message) {
+    eventBus.dispatch("toastAlert", {
+      type: "success",
+      message: message,
+    });
+  },
 };

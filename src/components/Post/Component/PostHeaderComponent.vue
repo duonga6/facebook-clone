@@ -18,13 +18,28 @@
         class="author-info"
         v-if="data.group && data.group.name && !isInGroup"
       >
-        <p class="author-name">
+        <router-link
+          :to="{
+            name: 'group-details-post',
+            params: {
+              id: data.group.id,
+            },
+          }"
+          class="author-name"
+        >
           {{ data.group.name }}
-        </p>
+        </router-link>
         <div class="date-post">
-          <span class="author-name">{{
-            data.user.firstName + " " + data.user.lastName
-          }}</span>
+          <router-link
+            :to="{
+              name: 'profile',
+              params: {
+                id: data.user.id,
+              },
+            }"
+            class="author-name"
+            >{{ data.user.firstName + " " + data.user.lastName }}</router-link
+          >
           <DotSplit></DotSplit>
           <div class="post-time">
             {{ convertDatePostDisplay(new Date(data.createdAt)) }}

@@ -17,17 +17,14 @@ export default {
     },
   },
   setup(props) {
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    const groupId = props.id;
     const store = useStore();
-    // eslint-disable-next-line no-unused-vars
     const router = useRouter();
 
     const groupData = computed(() => store.getters["group/getGroupInfo"]);
 
     onMounted(async () => {
       try {
-        await store.dispatch("group/initGroupStore", groupId);
+        await store.dispatch("group/initGroupStore", props.id);
       } catch (err) {
         console.error(err);
         if (err?.errors[0]?.substring(0, 5) == "Group") {

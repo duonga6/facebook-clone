@@ -160,3 +160,8 @@ export function convertDateTitleMessage(dateString) {
     return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   }
 }
+
+export function converDateToDDMMYYY(dateString) {
+  const date = new Date(dateString);
+  return `${date.getDate() < 10 ? "0" + date.getDate() : date.getDate()}/${date.getMonth() < 9 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1}/${date.getFullYear()}`
+}

@@ -6,7 +6,8 @@
     <div class="post-comment-input">
       <div class="flex">
         <textarea
-          @input="onCommentChange"
+          @input="onInputChangeHeight"
+          @keydown.enter.exact="createComment"
           rows="1"
           placeholder="Viết bình luận công khai..."
           class="comment-input"
@@ -33,8 +34,12 @@
 
 <script>
 import tokenService from "@/services/token.service";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useStore } from "vuex";
+import { onInputChangeHeight } from "@/utilities/inputUtils";
+
+/* eslint-disable */
+
 export default {
   props: {
     storeName: {
@@ -52,37 +57,34 @@ export default {
     // Data variables
     const commentInputEl = ref(null);
     const commentInput = ref(null);
-
-    // Set tự động height cho comment input
-    function onCommentChange(e) {
-      const textareaElement = e.target;
-      textareaElement.style.height = 0;
-      textareaElement.style.height = textareaElement.scrollHeight + "px";
-    }
+    let defaultHeight;
 
     // Create comment
-    function createComment() {
-      if (commentInput.value) {
-        if (
-          store.dispatch(`${props.storeName}/createComment`, {
-            data: {
-              content: commentInput.value,
-              postId: props.postId,
-            },
-            path: null,
-          })
-        ) {
-          commentInput.value = null;
-        }
+    async function createComment(e) {
+      e.preventDefault();
+      if (commentInput.value && commentInput.value.trim()) {
+        commentInputEl.value.style.height = defaultHeight;
+        store.dispatch(`${props.storeName}/createComment`, {
+          data: {
+            content: commentInput.value.trim(),
+            postId: props.postId,
+          },
+          path: null,
+        });
+            commentInput.value = null;
       }
     }
+
+    onMounted(() => {
+      defaultHeight = commentInputEl.value.style.height;
+    })
 
     return {
       user: tokenService.getUser(),
       commentInput,
       commentInputEl,
-      onCommentChange,
       createComment,
+      onInputChangeHeight,
     };
   },
 };

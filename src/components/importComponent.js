@@ -159,6 +159,16 @@ export function registerGlobalComponents(app) {
     defineAsyncComponent(() => import("@/components/Profile/ProfileFriendComponent"))
   );
 
+  app.component(
+    "EditProfile",
+    defineAsyncComponent(() => import("@/components/Profile/EditProfileComponent"))
+  );
+
+  app.component(
+    "ChangePassword",
+    defineAsyncComponent(() => import("@/components/Profile/ChangePasswordComponent"))
+  );
+
   // #endregion
 
   // #region === GROUP
@@ -215,7 +225,7 @@ export function registerGlobalComponents(app) {
 
   // #endregion
 
-  // #region === Message
+  // #region === Conversation
 
   app.component(
     "MessageWindow",
@@ -254,7 +264,7 @@ export function registerGlobalComponents(app) {
 
   // #endregion
 
-  // #region === Message
+  // #region === SEARCH
 
   app.component(
     "SearchComponent",

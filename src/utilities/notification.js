@@ -63,7 +63,7 @@ export async function generateNotificationUrl(data) {
       break;
     case NOTIFICATION_TYPE.FRIEND_REQUEST:
       router = {
-        name: "friend-request",
+        name: "friends-request",
         query: {
           id: data.jsonDetail.Id,
         },

@@ -1,5 +1,5 @@
 <template>
-  <div class="comment-item">
+  <div class="comment-item" v-if="post">
     <div :class="isChild ? 'w-7 h-7' : 'w-8 h-8'" class="user-avatar">
       <img :src="comment.user.avatarUrl" alt="" />
     </div>
@@ -20,9 +20,7 @@
         >
           {{ comment.user.firstName + " " + comment.user.lastName }}
         </router-link>
-        <div class="main-content">
-          {{ comment.content }}
-        </div>
+        <pre class="main-content">{{ comment.content }}</pre>
         <div
           v-if="commentReactions.reactions.length > 0"
           class="comment-reaction-container"
@@ -170,7 +168,8 @@
           <form @submit.prevent="handleCreateReplyComment">
             <div class="flex">
               <textarea
-                @input="onCommentChange"
+                @keydown.enter.exact="handleCreateReplyComment"
+                @input="onInputChangeHeight"
                 rows="1"
                 placeholder="Viết phản hồi"
                 class="comment-input outline-none bg-gray-100 placeholder:text-gray-600 text-15 ps-4 pe-12 py-1.5 rounded-2xl w-full resize-none overflow-hidden"
@@ -185,7 +184,6 @@
                 type="submit"
                 class="button-send flex items-center p-1.5"
                 :disabled="!commentInput"
-                @click="createComment"
               >
                 <i
                   class="pi pi-send text-md"
@@ -207,12 +205,14 @@
 </template>
 
 <script>
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { convertDateDisplay } from "@/utilities/dateUtils";
 import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { PostUtils } from "@/store/postUtils";
+import { onInputChangeHeight } from "@/utilities/inputUtils";
+
 export default {
   props: {
     comment: {
@@ -247,6 +247,7 @@ export default {
     const user = tokenService.getUser();
     const commentInput = ref(null);
     const commentInputEl = ref(null);
+    let defaultHeightInput;
     const commentsData = reactive({
       ...props.comment,
       childComment: {
@@ -407,24 +408,20 @@ export default {
       }, 1);
     }
 
-    function handleCreateReplyComment() {
-      if (commentInput.value) {
-        if (
-          store
-            .dispatch(`${props.storeName}/createComment`, {
-              data: {
-                content: commentInput.value,
-                postId: props.comment.postId,
-                parentCommentId: props.comment.id,
-              },
-              path: props.comment.path,
-            })
-            .finally(() => {
-              isShowReplyComment.value = false;
-            })
-        ) {
-          commentInput.value = null;
-        }
+    function handleCreateReplyComment(e) {
+      e.preventDefault();
+      if (commentInput.value && commentInput.value.trim()) {
+        commentInputEl.value.style.height = defaultHeightInput;
+        isShowReplyComment.value = false;
+        store.dispatch(`${props.storeName}/createComment`, {
+          data: {
+            content: commentInput.value.trim(),
+            postId: props.comment.postId,
+            parentCommentId: props.comment.id,
+          },
+          path: props.comment.path,
+        });
+        commentInput.value = null;
       }
     }
 
@@ -434,7 +431,7 @@ export default {
 
     async function onSubmitEditComment(data) {
       await store.dispatch(props.storeName + "/updateComment", {
-        content: data,
+        content: data.trim(),
         commentId: props.comment.id,
         path: props.comment.path,
       });
@@ -446,13 +443,6 @@ export default {
       isShowEditComment.value = false;
     }
 
-    // Text area auto height
-    function onCommentChange(e) {
-      const textareaElement = e.target;
-      textareaElement.style.height = 0;
-      textareaElement.style.height = textareaElement.scrollHeight + "px";
-    }
-
     function handleDeleteComment() {
       store.dispatch(`${props.storeName}/deleteComment`, {
         commentId: props.comment.id,
@@ -460,6 +450,10 @@ export default {
         path: props.comment.path,
       });
     }
+
+    onMounted(() => {
+      defaultHeightInput = commentInputEl.value.style.height;
+    });
 
     return {
       commentsData,
@@ -482,7 +476,6 @@ export default {
       commentInputEl,
       handleShowReplyComment,
       handleCreateReplyComment,
-      onCommentChange,
       showChildComment,
       commentReactions,
       userReacted,
@@ -492,6 +485,7 @@ export default {
       onSubmitEditComment,
       onCancelEditComment,
       handleEditComment,
+      onInputChangeHeight,
     };
   },
 };

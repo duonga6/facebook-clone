@@ -10,4 +10,10 @@ export const notificatonService = {
   seen(id) {
     return api.put(BASE_URL + `/${id}`);
   },
+  countNotSeen() {
+    return api.get(BASE_URL + "/Count");
+  },
+  seenAll() {
+    return api.put(BASE_URL);
+  },
 };

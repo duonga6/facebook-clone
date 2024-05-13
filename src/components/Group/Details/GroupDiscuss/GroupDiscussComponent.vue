@@ -1,10 +1,24 @@
 <template>
-  <div class="group-discuss-container">
+  <div class="group-discuss-container" v-if="groupInfo">
     <div class="group-discuss-post">
       <GroupCreatePost
         v-if="groupInfo && groupInfo.currentMember"
       ></GroupCreatePost>
       <GroupPost></GroupPost>
+      <div
+        class="group-notification-join"
+        v-if="!groupInfo.isPublic && !groupInfo.currentMember"
+      >
+        <div class="group-notification-image">
+          <img src="/src/images/icons/permission-denied.svg" alt="" />
+        </div>
+        <div class="group-notification-info">
+          <div class="notification-info-header">Đây là nhóm riêng tư</div>
+          <div class="notification-info-content">
+            Hãy tham gia nhóm này để xem hoặc cùng thảo luận nhé.
+          </div>
+        </div>
+      </div>
     </div>
     <div class="group-discuss-info" v-if="groupInfo">
       <div class="group-introduce">
@@ -63,7 +77,10 @@
           </div>
         </div>
       </div>
-      <div class="group-new-media">
+      <div
+        class="group-new-media"
+        v-if="!(!groupInfo.isPublic && !groupInfo.currentMember)"
+      >
         <div class="new-media-heading">File phương tiện mới đây</div>
         <div class="new-media-list">
           <router-link
@@ -150,6 +167,29 @@ export default {
 
   .group-discuss-post {
     @apply col-span-6;
+
+    .group-notification-join {
+      @apply bg-white rounded-lg border border-gray-100 p-4;
+
+      .group-notification-image {
+        @apply w-40 h-40 mx-auto;
+
+        img {
+          @apply w-full h-full object-contain;
+        }
+      }
+      .group-notification-info {
+        @apply text-center;
+
+        .notification-info-header {
+          @apply font-bold text-gray-600 text-xl;
+        }
+
+        .notification-info-content {
+          @apply text-15 text-gray-600;
+        }
+      }
+    }
   }
 
   .group-discuss-info {

@@ -4,6 +4,7 @@
     :style="{
       'font-size': size + 'px',
     }"
+    :class="classCss"
   ></i>
 </template>
 
@@ -13,6 +14,9 @@ export default {
     size: {
       type: Number,
       default: 2,
+    },
+    classCss: {
+      type: String,
     },
   },
   setup() {},

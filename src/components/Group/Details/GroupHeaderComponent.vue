@@ -1,5 +1,9 @@
 <template>
-  <div class="group-header-container" v-if="groupInfo">
+  <div
+    class="group-header-container"
+    v-if="groupInfo"
+    :class="{ 'pt-14': routeName == 'group-details-post' }"
+  >
     <div class="group-header-main">
       <div class="group-header-cover">
         <img :src="groupInfo.coverImage" alt="" />
@@ -104,7 +108,7 @@
           </div>
         </div>
       </div>
-      <div class="group-header-navbar">
+      <div class="group-header-navbar" v-if="groupInfo.currentMember">
         <div class="group-header-nav">
           <router-link
             :to="{
@@ -194,7 +198,9 @@ export default {
       });
     }
 
-    function handleLeaveGroup() {}
+    async function handleLeaveGroup() {
+      await store.dispatch("group/leaveGroup");
+    }
 
     return {
       isShowJoinAction,
@@ -206,6 +212,7 @@ export default {
       handleSendRequestInvite,
       handleDeleteGroup,
       handleLeaveGroup,
+      routeName: route.name,
     };
   },
 };
@@ -229,7 +236,7 @@ export default {
       }
     }
     .group-header-info {
-      @apply px-8;
+      @apply px-8 mb-6;
 
       .group-header-name {
         @apply text-28 font-bold mt-5 block;
@@ -301,7 +308,7 @@ export default {
       }
     }
     .group-header-navbar {
-      @apply mx-8 mt-6 flex justify-between items-center border-t;
+      @apply mx-8 flex justify-between items-center border-t;
 
       .group-header-nav {
         @apply flex items-center my-1;

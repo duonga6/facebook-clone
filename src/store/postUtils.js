@@ -124,6 +124,13 @@ export const PostUtils = {
             cursor: payLoad.cursor,
           });
           break;
+        case POST_TYPE.SEARCH_POST:
+          postResponse = await postService.getCursor({
+            pageSize: payLoad.pageSize,
+            cursor: payLoad.cursor,
+            searchString: payLoad.searchString,
+          });
+          break;
         case POST_TYPE.PROFILE_POST:
           postResponse = await userService.getPostCursor(payLoad.userId, {
             pageSize: payLoad.pageSize,

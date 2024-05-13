@@ -14,6 +14,7 @@ const defaultState = () => {
     hasNextPage: true,
     total: 0,
     pageSize: 10,
+    searchString: null,
     postType: null,
     // for group post
     groupId: null,
@@ -44,6 +45,7 @@ const createModuleCursor = () => ({
           groupId: state.groupId,
           userId: state.userId,
           postId: state.postId,
+          searchString: state.searchString,
         });
 
         commit("getPostSuccess", postRes);
@@ -291,6 +293,7 @@ const createModuleCursor = () => ({
         userId = null,
         postId = null,
         postType = POST_TYPE.HOME_POST,
+        searchString = null,
       } = {}
     ) {
       state.pageSize = pageSize || 10;
@@ -298,6 +301,7 @@ const createModuleCursor = () => ({
       state.userId = userId || null;
       state.postId = postId || null;
       state.postType = postType || POST_TYPE.HOME_POST;
+      state.searchString = searchString || null;
     },
 
     getPostSuccess(state, payLoad) {

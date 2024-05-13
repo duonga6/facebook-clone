@@ -13,6 +13,7 @@ const feedPost = createModuleCursor();
 const homePost = createModuleCursor();
 const profilePost = createModuleCursor();
 const singlePost = createModuleCursor();
+const searchPost = createModuleCursor();
 
 export default createStore({
   state: {},
@@ -39,5 +40,6 @@ export default createStore({
     group,
     feedPost,
     conversation,
+    searchPost,
   },
 });

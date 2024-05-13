@@ -33,9 +33,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.nav-header-right {
-  @apply relative;
-}
-</style>

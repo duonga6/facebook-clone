@@ -277,6 +277,30 @@ const routes = [
     component: () =>
       import(/* webpackChunkName: "not-found" */ "../views/NotFoundView.vue"),
   },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    meta: {
+      requiresAuth: false,
+      layout: "auth",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "forgot-password" */ "../views/Auth/ForgotPasswordView.vue"
+      ),
+  },
+  {
+    path: "/reset-password",
+    name: "reset-password",
+    meta: {
+      requiresAuth: false,
+      layout: "auth",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "reset-password" */ "../views/Auth/ResetPasswordView.vue"
+      ),
+  },
 ];
 
 const router = createRouter({

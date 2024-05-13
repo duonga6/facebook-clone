@@ -16,18 +16,19 @@ class SignalRService {
       const token = tokenService.getLocalToken()?.accessToken;
       const { HubConnectionBuilder, LogLevel } = signalR;
 
-      this.connection = new HubConnectionBuilder()
-        .configureLogging(LogLevel.None)
-        .withUrl("http://localhost:9999/hub", {
-          accessTokenFactory: () => token,
-        })
-        .build();
+      if (token) {
+        await this.connection.start().then(() => {
+          console.log("Kết nối socket thành công");
+        });
 
-      await this.connection.start().then(() => {
-        console.log("Kết nối socket thành công");
-      });
+        this.connection = new HubConnectionBuilder()
+          .configureLogging(LogLevel.None)
+          .withUrl("http://localhost:9999/hub", {
+            accessTokenFactory: () => token,
+          })
+          .build();
+      }
     } catch (err) {
-      console.error(err);
       this.retries++;
 
       if (this.retries < MAX_RETRIES) {

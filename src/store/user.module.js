@@ -1,3 +1,4 @@
+import tokenService from "@/services/token.service";
 import { userService } from "@/services/user.service";
 
 const initialState = {
@@ -9,6 +10,7 @@ export const user = {
   state: initialState,
   actions: {
     getDataUser({ commit }) {
+      if (!tokenService.getUser()) return;
       userService
         .getUserInfo()
         .then((res) => {
@@ -18,10 +20,17 @@ export const user = {
           console.log(error.message);
         });
     },
+    changeAvatar({ commit }, payLoad) {
+      commit("changeAvatar", payLoad);
+    },
   },
   mutations: {
     getDataSuccess(state, user) {
       state.user = user;
+    },
+
+    changeAvatar(state, payLoad) {
+      state.user.avatarUrl = payLoad;
     },
     reset(state) {
       state.user = null;

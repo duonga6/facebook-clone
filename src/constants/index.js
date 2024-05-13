@@ -6,6 +6,7 @@ export const POST_TYPE = {
   SINGLE_POST: "SINGLE_POST",
   GROUP_POST: "GROUP_POST",
   GROUP_FEED: "GROUP_FEED",
+  SEARCH_POST: "SEARCH_POST",
 };
 
 export const FRIEND_TYPE = {

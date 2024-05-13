@@ -40,7 +40,7 @@
             active:
               data.lastMessage &&
               !data.lastMessage.readedAt &&
-              data.lastMessage.user.id != user.id,
+              data.lastMessage.user.id != user?.id,
           }"
         ></div>
       </div>
@@ -138,7 +138,7 @@ export default {
         if (
           conversation &&
           conversation.lastMessage &&
-          conversation.lastMessage.user.id != user.id &&
+          conversation.lastMessage.user?.id != user?.id &&
           !conversation.lastMessage.readedAt
         ) {
           await conversationService.seenMessage(
@@ -212,14 +212,24 @@ export default {
       );
     }
 
+    function handleChangeConversationImage(data) {
+      const conversation = conversationData.data.find((x) => x.id == data.id);
+      if (conversation) {
+        conversation.images = data.images;
+      }
+    }
+
     onMounted(async () => {
-      await getConversation(conversationData);
+      if (tokenService.getLocalToken()) {
+        await getConversation(conversationData);
+      }
       eventBus.on("NewMessage", handleNewMessage);
       eventBus.on("SeenMessage", handleClickMessage);
       eventBus.on("ChangeContactName", handleChangeContactName);
       eventBus.on("ChangeConversationName", handleChangeConversationName);
       eventBus.on("NewGroupConversation", handleNewConversationGroup);
       eventBus.on("DeleteConversation", handleDeleteConversation);
+      eventBus.on("ChangeImageConversation", handleChangeConversationImage);
     });
 
     onUnmounted(() => {
@@ -229,6 +239,7 @@ export default {
       eventBus.remove("ChangeConversationName", handleChangeConversationName);
       eventBus.remove("NewGroupConversation", handleNewConversationGroup);
       eventBus.remove("DeleteConversation", handleDeleteConversation);
+      eventBus.remove("ChangeImageConversation", handleChangeConversationImage);
     });
 
     return {

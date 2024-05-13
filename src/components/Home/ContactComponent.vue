@@ -59,13 +59,8 @@
       </div>
     </div>
     <ul class="flex flex-col">
-      <li>
-        <div
-          class="message-item online"
-          v-for="friend in friendContact"
-          :key="friend.id"
-          @click="handleClickContact(friend.id)"
-        >
+      <li v-for="friend in friendContact" :key="friend.id">
+        <div class="message-item online" @click="handleClickContact(friend.id)">
           <div class="message-img">
             <img :src="friend.avatarUrl" alt="" />
           </div>
@@ -82,21 +77,24 @@
       Cuộc trò chuyện nhóm
     </div>
     <ul>
+      <li v-for="conversation in conversations.data" :key="conversation.id">
+        <div
+          class="message-item"
+          @click="handleClickConversation(conversation.id)"
+        >
+          <div class="message-img">
+            <img :src="conversation.images[0]" alt="" />
+          </div>
+          <div class="message-username">
+            {{ conversation.name }}
+          </div>
+        </div>
+      </li>
       <li>
-        <div class="message-item">
+        <div class="message-item" @click="isShowCreateConversation = true">
           <div class="message-img">
             <i
-              data-visualcompletion="css-img"
-              class="bg-gray-200 rounded-full"
-              style="
-                background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yc/r/reGeanxMxkz.png?_nc_eui2=AeGkBL9ufmJ2odeiCBWOtvHJc7FPvw3mlDFzsU-_DeaUMQzmNYrwrThYD0kLZgsnj-6cU9e99KkxtMBQyxjxvK99');
-                background-position: 0 -390px;
-                background-size: auto;
-                width: 20px;
-                height: 20px;
-                background-repeat: no-repeat;
-                display: inline-block;
-              "
+              class="bg-gray-200 w-7 h-7 flex items-center justify-center text-15 text-gray-500 rounded-full pi pi-plus font-semibold"
             ></i>
           </div>
           <div class="font-semibold ms-3">Tạo nhóm mới</div>
@@ -104,19 +102,34 @@
       </li>
     </ul>
   </div>
+  <CreateConversationGroup
+    v-if="isShowCreateConversation"
+    @onClose="isShowCreateConversation = false"
+  ></CreateConversationGroup>
 </template>
 
 <script>
-import { onMounted, onUnmounted, reactive } from "vue";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
 import eventBus from "@/common/EventBus";
 import { userService } from "@/services/user.service";
 import { friendshipService } from "@/services/friendship.service";
 import { useStore } from "vuex";
+import { toastAlert } from "@/utilities/toastAlert";
+import { conversationService } from "@/services/conversation.service";
 export default {
   setup() {
     const store = useStore();
+    const friendContact = reactive([]);
+    const conversations = reactive({
+      data: [],
+      pageSize: 10,
+      hasNextPage: true,
+      endCursor: null,
+    });
 
-    async function onFriendActive(data, friendContact) {
+    const isShowCreateConversation = ref(false);
+
+    async function onFriendActive(data) {
       const checkExist = friendContact.find((x) => x.id == data);
       if (checkExist) return;
 
@@ -130,35 +143,54 @@ export default {
       }
     }
 
-    function onFriendInActive(data, friendContact) {
+    function onFriendInActive(data) {
+      console.log(data);
       const index = friendContact.findIndex((x) => x.id == data);
       if (index != -1) {
         friendContact.splice(index, 1);
       }
     }
 
-    const friendContact = reactive([]);
-
     function handleClickContact(id) {
       store.dispatch("conversation/getConversationByUserId", id);
+    }
+
+    function handleClickConversation(id) {
+      store.dispatch("conversation/getConversationById", id);
+    }
+
+    function onNewConversation(data) {
+      const conversation = conversations.data.find(
+        (x) => x.id == data.conversationId
+      );
+      if (!conversation) {
+        conversations.data.push(data.data);
+      }
     }
 
     onMounted(async () => {
       eventBus.on("FriendActive", onFriendActive);
       eventBus.on("FriendInActive", onFriendInActive);
+      eventBus.on("NewGroupConversation", onNewConversation);
 
       const users = await getFriendActive();
       friendContact.push(...users);
+
+      await getConversation(conversations);
     });
 
     onUnmounted(() => {
       eventBus.remove("FriendActive", onFriendActive);
       eventBus.remove("FriendInActive", onFriendInActive);
+      eventBus.remove("NewGroupConversation", onNewConversation);
     });
 
     return {
       friendContact,
+      conversations,
       handleClickContact,
+      handleClickConversation,
+      isShowCreateConversation,
     };
   },
 };
@@ -181,6 +213,23 @@ async function getFriendActive() {
     console.error(err);
   }
   return users;
+}
+
+async function getConversation(data) {
+  if (data.hasNextPage) {
+    try {
+      const res = await conversationService.get({
+        pageSize: data.pageSize,
+        cursor: data.endCursor,
+        type: 1,
+      });
+
+      data.data.push(...res.data);
+    } catch (error) {
+      console.error(error);
+      toastAlert.error("Có lỗi khi tải cuộc trò chuyện nhóm");
+    }
+  }
 }
 
 async function getUser(userId) {

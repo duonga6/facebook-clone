@@ -9,6 +9,9 @@
             alt=""
           />
           <div v-else class="cover-image-none"></div>
+          <div class="change-image-btn">
+            <i class="change-image-icon pi pi-camera"></i>
+          </div>
         </div>
         <div class="user-info">
           <div class="user-avatar">
@@ -421,13 +424,23 @@ export default {
       @apply mx-auto;
 
       .cover-image {
-        @apply rounded-bl-lg rounded-br-lg overflow-hidden;
+        @apply rounded-bl-lg rounded-br-lg overflow-hidden relative;
         height: 460px;
+
         img {
           @apply w-full object-cover;
         }
+
         .cover-image-none {
           @apply w-full h-full bg-gray-100;
+        }
+
+        .change-image-btn {
+          @apply absolute bottom-1 right-1 w-8 h-8 rounded-lg bg-gray-600 bg-opacity-40 flex items-center justify-center;
+
+          .change-image-icon {
+            @apply text-15;
+          }
         }
       }
       .user-info {

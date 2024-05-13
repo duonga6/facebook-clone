@@ -243,6 +243,20 @@ export const conversation = {
     changeConversationNameWithoutFetch({ commit }, payLoad) {
       commit("updateConversationNameSuccess", payLoad);
     },
+    async updateImage({ commit }, payLoad) {
+      try {
+        const res = await conversationService.update(payLoad.conversationId, {
+          image: payLoad.url,
+        });
+
+        commit("updatedImage", {
+          conversationId: payLoad.conversationId,
+          images: res.data.images,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    },
     reset({ commit }) {
       commit("reset");
     },
@@ -380,6 +394,14 @@ export const conversation = {
       const conversation = state.data.find((x) => x.id == payLoad.id);
       if (conversation) {
         conversation.name = payLoad.name;
+      }
+    },
+    updatedImage(state, payLoad) {
+      const conversation = state.data.find(
+        (x) => x.id == payLoad.conversationId
+      );
+      if (conversation) {
+        conversation.images = payLoad.images;
       }
     },
     reset(state) {

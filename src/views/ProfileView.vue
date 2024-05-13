@@ -9,10 +9,24 @@
             alt=""
           />
           <div v-else class="cover-image-none"></div>
+          <button
+            v-if="userData.id == loggedUserId"
+            class="change-image-btn"
+            @click="handleChangeImage('cover')"
+          >
+            <i class="change-image-icon pi pi-camera"></i>
+          </button>
         </div>
         <div class="user-info">
           <div class="user-avatar">
             <img :src="userData.avatarUrl" alt="" />
+            <button
+              v-if="userData.id == loggedUserId"
+              class="change-image-btn"
+              @click="handleChangeImage('avatar')"
+            >
+              <i class="change-image-icon pi pi-camera"></i>
+            </button>
           </div>
           <div class="user-name">
             <div class="main-name">
@@ -22,7 +36,7 @@
               {{ userFriends.total }} bạn bè
             </div>
           </div>
-          <div class="user-action">
+          <div class="user-action" v-if="friendShip">
             <template v-if="friendShip.status == FRIEND_TYPE.NOT_FRIEND">
               <button
                 class="add-friend-btn btn--primary"
@@ -30,7 +44,7 @@
               >
                 <img
                   class="btn-icon"
-                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yK/r/r2FA830xjtI.png?_nc_eui2=AeF8FiEA9JN6wBCKRYj0KLFCLvJBHXhZHNwu8kEdeFkc3AFyf9KO7QelJ1VsfggLZ_H2aExODmvyZfN2IPZJeEPt"
+                  src="/src/images/icons/friend/friend-add.png"
                   alt=""
                   height="16"
                   width="16"
@@ -38,9 +52,7 @@
                 <span class="btn-text">Thêm bạn bè</span>
               </button>
             </template>
-            <template
-              v-else-if="friendShip.status == FRIEND_TYPE.PENDING_OTHER"
-            >
+            <template v-else-if="friendShip.status == FRIEND_TYPE.PENDING_ME">
               <button
                 class="add-friend-btn btn--primary"
                 @click="handleAcceptFriend"
@@ -54,14 +66,16 @@
                 <span class="btn-text">Xóa lời mời</span>
               </button>
             </template>
-            <template v-else-if="friendShip.status == FRIEND_TYPE.PENDING_ME">
+            <template
+              v-else-if="friendShip.status == FRIEND_TYPE.PENDING_OTHER"
+            >
               <button
                 class="add-friend-btn btn--primary"
                 @click="handleCancelRequest"
               >
                 <img
                   class="btn-icon"
-                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yo/r/Qg9sXPTnmFb.png?_nc_eui2=AeHPOLXvfCjmO8mg2ATf3Goo70XPseqSZArvRc-x6pJkCrqKooLPT71xgMEXyo1TeOvUzjc2nBQq5VXqAZkeosB1"
+                  src="/src/images/icons/friend/friend-cancel.png"
                   alt=""
                   height="16"
                   width="16"
@@ -71,25 +85,39 @@
             </template>
             <template v-else-if="friendShip.status == FRIEND_TYPE.ACCEPTED">
               <button
-                class="add-friend-btn btn--secondary cursor-pointer"
-                disabled
+                class="add-friend-btn btn--secondary"
+                @click="isShowFriendAcceptedMore = !isShowFriendAcceptedMore"
+                v-click-outside="() => (isShowFriendAcceptedMore = false)"
               >
                 <img
                   class="btn-icon"
-                  src="https://static.xx.fbcdn.net/rsrc.php/v3/yF/r/5nzjDogBZbf.png?_nc_eui2=AeFgCUS7kICqGJnL23ZuvyGBr5jr7d_7UXGvmOvt3_tRcZHrN7Yoq1SqiKqcusNCNC0FpGaBVOaJc1ATKqGZNNvt"
+                  src="/src/images/icons/friend/friend-accepted.png"
                   alt=""
                   height="16"
                   width="16"
                 />
                 <span class="btn-text">Bạn bè</span>
+                <div
+                  class="friend-action-more"
+                  v-show="isShowFriendAcceptedMore"
+                >
+                  <TriangleArrow
+                    :css="'bottom-full right-3 mt-0.5'"
+                  ></TriangleArrow>
+                  <div class="friend-action-list">
+                    <div class="friend-action-item" @click="handleUnFriend">
+                      Hủy kết bạn
+                    </div>
+                  </div>
+                </div>
               </button>
               <button
                 class="add-friend-btn btn--primary"
-                @click="handleAcceptFriend"
+                @click="handleStartConversation"
               >
                 <img
                   class="btn-icon"
-                  src="https://static.xx.fbcdn.net/rsrc.php/v3/y9/r/YjBUcSAL8TC.png?_nc_eui2=AeGST8v48r_KM_1wK_FJk7NOYWMzpYRsku5hYzOlhGyS7tQP2I7aYMXxMEgeIAEI8mywcGMW2-cptWU44nI_Vb_p"
+                  src="/src/images/icons/friend/friend-message.png"
                   alt=""
                   height="16"
                   width="16"
@@ -173,6 +201,13 @@
             <div class="user-introduce user-data-section">
               <div class="user-data-title">
                 <div class="user-data-heading">Giới thiệu</div>
+                <button
+                  class="user-action-btn"
+                  v-if="userData.id == loggedUserId"
+                  @click="isShowEditProfile = true"
+                >
+                  <i class="user-action-icon pi pi-pencil"></i>
+                </button>
               </div>
               <ul class="user-introduce-list">
                 <li class="user-introduce-item">
@@ -189,7 +224,16 @@
                   <div class="user-introduce-text">
                     Giới tính
                     <span class="user-introduce-strong">{{
-                      userData.gender
+                      userData.gender == 1 ? "Nam" : "Nữ"
+                    }}</span>
+                  </div>
+                </li>
+                <li class="user-introduce-item">
+                  <i class="user-introduce-icon pi pi-calendar"></i>
+                  <div class="user-introduce-text">
+                    Ngày sinh
+                    <span class="user-introduce-strong">{{
+                      converDateToDDMMYYY(userData.dateOfBirth)
                     }}</span>
                   </div>
                 </li>
@@ -279,19 +323,33 @@
       </div>
     </div>
   </div>
+  <EditProfile
+    v-if="isShowEditProfile"
+    @onClose="isShowEditProfile = false"
+    @onSubmit="onSubmitEditProfile"
+    @onChangePassword="isShowChangePassword = true"
+    :data="userData"
+  ></EditProfile>
+
+  <ChangePassword
+    v-if="isShowChangePassword"
+    @onClose="isShowChangePassword = false"
+  ></ChangePassword>
 </template>
 
 <script>
 import { useRoute } from "vue-router";
 import tokenService from "@/services/token.service";
-import { computed, onUnmounted, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { FRIEND_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { useStore } from "vuex";
+import { uploadFileService } from "@/services/upload-file.service";
+import { converDateToDDMMYYY } from "@/utilities/dateUtils";
 
 export default {
-  async setup() {
+  setup() {
     const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
@@ -300,6 +358,10 @@ export default {
       const tabName = route.query.tab;
       return availableTab.includes(tabName) ? tabName : null;
     });
+
+    const isShowEditProfile = ref(false);
+    const isShowChangePassword = ref(false);
+    const isShowFriendAcceptedMore = ref(false);
 
     const currentRoute = {
       name: route.name,
@@ -319,14 +381,9 @@ export default {
       }
     );
 
-    onUnmounted(() => {
-      store.dispatch("profile/reset");
-    });
-
-    const friendShip = await checkFriendStatus(loggedUserId, userId.value);
-
-    await store.dispatch("profile/initStore", {
-      userId: userId.value,
+    const friendShip = reactive({
+      id: null,
+      status: null,
     });
 
     const userData = computed(() => store.getters["profile/getUser"]);
@@ -345,13 +402,14 @@ export default {
     async function handleRequestFriend() {
       try {
         const res = await friendshipService.sendRequest({
-          targetUserId: userId,
+          targetUserId: userId.value,
         });
 
         friendShip.id = res.data.id;
         friendShip.status = FRIEND_TYPE.PENDING_ME;
       } catch (err) {
-        toastAlert.error(err);
+        console.error(err);
+        toastAlert.error("Có lỗi khi gửi lời mời kết bạn");
       }
     }
 
@@ -378,9 +436,77 @@ export default {
         await friendshipService.cancelSendRequest(friendShip.id);
         friendShip.status = FRIEND_TYPE.NOT_FRIEND;
       } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi hủy yêu cầu kết bạn");
+      }
+    }
+
+    async function handleUnFriend() {
+      try {
+        await friendshipService.unFriend(friendShip.id);
+        friendShip.status = FRIEND_TYPE.NOT_FRIEND;
+      } catch (error) {
         toastAlert.error(error);
       }
     }
+
+    function handleChangeImage(type) {
+      const fileUpload = document.createElement("input");
+      fileUpload.type = "file";
+      fileUpload.multiple = false;
+      fileUpload.accept = "image/jpg, image/png,image/jpeg, video/mp4";
+
+      fileUpload.addEventListener("change", async function (e) {
+        const file = e.target.files[0];
+        const res = await uploadFileService.upload(file, "upload");
+        if (type == "cover") {
+          await store.dispatch("profile/changeCoverImage", {
+            url: res.data.url,
+          });
+        } else {
+          await store.dispatch("profile/changeAvatar", {
+            url: res.data.url,
+          });
+        }
+      });
+
+      fileUpload.click();
+    }
+
+    async function onSubmitEditProfile(data) {
+      isShowEditProfile.value = false;
+      const currentData = userData.value;
+      currentData.dateOfBirth = new Date(currentData.dateOfBirth);
+      if (
+        data.firstName == currentData.firstName &&
+        data.lastName == currentData.lastName &&
+        data.dateOfBirth.getDate() == currentData.dateOfBirth.getDate() &&
+        data.dateOfBirth.getMonth() == currentData.dateOfBirth.getMonth() &&
+        data.dateOfBirth.getFullYear() ==
+          currentData.dateOfBirth.getFullYear() &&
+        data.address == currentData.address &&
+        data.gender == currentData.gender
+      ) {
+        return;
+      }
+
+      await store.dispatch("profile/updateUser", data);
+    }
+
+    function handleStartConversation() {
+      store.dispatch("conversation/getConversationByUserId", userId.value);
+    }
+
+    onMounted(async () => {
+      await store.dispatch("profile/initStore", {
+        userId: userId.value,
+      });
+      await checkFriendStatus(loggedUserId, userData.value.id, friendShip);
+    });
+
+    onUnmounted(() => {
+      store.dispatch("profile/reset");
+    });
 
     return {
       userData,
@@ -392,20 +518,23 @@ export default {
       FRIEND_TYPE,
       currentTab,
       currentRoute,
+      isShowEditProfile,
+      isShowFriendAcceptedMore,
+      handleUnFriend,
       handleRequestFriend,
       handleAcceptFriend,
       handleRefuseFriend,
       handleCancelRequest,
+      handleChangeImage,
+      onSubmitEditProfile,
+      converDateToDDMMYYY,
+      handleStartConversation,
+      isShowChangePassword,
     };
   },
 };
 
-async function checkFriendStatus(requestId, targetId) {
-  const friendShip = {
-    status: null,
-    id: null,
-  };
-
+async function checkFriendStatus(requestId, targetId, friendShip) {
   if (requestId == targetId) {
     friendShip.status = FRIEND_TYPE.SELF;
   } else {
@@ -415,7 +544,7 @@ async function checkFriendStatus(requestId, targetId) {
         friendShip.id = res.data.id;
         switch (res.data.friendStatus) {
           case 1:
-            friendShip.status = FRIEND_TYPE.PENDING_OTHER;
+            friendShip.status = FRIEND_TYPE.PENDING_ME;
             break;
           case 2:
             friendShip.status = FRIEND_TYPE.ACCEPTED;
@@ -425,11 +554,10 @@ async function checkFriendStatus(requestId, targetId) {
         friendShip.status = FRIEND_TYPE.NOT_FRIEND;
       }
     } catch (err) {
-      toastAlert.error(err);
+      console.error(err);
+      toastAlert.error("Có lỗi khi tải thông tin bạn bè");
     }
   }
-
-  return friendShip;
 }
 </script>
 
@@ -440,24 +568,44 @@ async function checkFriendStatus(requestId, targetId) {
     @apply shadow-lg bg-white;
     .top-info {
       width: 1260px;
-      @apply mx-auto;
+      @apply mx-auto z-1;
 
       .cover-image {
-        @apply rounded-bl-lg rounded-br-lg overflow-hidden;
+        @apply rounded-bl-lg rounded-br-lg overflow-hidden relative;
         height: 460px;
+
         img {
           @apply w-full object-cover;
         }
+
         .cover-image-none {
           @apply w-full h-full bg-gray-100;
+        }
+
+        .change-image-btn {
+          @apply absolute bottom-2 right-2 w-8 h-8 rounded-lg bg-white bg-opacity-40 flex items-center justify-center;
+
+          .change-image-icon {
+            @apply text-15;
+          }
         }
       }
       .user-info {
         @apply flex items-center mx-8 py-2 border-b-2 border-gray-200;
+
         .user-avatar {
-          @apply w-44 h-44 -mt-24 rounded-full overflow-hidden border-4 border-white;
+          @apply w-44 h-44 -mt-24 rounded-full overflow-hidden border-4 border-white z-10 relative;
+
           img {
             @apply w-full h-full object-cover;
+          }
+
+          .change-image-btn {
+            @apply absolute bottom-4 right-6 w-8 h-8 rounded-lg bg-white bg-opacity-40 flex items-center justify-center;
+
+            .change-image-icon {
+              @apply text-15;
+            }
           }
         }
         .user-name {
@@ -472,7 +620,7 @@ async function checkFriendStatus(requestId, targetId) {
         .user-action {
           @apply ms-auto flex items-center space-x-2;
           .add-friend-btn {
-            @apply flex space-x-2 items-center py-2 rounded-md px-3;
+            @apply flex space-x-2 items-center py-2 rounded-md px-3 relative;
 
             &.btn--primary {
               @apply text-white bg-primary;
@@ -491,6 +639,15 @@ async function checkFriendStatus(requestId, targetId) {
             }
             .btn-text {
               @apply text-15 ms-1 font-semibold;
+            }
+
+            .friend-action-more {
+              @apply absolute top-14 right-0 bg-white p-2 w-52 rounded-lg shadow-custom-sm;
+              .friend-action-list {
+                .friend-action-item {
+                  @apply p-2 text-left font-semibold text-15 hover:bg-gray-100 transition-all rounded-lg;
+                }
+              }
             }
           }
         }
@@ -525,13 +682,24 @@ async function checkFriendStatus(requestId, targetId) {
       .bottom-left {
         .user-data-section {
           @apply p-4 bg-white rounded-lg border border-gray-200 mb-4;
+
           .user-data-title {
             @apply flex items-center justify-between;
+
             .user-data-heading {
               @apply text-xl font-bold;
             }
+
             .user-data-button {
               @apply text-17 text-primary rounded-lg px-2 py-1 hover:bg-gray-100 transition-all;
+            }
+
+            .user-action-btn {
+              @apply p-2;
+
+              .user-action-icon {
+                @apply text-15 text-gray-600;
+              }
             }
           }
         }

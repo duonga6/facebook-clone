@@ -36,6 +36,9 @@ export const auth = {
     refreshToken({ commit }, token) {
       commit("refreshToken", token);
     },
+    changeAvatar({ commit }, payLoad) {
+      commit("changeAvatar", payLoad);
+    },
   },
   mutations: {
     loginSuccess(state, user) {
@@ -62,5 +65,12 @@ export const auth = {
     refreshToken(state, token) {
       state.user.token = token;
     },
+    changeAvatar(state, payLoad) {
+      state.user.avatarUrl = payLoad;
+    },
+  },
+  getters: {
+    getUser: (state) => state.user,
+    getLoginStatus: (state) => state.status.loggedIn,
   },
 };

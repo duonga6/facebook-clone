@@ -70,7 +70,7 @@
           <div class="navigation-text">Nhóm</div>
         </router-link>
       </li>
-      <li>
+      <!-- <li>
         <div class="navigation-item">
           <div class="navigation-img">
             <i
@@ -87,7 +87,7 @@
           </div>
           <div class="navigation-text">Video</div>
         </div>
-      </li>
+      </li> -->
       <!-- <li>
         <div class="navigation-item">
           <div class="navigation-img">
@@ -127,7 +127,7 @@
     </ul>
     <hr class="mt-2 mx-2" />
     <!-- Sub navigation -->
-    <div
+    <!-- <div
       @mouseover="isShowEditSubNav = true"
       @mouseleave="isShowEditSubNav = false"
     >
@@ -162,7 +162,7 @@
           </div>
         </li>
       </ul>
-    </div>
+    </div> -->
   </div>
 </template>
 

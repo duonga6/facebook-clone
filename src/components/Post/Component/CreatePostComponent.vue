@@ -2,17 +2,14 @@
   <div class="add-post">
     <div class="add-post__top-section">
       <div class="top-section__user-img">
-        <img
-          src="https://cand.com.vn/Files/Image/daudung/2017/07/14/thumb_660_bfc91729-e563-4696-ba5b-71f1364d403a.png"
-          alt=""
-        />
+        <img :src="user?.avatarUrl" alt="" />
       </div>
       <div class="top-section__input" @click="handleOpenCreatePost">
-        {{ user?.lastName }} ơi, bạn đang nghĩ gì thể?
+        {{ user?.lastName }} ơi, bạn đang nghĩ gì thế?
       </div>
     </div>
-    <hr class="mt-3" />
-    <div class="add-post__bottom-section">
+    <!-- <hr class="mt-3" /> -->
+    <!-- <div class="add-post__bottom-section">
       <div class="bottom-section__type-post-list">
         <div class="type-post-item" @click="handleOpenCreatePost">
           <div class="type-post__img">
@@ -54,7 +51,7 @@
           <div class="type-post__text">Cảm xúc hoạt động</div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 
   <PostEditor
@@ -95,7 +92,7 @@ export default {
     }
 
     return {
-      user: computed(() => store.getters["user/getUser"]),
+      user: computed(() => store.getters["auth/getUser"]),
       isShowCreatePost,
       handleOpenCreatePost,
       onCloseCreatePost,

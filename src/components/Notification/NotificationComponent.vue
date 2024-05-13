@@ -1,22 +1,32 @@
 <template>
   <div
-    class="notification-container"
+    class="nav-header-right"
     @click="handleToggleShowNoti"
     v-click-outside="() => (isShowNotify = false)"
   >
-    <div class="notification-icon">
-      <svg viewBox="0 0 24 24" width="20" height="20" class="text-gray-950">
-        <path
-          d="M3 9.5a9 9 0 1 1 18 0v2.927c0 1.69.475 3.345 1.37 4.778a1.5 1.5 0 0 1-1.272 2.295h-4.625a4.5 4.5 0 0 1-8.946 0H2.902a1.5 1.5 0 0 1-1.272-2.295A9.01 9.01 0 0 0 3 12.43V9.5zm6.55 10a2.5 2.5 0 0 0 4.9 0h-4.9z"
-        ></path>
-      </svg>
+    <svg viewBox="0 0 24 24" width="20" height="20" class="text-gray-950">
+      <path
+        d="M3 9.5a9 9 0 1 1 18 0v2.927c0 1.69.475 3.345 1.37 4.778a1.5 1.5 0 0 1-1.272 2.295h-4.625a4.5 4.5 0 0 1-8.946 0H2.902a1.5 1.5 0 0 1-1.272-2.295A9.01 9.01 0 0 0 3 12.43V9.5zm6.55 10a2.5 2.5 0 0 0 4.9 0h-4.9z"
+      ></path>
+    </svg>
+    <div class="count-notification" v-if="notiData.totalNotSeen">
+      {{ notiData.totalNotSeen }}
     </div>
     <div
       class="notify-tab"
       :class="isShowNotify ? 'opacity-100 visible' : 'opacity-0 invisible'"
     >
-      <div class="notify-header">Thông báo</div>
-      <div class="notify-list" v-scroll-bottom="onScrollBottom">
+      <div class="notify-header">
+        <div class="notify-header-text">Thông báo</div>
+        <div
+          class="notify-header-action"
+          v-if="notiData.totalNotSeen"
+          @click.stop="handleClickSeenAll"
+        >
+          Đánh dấu tất cả đã xem
+        </div>
+      </div>
+      <div class="notify-list" v-scroll-near-bottom="onScrollBottom">
         <div
           class="notify-item"
           v-for="noti in notiData.data"
@@ -41,6 +51,7 @@
       </div>
     </div>
   </div>
+
   <NotificationAlert></NotificationAlert>
 </template>
 
@@ -53,12 +64,13 @@ import { generateNotificationUrl } from "@/utilities/notification";
 import eventBus from "@/common/EventBus";
 import { toastAlert } from "@/utilities/toastAlert";
 import router from "@/router";
+import tokenService from "@/services/token.service";
 
 export default {
   components: {
     NotificationAlert,
   },
-  async setup() {
+  setup() {
     const isShowNotify = ref(false);
 
     const notiData = reactive({
@@ -67,6 +79,7 @@ export default {
       pageSize: 15,
       hasNext: true,
       total: 0,
+      totalNotSeen: 0,
     });
 
     onMounted(() => {
@@ -78,8 +91,6 @@ export default {
     onUnmounted(() => {
       eventBus.remove("NewNotificaiton");
     });
-
-    await getNotifications(notiData);
 
     function handleToggleShowNoti() {
       isShowNotify.value = !isShowNotify.value;
@@ -100,9 +111,33 @@ export default {
       }
     }
 
-    async function onScrollBottom() {
-      await getNotifications(notiData);
+    async function handleClickSeenAll() {
+      try {
+        await notificatonService.seenAll();
+
+        notiData.data.forEach((item) => {
+          item.readAt = new Date();
+        });
+
+        notiData.totalNotSeen = 0;
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi đánh dấu đã đọc tất cả");
+      }
     }
+
+    let isFetching = false;
+    async function onScrollBottom() {
+      if (!isFetching) {
+        isFetching = true;
+        await getNotifications(notiData);
+        isFetching = false;
+      }
+    }
+
+    onMounted(async () => {
+      if (tokenService.getLocalToken()) await getNotifications(notiData);
+    });
 
     return {
       isShowNotify,
@@ -111,6 +146,7 @@ export default {
       convertDateDisplay,
       handleClickNotification,
       onScrollBottom,
+      handleClickSeenAll,
     };
   },
 };
@@ -136,6 +172,9 @@ async function getNotifications(notiData) {
       notiData.data = [...notiData.data, ...res.data];
       notiData.endCursor = res.endCursor;
       notiData.hasNext = res.hasNextPage;
+
+      const countRes = await notificatonService.countNotSeen();
+      notiData.totalNotSeen = countRes.data;
     } catch (err) {
       console.error(err);
       toastAlert.error("Có lỗi khi tải thông báo");
@@ -144,82 +183,93 @@ async function getNotifications(notiData) {
 }
 </script>
 
-<style lang="scss">
-.notification-container {
-  @apply relative;
+<style lang="scss" scoped>
+.nav-header-right {
+  @apply flex justify-center items-center p-2.5 bg-gray-200 rounded-full cursor-pointer transition-all relative;
 
-  .notification-icon {
+  .count-notification {
+    @apply absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white flex justify-center items-center font-semibold;
+    font-size: 12px;
+    content: "";
   }
+}
 
-  .notify-tab {
-    max-height: 80vh;
-    @apply absolute top-9 -right-14 w-90 bg-white shadow-custom-sm rounded-lg py-2 transition-all flex flex-col;
+.notify-tab {
+  max-height: 80vh;
+  @apply absolute top-12 right-0 w-90 bg-white shadow-custom-sm rounded-lg py-2 transition-all flex flex-col;
 
-    .notify-header {
-      @apply text-2xl font-bold px-4;
+  .notify-header {
+    @apply flex items-end justify-between  px-4;
+
+    .notify-header-text {
+      @apply text-2xl font-bold;
     }
 
-    .notify-list {
-      @apply px-2 mt-4 flex-1 overflow-y-auto;
+    .notify-header-action {
+      @apply text-13 text-primary;
+    }
+  }
 
-      &::-webkit-scrollbar {
-        @apply w-2;
+  .notify-list {
+    @apply px-2 mt-4 flex-1 overflow-y-auto;
+
+    &::-webkit-scrollbar {
+      @apply w-2;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      @apply rounded-lg bg-gray-300;
+    }
+
+    &::-webkit-scrollbar-track {
+      @apply hidden;
+    }
+
+    .notify-item {
+      @apply p-2 flex items-start space-x-2 rounded-lg hover:bg-gray-100 transition-all;
+
+      .from-user-avatar {
+        @apply w-14 h-14 min-w-14 min-h-14 rounded-full overflow-hidden border border-gray-100;
+
+        img {
+          @apply w-full h-full object-cover;
+        }
+        .notify-type-icon {
+        }
       }
 
-      &::-webkit-scrollbar-thumb {
-        @apply rounded-lg bg-gray-300;
-      }
+      .notify-content {
+        @apply flex-1 flex flex-col;
 
-      &::-webkit-scrollbar-track {
-        @apply hidden;
-      }
+        .notify-text {
+          @apply text-15 leading-18;
 
-      .notify-item {
-        @apply p-2 flex items-start space-x-2 rounded-lg hover:bg-gray-100 transition-all;
-
-        .from-user-avatar {
-          @apply w-14 h-14 min-w-14 min-h-14 rounded-full overflow-hidden border border-gray-100;
-
-          img {
-            @apply w-full h-full object-cover;
-          }
-          .notify-type-icon {
+          strong {
+            @apply font-semibold;
           }
         }
+        .notify-created-at {
+          @apply mt-0.5 text-13 leading-4 font-semibold text-primary;
+        }
+      }
+      .notify-read-status {
+        @apply my-auto;
 
+        .notify-read-icon {
+          @apply w-3 h-3 rounded-full bg-primary;
+        }
+      }
+
+      &.readed {
         .notify-content {
-          @apply flex-1 flex flex-col;
-
-          .notify-text {
-            @apply text-15 leading-18;
-
-            strong {
-              @apply font-semibold;
-            }
-          }
           .notify-created-at {
-            @apply mt-0.5 text-13 leading-4 font-semibold text-primary;
+            @apply font-normal text-gray-800;
           }
         }
+
         .notify-read-status {
-          @apply my-auto;
-
           .notify-read-icon {
-            @apply w-3 h-3 rounded-full bg-primary;
-          }
-        }
-
-        &.readed {
-          .notify-content {
-            .notify-created-at {
-              @apply font-normal text-gray-800;
-            }
-          }
-
-          .notify-read-status {
-            .notify-read-icon {
-              @apply bg-transparent;
-            }
+            @apply bg-transparent;
           }
         }
       }

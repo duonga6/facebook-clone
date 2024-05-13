@@ -6,6 +6,7 @@ import tokenService from "@/services/token.service";
 import { groupInviteService } from "@/services/group-invite.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { POST_TYPE } from "@/constants";
+const user = tokenService.getUser();
 
 const defaultState = () => {
   return {
@@ -63,8 +64,15 @@ export const group = {
   actions: {
     async initGroupStore({ dispatch, state }, payLoad) {
       await dispatch("getGroupInfo", payLoad);
+      await dispatch("getMemberCurrent", payLoad);
+
+      // Nhóm riêng tư và không phải thàn viên
+      if (!state.info.isPublic && !state.info.currentMember) {
+        return;
+      }
       await dispatch("getMedia");
       await dispatch("getMember");
+      await dispatch("getInviteCurrent", payLoad);
       await dispatch(
         "groupPost/initStore",
         {
@@ -83,11 +91,9 @@ export const group = {
       }
     },
 
-    async getGroupInfo({ commit, dispatch }, payLoad) {
+    async getGroupInfo({ commit }, payLoad) {
       const groupRes = await groupService.getById(payLoad);
       commit("getGroupDataSuccess", groupRes.data);
-      await dispatch("getMemberCurrent", payLoad);
-      await dispatch("getInviteCurrent", payLoad);
     },
 
     async getMemberCurrent({ commit }, payLoad) {
@@ -141,12 +147,16 @@ export const group = {
     },
 
     async getMedia({ commit, state }) {
-      const mediaRes = await groupService.getMedia(state.info.id, {
-        pageSize: state.media.pageSize,
-        pageNumber: state.media.pageNumber + 1,
-      });
-
-      commit("getMediaSuccess", mediaRes);
+      try {
+        const mediaRes = await groupService.getMedia(state.info.id, {
+          pageSize: state.media.pageSize,
+          pageNumber: state.media.pageNumber + 1,
+        });
+        commit("getMediaSuccess", mediaRes);
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi tải hình ảnh");
+      }
     },
 
     async getMember({ commit, state }) {
@@ -327,6 +337,16 @@ export const group = {
       }
     },
 
+    async leaveGroup({ commit, state }) {
+      try {
+        await grMemberService.deleteByUidGrId(user.id, state.info.id);
+        commit("leaveGroupSuccess");
+      } catch (error) {
+        console.error(error);
+        toastAlert.error("Có lỗi khi rời nhóm");
+      }
+    },
+
     resetSearchMember({ commit }) {
       commit("resetSearchMember");
     },
@@ -424,6 +444,10 @@ export const group = {
     addedOrRemovedAdminRole(state, payLoad) {
       const member = state.member.data.find((x) => x.id == payLoad.id);
       member.isAdmin = payLoad.isAdmin;
+    },
+
+    leaveGroupSuccess(state) {
+      state.currentMember = null;
     },
 
     resetSearchMember(state) {

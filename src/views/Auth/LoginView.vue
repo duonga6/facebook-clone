@@ -4,11 +4,7 @@
       <div class="flex-1 flex items-center">
         <div class="flex flex-col ms-auto w-500px">
           <div class="">
-            <img
-              src="https://static.xx.fbcdn.net/rsrc.php/y1/r/4lCu2zih0ca.svg"
-              class="w-80"
-              alt=""
-            />
+            <img src="/src/images/big-logo.png" class="w-80" alt="" />
           </div>
           <div class="text-2xl">
             Facebook giúp bạn kết nối và chia sẻ với mọi người trong cuộc sống
@@ -59,7 +55,13 @@
           </div>
           <div class="form-group">
             <div class="w-full py-3 text-center border-b border-gray-200">
-              <a href="" class="text-primary">Quên mật khẩu</a>
+              <router-link
+                :to="{
+                  name: 'forgot-password',
+                }"
+                class="text-primary"
+                >Quên mật khẩu</router-link
+              >
             </div>
           </div>
           <div class="form-group flex justify-center">
@@ -245,6 +247,7 @@ export default {
   components: { Form, Field, ErrorMessage },
   setup() {
     const isShowRegister = ref(false);
+    const isShowForgotPassword = ref(false);
     const messagesLogin = reactive([]);
     const messagesRegister = reactive([]);
     const isLogging = ref(false);
@@ -328,6 +331,7 @@ export default {
 
     return {
       isShowRegister,
+      isShowForgotPassword,
       schemaLogin,
       schemaRegister,
       messagesLogin,

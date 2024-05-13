@@ -60,6 +60,38 @@ export const profile = {
       });
       commit("getFriendSuccess", friendRes);
     },
+    async changeCoverImage({ commit }, payLoad) {
+      try {
+        const res = await userService.changeCoverImage({
+          url: payLoad.url,
+        });
+        commit("updateCoverImage", res.data);
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi cập nhật ảnh bìa");
+      }
+    },
+    async changeAvatar({ commit, dispatch }, payLoad) {
+      try {
+        const res = await userService.changeAvatar({
+          url: payLoad.url,
+        });
+        commit("updateAvatar", res.data);
+        dispatch("auth/changeAvatar", res.data.avatarUrl, { root: true });
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi cập nhật ảnh đại diện");
+      }
+    },
+    async updateUser({ commit, state }, payLoad) {
+      try {
+        const res = await userService.update(state.userId, payLoad);
+        commit("updateUserSuccess", res);
+      } catch (err) {
+        console.error(err);
+        toastAlert.error("Có lỗi khi cập nhật thông tin");
+      }
+    },
     reset({ commit, dispatch }) {
       commit("reset");
       dispatch("profilePost/reset", null, { root: true });
@@ -83,6 +115,15 @@ export const profile = {
       state.friend.pageNumber++;
       state.friend.total = payLoad.totalItems;
       state.photo._isFetched = true;
+    },
+    updateCoverImage(state, payLoad) {
+      state.userData.coverImageUrl = payLoad.coverImageUrl;
+    },
+    updateAvatar(state, payLoad) {
+      state.userData.avatarUrl = payLoad.avatarUrl;
+    },
+    updateUserSuccess(state, payLoad) {
+      state.userData = payLoad.data;
     },
     reset(state) {
       state.userId = null;

@@ -52,9 +52,7 @@
           >
             {{ message.participant.userContactName }}
           </div>
-          <div class="message-content-main">
-            {{ message.content }}
-          </div>
+          <pre class="message-content-main">{{ message.content }}</pre>
         </div>
       </div>
     </div>
@@ -65,8 +63,8 @@
         class="message-footer-input"
         placeholder="Aa"
         rows="1"
-        @input="onContentChange"
-        @keydown.prevent.enter="onSendMessage"
+        @input="onInputChangeHeight"
+        @keydown.enter.exact="onSendMessage"
       ></textarea>
       <button
         class="message-footer-btn"
@@ -224,6 +222,28 @@
           </div>
           <div class="option-item-text">Thêm người</div>
         </div>
+        <div
+          class="option-item"
+          v-if="data.type == 1"
+          @click="handleSelectImageChange"
+        >
+          <div class="option-item-icon">
+            <i
+              data-visualcompletion="css-img"
+              class="x1b0d499 xep6ejk"
+              style="
+                background-image: url('/src/images/icons/message-icon3.png');
+                background-position: 0px -294px;
+                background-size: auto;
+                width: 20px;
+                height: 20px;
+                background-repeat: no-repeat;
+                display: inline-block;
+              "
+            ></i>
+          </div>
+          <div class="option-item-text">Thay đổi ảnh</div>
+        </div>
         <div class="option-item" @click="isShowLeaveGroup = true">
           <div class="option-item-icon">
             <svg
@@ -378,6 +398,9 @@ import { convertDateTitleMessage } from "@/utilities/dateUtils";
 import eventBus from "@/common/EventBus";
 import { toastAlert } from "@/utilities/toastAlert";
 import { conversationService } from "@/services/conversation.service";
+import { uploadFileService } from "@/services/upload-file.service";
+import { onInputChangeHeight } from "@/utilities/inputUtils";
+
 const userId = tokenService.getUser().id;
 export default {
   props: {
@@ -443,6 +466,7 @@ export default {
     );
 
     const inputElement = ref(null);
+    let defaultHeightInput;
     const listMessageEl = ref(null);
 
     function handleClose() {
@@ -453,24 +477,20 @@ export default {
       emit("onMinimize", props.data.id);
     }
 
-    function onContentChange(e) {
-      const textareaElement = e.target;
-      textareaElement.style.height = 0;
-      textareaElement.style.height = textareaElement.scrollHeight + "px";
-    }
-
-    async function onSendMessage() {
+    async function onSendMessage(e) {
+      e.preventDefault();
       if (isCanSendMessage.value) {
+        inputElement.value.style.height = defaultHeightInput;
         store
           .dispatch("conversation/sendMessage", {
             conversationId: props.data.id,
-            content: messageContent.value,
+            content: messageContent.value.trim(),
           })
           .then((data) => {
             eventBus.dispatch("NewMessage", data);
-            messageContent.value = null;
             scrollBottom(listMessageEl.value);
           });
+        messageContent.value = null;
       }
     }
 
@@ -547,6 +567,29 @@ export default {
       isShowConversationMore.value = !isShowConversationMore.value;
     }
 
+    function handleSelectImageChange() {
+      const fileUpload = document.createElement("input");
+      fileUpload.type = "file";
+      fileUpload.multiple = false;
+      fileUpload.accept = "image/jpg, image/png, image/jpeg";
+
+      fileUpload.addEventListener("change", async function (e) {
+        const file = e.target.files[0];
+        try {
+          const res = await uploadFileService.upload(file, "upload");
+          store.dispatch("conversation/updateImage", {
+            url: res.data.url,
+            conversationId: props.data.id,
+          });
+        } catch (error) {
+          console.error(error);
+          toastAlert.error("Có lỗi khi tải ảnh lên");
+        }
+      });
+
+      fileUpload.click();
+    }
+
     watch(
       () => props.data.messages.data,
       () => {
@@ -561,6 +604,7 @@ export default {
     onMounted(async () => {
       inputElement.value.focus();
       scrollBottom(listMessageEl.value);
+      defaultHeightInput = inputElement.value.style.height;
     });
 
     return {
@@ -584,7 +628,6 @@ export default {
       currentParticipant,
       handleClose,
       handleMinimize,
-      onContentChange,
       onSendMessage,
       onLoadMessage,
       convertDateTitleMessage,
@@ -594,6 +637,8 @@ export default {
       onSubmitLeave,
       handleShowConversationOption,
       onSubmitDelete,
+      handleSelectImageChange,
+      onInputChangeHeight,
     };
   },
 };

@@ -74,13 +74,8 @@ import { conversationService } from "@/services/conversation.service";
 const user = tokenService.getUser();
 export default {
   props: {
-    conversationId: {
-      type: String,
-      required: true,
-    },
     defaultUser: {
       type: Object,
-      requried: true,
     },
   },
   emits: ["onClose"],
@@ -89,7 +84,11 @@ export default {
     const friendSearchInput = ref(null);
     const store = useStore();
 
-    const conversationMemberList = reactive([props.defaultUser]);
+    const conversationMemberList = reactive([]);
+    if (props.defaultUser != null) {
+      conversationMemberList.push(props.defaultUser);
+    }
+
     const conversationMemberSearch = reactive({
       pageSize: 10,
       pageNumber: 0,

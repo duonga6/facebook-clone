@@ -16,11 +16,15 @@
           />
         </router-link>
         <div class="relative">
-          <input
-            type="text"
-            class="bg-gray-100 ms-2 py-2 w-60 rounded-3xl outline-none ps-9 placeholder:text-gray-500 text-md"
-            placeholder="Tìm kiếm trên Facebook"
-          />
+          <form @submit.prevent="onSubmit">
+            <input
+              type="text"
+              name="searchString"
+              class="bg-gray-100 ms-2 py-2 w-60 rounded-3xl outline-none ps-9 placeholder:text-gray-500 text-md"
+              placeholder="Tìm kiếm trên FBook"
+              v-model="searchString"
+            />
+          </form>
           <div class="absolute left-5 top-1/2 -translate-y-1/2">
             <svg
               viewBox="0 0 16 16"
@@ -84,7 +88,7 @@
               params: null,
             }"
             class="nav-header-center friends"
-            :class="{ active: currentRoute == 'friends' }"
+            :class="{ active: currentRoute == 'frien' }"
           >
             <svg
               viewBox="0 0 24 24"
@@ -99,7 +103,7 @@
             </svg>
           </router-link>
         </li>
-        <li>
+        <!-- <li>
           <div
             class="nav-header-center video"
             :class="{ active: currentRoute == 'video' }"
@@ -119,7 +123,7 @@
               ></path>
             </svg>
           </div>
-        </li>
+        </li> -->
         <li>
           <router-link
             :to="{
@@ -145,7 +149,7 @@
             </svg>
           </router-link>
         </li>
-        <li>
+        <!-- <li>
           <div class="nav-header-center">
             <svg
               viewBox="0 0 24 24"
@@ -162,10 +166,10 @@
               ></path>
             </svg>
           </div>
-        </li>
+        </li> -->
       </ul>
       <ul class="flex justify-end items-center space-x-2 flex-1">
-        <li>
+        <!-- <li>
           <div class="nav-header-right">
             <svg
               viewBox="0 0 24 24"
@@ -179,28 +183,12 @@
               ></path>
             </svg>
           </div>
-        </li>
+        </li> -->
         <li>
-          <!-- <div class="nav-header-right">
-            <svg
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-              fill="currentColor"
-              class="text-gray-950"
-            >
-              <path
-                d="M.5 12C.5 5.649 5.649.5 12 .5S23.5 5.649 23.5 12 18.351 23.5 12 23.5c-1.922 0-3.736-.472-5.33-1.308a.63.63 0 0 0-.447-.069l-3.4.882a1.5 1.5 0 0 1-1.828-1.829l.882-3.4a.63.63 0 0 0-.07-.445A11.454 11.454 0 0 1 .5 12zm17.56-1.43a.819.819 0 0 0-1.125-1.167L14 11.499l-3.077-2.171a1.5 1.5 0 0 0-2.052.308l-2.93 3.793a.819.819 0 0 0 1.123 1.167L10 12.5l3.076 2.172a1.5 1.5 0 0 0 2.052-.308l2.931-3.793z"
-              ></path>
-            </svg>
-            <div class="count-notification">1</div>
-          </div> -->
           <Message></Message>
         </li>
         <li>
-          <div class="nav-header-right">
-            <Notification></Notification>
-          </div>
+          <Notification></Notification>
         </li>
         <li>
           <div class="relative" v-if="user">
@@ -287,10 +275,11 @@
 <script>
 import { computed, ref } from "vue";
 import eventBus from "@/common/EventBus";
-import tokenService from "@/services/token.service";
 import Notification from "@/components/Notification/NotificationComponent.vue";
 import Message from "@/components/Messages/MessageComponent.vue";
 import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+import router from "@/router";
 
 export default {
   components: {
@@ -299,22 +288,38 @@ export default {
   },
   setup() {
     const route = useRoute();
+    const store = useStore();
     const isShowUserMenu = ref(false);
-    const user = tokenService.getUser();
+    const user = computed(() => store.getters["user/getUser"]);
     function handleToggleUserMenu() {
       isShowUserMenu.value = !isShowUserMenu.value;
     }
+
+    const searchString = ref(route.query.s ?? null);
 
     function handleLogout() {
       eventBus.dispatch("logout");
     }
 
+    function onSubmit() {
+      if (!searchString.value || !searchString.value.trim()) return;
+
+      router.push({
+        name: "search",
+        query: {
+          s: searchString.value,
+        },
+      });
+    }
+
     return {
       user,
       isShowUserMenu,
-      currentRoute: computed(() => route.name?.substring(0, 6)),
+      currentRoute: computed(() => route.name?.substring(0, 5)),
       handleToggleUserMenu,
       handleLogout,
+      onSubmit,
+      searchString,
     };
   },
 };
