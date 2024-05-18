@@ -1,5 +1,6 @@
 import * as signalR from "@microsoft/signalr";
 import tokenService from "./token.service";
+import { BASE_HUB_URL } from "@/config/api-config";
 
 const MAX_RETRIES = 10;
 const RETRY_DELAY = 5000;
@@ -15,18 +16,17 @@ class SignalRService {
     try {
       const token = tokenService.getLocalToken()?.accessToken;
       const { HubConnectionBuilder, LogLevel } = signalR;
-
       if (token) {
-        await this.connection.start().then(() => {
-          console.log("Kết nối socket thành công");
-        });
-
         this.connection = new HubConnectionBuilder()
           .configureLogging(LogLevel.None)
-          .withUrl("http://localhost:9999/hub", {
+          .withUrl(BASE_HUB_URL, {
             accessTokenFactory: () => token,
           })
           .build();
+
+        await this.connection.start().then(() => {
+          console.log("Kết nối socket thành công");
+        });
       }
     } catch (err) {
       this.retries++;

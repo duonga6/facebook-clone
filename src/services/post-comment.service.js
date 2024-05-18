@@ -37,5 +37,8 @@ export const postCommentService = {
   },
   getById(id) {
     return api.get(`${BASE_URL}/${id}`);
+  },
+  getStats() {
+    return api.get(BASE_URL + "/Stats");
   }
 };

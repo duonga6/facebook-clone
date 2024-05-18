@@ -301,6 +301,54 @@ const routes = [
         /* webpackChunkName: "reset-password" */ "../views/Auth/ResetPasswordView.vue"
       ),
   },
+  {
+    path: "/dashboards",
+    name: "dashboard-page",
+    meta: {
+      requiresAuth: true,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "reset-password" */ "../views/Admin/DashboardView.vue"
+      ),
+  },
+  {
+    path: "/dashboards/user",
+    name: "admin-user-page",
+    meta: {
+      requiresAuth: false,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "admin-user-page" */ "../views/Admin/UserView.vue"
+      ),
+  },
+  {
+    path: "/dashboards/group",
+    name: "admin-group-page",
+    meta: {
+      requiresAuth: false,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "admin-group-page" */ "../views/Admin/GroupView.vue"
+      ),
+  },
+  {
+    path: "/dashboards/post",
+    name: "admin-post-page",
+    meta: {
+      requiresAuth: false,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "admin-post-page" */ "../views/Admin/PostView.vue"
+      ),
+  },
 ];
 
 const router = createRouter({

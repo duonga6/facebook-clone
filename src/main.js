@@ -32,4 +32,5 @@ app.directive("scroll-near-bottom", scrollNearBottom);
 app.directive("scroll-bottom-window", scrollToBottomWindow);
 app.directive("scroll-near-bottom-window", scrollToNearBottomWindow);
 app.directive("scroll-near-top", scrollToNearTop);
+
 app.mount("#app");

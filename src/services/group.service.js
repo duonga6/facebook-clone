@@ -36,4 +36,7 @@ export const groupService = {
       params: params,
     });
   },
+  getStats() {
+    return api.get(BASE_URL + "/Stats");
+  },
 };

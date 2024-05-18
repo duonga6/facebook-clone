@@ -29,4 +29,7 @@ export const postService = {
   sharePost(data) {
     return api.post(`${BASE_URL}/Share`, data);
   },
+  getStats() {
+    return api.get(BASE_URL + "/Stats");
+  },
 };

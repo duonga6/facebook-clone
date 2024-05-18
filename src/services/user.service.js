@@ -59,4 +59,7 @@ export const userService = {
   resetPassword(data) {
     return api.post(BASE_URL + "/ResetPassword", data);
   },
+  getStats() {
+    return api.get(BASE_URL + "/Stats");
+  },
 };

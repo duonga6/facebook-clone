@@ -1,0 +1,3 @@
+<template>
+  <PostManager></PostManager>
+</template>

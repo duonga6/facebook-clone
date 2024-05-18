@@ -9,11 +9,7 @@
           }"
           class="ms-4"
         >
-          <img
-            class="w-10"
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/2048px-2023_Facebook_icon.svg.png"
-            alt=""
-          />
+          <img class="w-10" src="/src/images/logo.svg" alt="" />
         </router-link>
         <div class="relative">
           <form @submit.prevent="onSubmit">
@@ -127,7 +123,7 @@
         <li>
           <router-link
             :to="{
-              name: 'group',
+              name: 'group-feed',
               params: null,
             }"
             class="nav-header-center group"

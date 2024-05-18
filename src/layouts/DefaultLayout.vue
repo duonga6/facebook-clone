@@ -8,7 +8,6 @@
 import HeaderComponent from "@/components/Header/HeaderComponent.vue";
 import MessageOverlay from "@/components/Messages/MessageWindowControl.vue";
 import { useStore } from "vuex";
-// import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import eventBus from "@/common/EventBus";
 import { generateNotificationUrl } from "@/utilities/notification";
 import signalRService from "@/services/signalR.service";

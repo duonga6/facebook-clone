@@ -2,6 +2,8 @@
 import { defineAsyncComponent } from "vue";
 import Dropdown from "primevue/dropdown";
 import Divider from 'primevue/divider';
+import Paginator from "primevue/paginator";
+
 export function registerGlobalComponents(app) {
   // #region ==== Layout
   app.component(
@@ -12,6 +14,11 @@ export function registerGlobalComponents(app) {
   app.component(
     "default-layout",
     defineAsyncComponent(() => import("@/layouts/DefaultLayout"))
+  );
+
+  app.component(
+    "admin-layout",
+    defineAsyncComponent(() => import("@/layouts/AdminLayout"))
   );
 
   app.component(
@@ -273,9 +280,24 @@ export function registerGlobalComponents(app) {
 
   // #endregion
 
+  // #region === Manager
+
+  app.component("UserManager",
+    defineAsyncComponent(() => import("@/components/Admin/Manager/UserManagerComponent")))
+
+  app.component("GroupManager",
+    defineAsyncComponent(() => import("@/components/Admin/Manager/GroupManagerComponent")))
+
+  app.component("PostManager",
+    defineAsyncComponent(() => import("@/components/Admin/Manager/PostManagerComponent")))
+
+
+  // #endregion
+
   // #region == PrimeVue
   app.component("drop-down", Dropdown);
   app.component("Divider", Divider);
+  app.component("Paginator", Paginator);
 
   // #endregion
 
