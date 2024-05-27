@@ -125,6 +125,20 @@
                 <span class="btn-text">Nhắn tin</span>
               </button>
             </template>
+            <div
+              class="add-friend-btn btn--secondary"
+              v-click-outside="() => (isShowMore = false)"
+            >
+              <i
+                class="nav-search-icon pi pi-ellipsis-h p-1 px-0.5 cursor-pointer"
+                @click="isShowMore = !isShowMore"
+              ></i>
+              <div class="user-more-list" v-if="isShowMore">
+                <div class="user-more-item" @click="isShowReport = true">
+                  Báo cáo người dùng
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <ul class="user-navbar-list">
@@ -335,13 +349,22 @@
     v-if="isShowChangePassword"
     @onClose="isShowChangePassword = false"
   ></ChangePassword>
+
+  <ReportComponent
+    v-if="isShowReport"
+    :title="'Báo cáo người dùng'"
+    @onClose="isShowReport = false"
+    @onSubmit="isShowReport = false"
+    :reportType="REPORT_TYPE.USER"
+    :relationId="userId"
+  ></ReportComponent>
 </template>
 
 <script>
 import { useRoute } from "vue-router";
 import tokenService from "@/services/token.service";
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { FRIEND_TYPE } from "@/constants";
+import { FRIEND_TYPE, REPORT_TYPE } from "@/constants";
 import { friendshipService } from "@/services/friendship.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { useStore } from "vuex";
@@ -349,7 +372,12 @@ import { uploadFileService } from "@/services/upload-file.service";
 import { converDateToDDMMYYY } from "@/utilities/dateUtils";
 
 export default {
-  setup() {
+  props: {
+    id: {
+      type: String,
+    },
+  },
+  setup(props) {
     const store = useStore();
     const route = useRoute();
     const loggedUserId = tokenService.getUser().id;
@@ -362,6 +390,8 @@ export default {
     const isShowEditProfile = ref(false);
     const isShowChangePassword = ref(false);
     const isShowFriendAcceptedMore = ref(false);
+    const isShowMore = ref(false);
+    const isShowReport = ref(false);
 
     const currentRoute = {
       name: route.name,
@@ -369,7 +399,9 @@ export default {
       query: route.query,
     };
 
-    const userId = computed(() => route.params.id || route.query.userId);
+    const userId = computed(
+      () => props.id || route.params.id || route.query.userId
+    );
 
     watch(
       () => userId.value,
@@ -530,6 +562,9 @@ export default {
       converDateToDDMMYYY,
       handleStartConversation,
       isShowChangePassword,
+      isShowMore,
+      isShowReport,
+      REPORT_TYPE,
     };
   },
 };
@@ -619,6 +654,7 @@ async function checkFriendStatus(requestId, targetId, friendShip) {
         }
         .user-action {
           @apply ms-auto flex items-center space-x-2;
+
           .add-friend-btn {
             @apply flex space-x-2 items-center py-2 rounded-md px-3 relative;
 
@@ -647,6 +683,13 @@ async function checkFriendStatus(requestId, targetId, friendShip) {
                 .friend-action-item {
                   @apply p-2 text-left font-semibold text-15 hover:bg-gray-100 transition-all rounded-lg;
                 }
+              }
+            }
+
+            .user-more-list {
+              @apply absolute top-6 right-2 w-56 bg-white shadow-custom-sm rounded-lg p-2;
+              .user-more-item {
+                @apply p-2 py-1.5 rounded-lg text-15 font-semibold cursor-pointer hover:bg-gray-100;
               }
             }
           }

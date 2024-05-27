@@ -8,14 +8,20 @@
           <i class="close-btn-icon pi pi-times"></i>
         </div>
       </div>
-      <div class="leave-group-content">
-        {{ content }}
+      <div class="leave-group-content">Nhập nội dung báo cáo</div>
+      <div class="report-content">
+        <textarea class="input-report" rows="10" v-model="inputText"></textarea>
       </div>
       <div class="leave-group-action">
         <button class="leave-action-btn btn--second" @click="onClose">
           Hủy
         </button>
-        <button class="leave-action-btn btn--primary" @click="onSubmit">
+        <button
+          class="leave-action-btn btn--primary"
+          :class="{ disable: !isCanSubmit }"
+          @click="onSubmit"
+          :disabled="!isCanSubmit"
+        >
           Xác nhận
         </button>
       </div>
@@ -24,30 +30,67 @@
 </template>
 
 <script>
+import { computed, ref } from "vue";
+import { REPORT_TYPE } from "@/constants";
+import { reportService } from "@/services/report.service";
+import { toastAlert } from "@/utilities/toastAlert";
+
 export default {
   props: {
     title: {
       type: String,
       required: true,
     },
-    content: {
+    reportType: {
+      type: Number,
+      default: REPORT_TYPE.POST,
+    },
+    relationId: {
       type: String,
       required: true,
     },
   },
   emits: ["onClose", "onSubmit"],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const inputText = ref(null);
+
+    const isCanSubmit = computed(
+      () => inputText.value && inputText.value.trim()
+    );
+
     function onClose() {
       emit("onClose");
     }
 
-    function onSubmit() {
-      emit("onSubmit");
+    async function onSubmit() {
+      if (isCanSubmit.value) {
+        try {
+          await reportService.create({
+            reportType: props.reportType,
+            content: inputText.value,
+            relationId: props.relationId,
+          });
+          toastAlert.success("Báo cáo của bạn đã được gửi đi");
+        } catch (err) {
+          if (err.errors.find((x) => x == "RP_EXIST")) {
+            toastAlert.error(
+              "Bạn đã gửi báo cáo trước đó hãy chờ quản trị viên xử lý"
+            );
+          } else {
+            console.error(err);
+            toastAlert.error("Có lỗi khi báo cáo bài viết");
+          }
+        } finally {
+          emit("onSubmit");
+        }
+      }
     }
 
     return {
       onClose,
       onSubmit,
+      inputText,
+      isCanSubmit,
     };
   },
 };
@@ -78,6 +121,14 @@ export default {
     .leave-group-content {
       @apply text-15 p-4;
     }
+
+    .report-content {
+      @apply p-4 pt-0;
+      .input-report {
+        @apply border border-gray-200 w-full outline-none rounded-lg p-2;
+      }
+    }
+
     .leave-group-action {
       @apply p-4 flex items-center justify-end space-x-3;
 
@@ -89,6 +140,10 @@ export default {
         }
 
         &.btn--second {
+          @apply bg-gray-200 text-dark;
+        }
+
+        &.disable {
           @apply bg-gray-200 text-dark;
         }
       }

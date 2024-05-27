@@ -239,6 +239,34 @@
                   </router-link>
                 </li>
                 <li
+                  class="p-2 cursor-pointer hover:bg-gray-100 transition-all rounded-lg"
+                  v-if="user.isAdmin"
+                >
+                  <router-link
+                    :to="{
+                      name: 'dashboard-page',
+                    }"
+                    class="flex items-center"
+                  >
+                    <div
+                      class="rounded-full bg-gray-200 w-9 h-9 flex justify-center items-center"
+                    >
+                      <i
+                        style="
+                          background-image: url('/src/images/icons/identity-icon.png');
+                          background-position: 0px -644px;
+                          background-size: auto;
+                          width: 20px;
+                          height: 20px;
+                          background-repeat: no-repeat;
+                          display: inline-block;
+                        "
+                      ></i>
+                    </div>
+                    <div class="font-semibold ms-4">Trang quản trị</div>
+                  </router-link>
+                </li>
+                <li
                   class="flex items-center p-2 cursor-pointer hover:bg-gray-100 transition-all rounded-lg"
                   @click="handleLogout"
                 >
@@ -247,8 +275,8 @@
                   >
                     <i
                       style="
-                        background-image: url('https://static.xx.fbcdn.net/rsrc.php/v3/yW/r/3OVYvwCR-Cs.png?_nc_eui2=AeGr2q1Bz9_FGagNy4A53ZhidhsKN6OrHc92Gwo3o6sdz6Z_hysejmvvTHzrv-yYDIGey5vrszMdPmUMCqoVB3-A');
-                        background-position: 0px -280px;
+                        background-image: url('/src/images/icons/identity-icon.png');
+                        background-position: 0px -499px;
                         background-size: auto;
                         width: 20px;
                         height: 20px;

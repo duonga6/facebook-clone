@@ -13,7 +13,7 @@
           <img
             alt="..."
             class="w-full rounded-full align-middle border-none shadow-lg"
-            :src="user.avatarUrl"
+            :src="user?.avatarUrl"
           />
         </span>
       </div>
@@ -76,7 +76,7 @@ export default {
   setup() {
     const store = useStore();
 
-    const user = computed(() => store.getters["user/getUser"]);
+    const user = computed(() => store.getters["auth/getUser"]);
 
     function handleLogout() {
       eventBus.dispatch("logout");

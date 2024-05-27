@@ -7,8 +7,8 @@
             <img src="/src/images/big-logo.png" class="w-80" alt="" />
           </div>
           <div class="text-2xl">
-            Facebook giúp bạn kết nối và chia sẻ với mọi người trong cuộc sống
-            của bạn.
+            FBook giúp bạn kết nối và chia sẻ với mọi người trong cuộc sống của
+            bạn.
           </div>
         </div>
       </div>
@@ -189,38 +189,14 @@
             :key="message"
             >{{ message }}</span
           >
+          <span
+            class="text-green-500 block"
+            v-for="message in messageRegisterSuccess"
+            :key="message"
+            >{{ message }}</span
+          >
         </div>
-        <div class="form-group mb-2.5">
-          <p class="text-11 text-gray-700 leading-4">
-            Những người dùng dịch vụ của chúng tôi có thể đã tải thông tin liên
-            hệ của bạn lên Facebook.
-            <a
-              href=""
-              class="text-primary hover:underline hover:decoration-primary"
-              >Tìm hiểu thêm</a
-            >.
-          </p>
-          <p class="text-11 text-gray-700 leading-4 mt-3">
-            Bằng cách nhấp vào Đăng ký, bạn đồng ý với
-            <a
-              href=""
-              class="text-primary hover:underline hover:decoration-primary"
-              >Điều khoản</a
-            >,
-            <a
-              href=""
-              class="text-primary hover:underline hover:decoration-primary"
-              >Chính sách quyền riêng tư</a
-            >
-            và
-            <a
-              href=""
-              class="text-primary hover:underline hover:decoration-primary"
-              >Chính sách Cookie</a
-            >. của chúng tôi. Bạn có thể nhận được thông báo của chúng tôi qua
-            SMS và hủy nhận bất kỳ lúc nào.
-          </p>
-        </div>
+
         <div class="form-group text-center my-2 mt-4">
           <button
             class="text-white font-bold text-ld rounded-md bg-green-500 px-8 py-2 transition-all"
@@ -236,7 +212,7 @@
 </template>
 
 <script>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { useStore } from "vuex";
@@ -250,11 +226,34 @@ export default {
     const isShowForgotPassword = ref(false);
     const messagesLogin = reactive([]);
     const messagesRegister = reactive([]);
+    const messageRegisterSuccess = reactive([]);
     const isLogging = ref(false);
     const isRegistering = ref(false);
 
     const store = useStore();
     const router = useRouter();
+
+    const loginStatus = computed(() => store.getters["auth/getLoginStatus"]);
+
+    if (loginStatus.value) {
+      router.push({
+        name: "home",
+        params: null,
+      });
+    }
+
+    watch(
+      () => loginStatus.value,
+      (newVal) => {
+        console.log(newVal);
+        if (newVal) {
+          router.push({
+            name: "home",
+            params: null,
+          });
+        }
+      }
+    );
 
     const schemaLogin = yup.object().shape({
       email: yup
@@ -314,10 +313,9 @@ export default {
         .dispatch("auth/register", user)
         .then(
           () => {
-            router.push({
-              name: "home",
-              params: null,
-            });
+            messageRegisterSuccess.push(
+              "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản"
+            );
           },
           (error) => {
             messagesRegister.length = 0;
@@ -346,6 +344,7 @@ export default {
       days,
       months,
       years,
+      messageRegisterSuccess,
     };
   },
 };

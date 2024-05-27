@@ -17,6 +17,7 @@ import AdminNavbar from "@/components/Admin/Navbars/AdminNavbar.vue";
 import Sidebar from "@/components/Admin/Sidebar/Sidebar.vue";
 import HeaderStats from "@/components/Admin/Headers/HeaderStats.vue";
 import FooterAdmin from "@/components/Admin/Footers/FooterAdmin.vue";
+import { useStore } from "vuex";
 export default {
   name: "admin-layout",
   components: {
@@ -25,6 +26,9 @@ export default {
     HeaderStats,
     FooterAdmin,
   },
-  setup() {},
+  setup() {
+    const store = useStore();
+    store.dispatch("user/getDataUser");
+  },
 };
 </script>

@@ -38,7 +38,10 @@ export const user = {
   },
   getters: {
     getUser(state) {
-      return state.user;
+      return {
+        ...state.user,
+        isAdmin: state.user?.roles?.find((x) => x == "Administrator") != null,
+      };
     },
   },
 };

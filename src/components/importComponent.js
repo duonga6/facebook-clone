@@ -291,6 +291,11 @@ export function registerGlobalComponents(app) {
   app.component("PostManager",
     defineAsyncComponent(() => import("@/components/Admin/Manager/PostManagerComponent")))
 
+  app.component("ReportManager",
+    defineAsyncComponent(() => import("@/components/Admin/Manager/ReportManagerComponent")))
+
+  app.component("ReportDetail",
+    defineAsyncComponent(() => import("@/components/Admin/Manager/ReportDetailComponent")))
 
   // #endregion
 
@@ -313,6 +318,13 @@ export function registerGlobalComponents(app) {
 
   app.component("TriangleArrow",
     defineAsyncComponent(() => import("@/components/Utils/TriangleArrowBorder")))
+
+  app.component("ModalConfirm",
+    defineAsyncComponent(() => import("@/components/Utils/ModalConfirmComponent")))
+
+
+  app.component("ReportComponent",
+    defineAsyncComponent(() => import("@/components/Utils/ReportComponent")))
 
   // #endregion
 }

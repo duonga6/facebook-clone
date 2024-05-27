@@ -77,6 +77,9 @@
             >
               Xóa
             </li>
+            <li @click="isShowReport = true" class="comment-more-item">
+              Báo cáo
+            </li>
           </ul>
         </div>
       </div>
@@ -202,6 +205,15 @@
       @onCancelEditComment="onCancelEditComment"
     ></EditComment>
   </div>
+
+  <ReportComponent
+    v-if="isShowReport"
+    :title="'Báo cáo bình luận'"
+    :reportType="REPORT_TYPE.COMMENT"
+    :relationId="comment.id"
+    @onClose="isShowReport = false"
+    @onSubmit="isShowReport = false"
+  ></ReportComponent>
 </template>
 
 <script>
@@ -212,6 +224,7 @@ import tokenService from "@/services/token.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { PostUtils } from "@/store/postUtils";
 import { onInputChangeHeight } from "@/utilities/inputUtils";
+import { REPORT_TYPE } from "@/constants/index";
 
 export default {
   props: {
@@ -242,6 +255,7 @@ export default {
     const isLoadingChildComment = ref(false);
     const isShowChildComment = ref(false);
     const isShowEditComment = ref(false);
+    const isShowReport = ref(false);
 
     // Data variables
     const user = tokenService.getUser();
@@ -456,6 +470,7 @@ export default {
     });
 
     return {
+      isShowReport,
       commentsData,
       convertDateDisplay,
       onHoverReaction,
@@ -486,6 +501,7 @@ export default {
       onCancelEditComment,
       handleEditComment,
       onInputChangeHeight,
+      REPORT_TYPE,
     };
   },
 };

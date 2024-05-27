@@ -161,27 +161,50 @@
             <Badge v-if="inviteCount > 0" :value="inviteCount"></Badge>
           </router-link>
         </div>
-        <div class="group-nav-action">
-          <button class="group-nav-search btn">
-            <i class="nav-search-icon pi pi-search"></i>
+        <div
+          class="group-nav-action"
+          v-click-outside="() => (isShowGroupMore = false)"
+        >
+          <button
+            class="group-nav-search btn"
+            @click="isShowGroupMore = !isShowGroupMore"
+          >
+            <i class="nav-search-icon pi pi-ellipsis-h"></i>
           </button>
+          <div class="group-more-list" v-if="isShowGroupMore">
+            <div class="group-more-item" @click="isShowReport = true">
+              Báo cáo nhóm
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <ReportComponent
+    v-if="isShowReport"
+    :title="'Báo cáo nhóm'"
+    :relationId="groupInfo.id"
+    :reportType="REPORT_TYPE.GROUP"
+    @onClose="isShowReport = false"
+    @onSubmit="isShowReport = false"
+  ></ReportComponent>
 </template>
 
 <script>
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
+import { REPORT_TYPE } from "@/constants";
 export default {
   setup() {
     const store = useStore();
     const route = useRoute();
     const router = useRouter();
     const isShowJoinAction = ref(false);
+    const isShowGroupMore = ref(false);
     const groupInfo = computed(() => store.getters["group/getGroupInfo"]);
+
+    const isShowReport = ref(false);
 
     async function handleCancelRequestInvite() {
       await store.dispatch("group/cancelRequestInvite");
@@ -213,6 +236,9 @@ export default {
       handleDeleteGroup,
       handleLeaveGroup,
       routeName: route.name,
+      isShowGroupMore,
+      isShowReport,
+      REPORT_TYPE,
     };
   },
 };
@@ -326,10 +352,19 @@ export default {
         }
       }
       .group-nav-action {
+        @apply relative;
+
         .group-nav-search {
           @apply flex items-center justify-center bg-gray-200 w-8 h-10;
           .nav-search-icon {
             @apply font-semibold text-gray-700;
+          }
+        }
+
+        .group-more-list {
+          @apply absolute top-6 right-2 w-40 bg-white shadow-custom-sm rounded-lg p-2;
+          .group-more-item {
+            @apply p-2 py-1.5 rounded-lg text-15 font-semibold cursor-pointer hover:bg-gray-100;
           }
         }
       }

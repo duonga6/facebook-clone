@@ -302,6 +302,18 @@ const routes = [
       ),
   },
   {
+    path: "/confirm-email",
+    name: "confirm-email",
+    meta: {
+      requiresAuth: false,
+      layout: "auth",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "confirm-email" */ "../views/Auth/ConfirmEmailView.vue"
+      ),
+  },
+  {
     path: "/dashboards",
     name: "dashboard-page",
     meta: {
@@ -347,6 +359,30 @@ const routes = [
     component: () =>
       import(
         /* webpackChunkName: "admin-post-page" */ "../views/Admin/PostView.vue"
+      ),
+  },
+  {
+    path: "/dashboards/report",
+    name: "admin-report-page",
+    meta: {
+      requiresAuth: false,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "admin-report-page" */ "../views/Admin/ReportView.vue"
+      ),
+  },
+  {
+    path: "/dashboards/report/:id",
+    name: "admin-report-detail-page",
+    meta: {
+      requiresAuth: false,
+      layout: "admin",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "admin-report-detail-page" */ "../views/Admin/ReportDetailView.vue"
       ),
   },
 ];

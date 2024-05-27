@@ -12,8 +12,8 @@
         @click="isShowCreatePost = true"
       />
     </div>
-    <hr />
-    <div class="create-post-options">
+    <!-- <hr /> -->
+    <!-- <div class="create-post-options">
       <div class="post-option-item">
         <div class="post-option-icon">
           <img
@@ -36,7 +36,7 @@
           Ảnh/Video
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
   <PostEditor
     v-if="isShowCreatePost"

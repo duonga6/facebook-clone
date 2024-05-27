@@ -57,3 +57,17 @@ export const MEMBER_TYPE = {
   SUPER_ADMIN: 2,
   NORMAL: 3,
 };
+
+export const REPORT_TYPE = {
+  POST: 0,
+  USER: 1,
+  COMMENT: 2,
+  GROUP: 3,
+};
+
+export const REPORT_TYPE_NAME = {
+  POST: "Bài viết",
+  USER: "Người dùng",
+  COMMENT: "Bình luận",
+  GROUP: "Nhóm",
+};

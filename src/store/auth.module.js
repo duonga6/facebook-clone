@@ -24,7 +24,6 @@ export const auth = {
     register({ commit }, user) {
       return AuthService.register(user).then(
         (res) => {
-          commit("registerSuccess", res.data);
           return Promise.resolve(res);
         },
         (error) => {
@@ -38,6 +37,9 @@ export const auth = {
     },
     changeAvatar({ commit }, payLoad) {
       commit("changeAvatar", payLoad);
+    },
+    setUser({ commit }, user) {
+      commit("setUser", user);
     },
   },
   mutations: {
@@ -67,6 +69,10 @@ export const auth = {
     },
     changeAvatar(state, payLoad) {
       state.user.avatarUrl = payLoad;
+    },
+    setUser(state, payLoad) {
+      state.user = payLoad.user;
+      state.state.loggedIn = true;
     },
   },
   getters: {

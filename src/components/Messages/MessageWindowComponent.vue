@@ -31,7 +31,7 @@
     >
       <div
         class="message-item"
-        v-for="message in messageData"
+        v-for="(message, index) in data.messages.data"
         :key="message.id"
         :class="{ self: message.user.id == userId }"
       >
@@ -39,7 +39,7 @@
           <img
             :src="message.user.avatarUrl"
             alt=""
-            v-if="message.isShowAvatar"
+            v-if="messageStatusShow[index].isShowAvatar"
           />
         </div>
         <div
@@ -48,11 +48,22 @@
         >
           <div
             class="message-participant-name"
-            v-if="data.type == 1 && message.isShowContactName"
+            v-if="data.type == 1 && messageStatusShow[index].isShowContactName"
           >
             {{ message.participant.userContactName }}
           </div>
           <pre class="message-content-main">{{ message.content }}</pre>
+        </div>
+        <div
+          class="message-more"
+          v-if="false"
+          @click="() => (message.isShowMore = !message.isShowMore)"
+          v-click-outside="() => (message.isShowMore = false)"
+        >
+          <i class="message-more-icon pi pi-ellipsis-h"></i>
+          <div class="message-more-list" v-show="message.isShowMore">
+            <div class="message-more-item">Xóa</div>
+          </div>
         </div>
       </div>
     </div>
@@ -455,10 +466,9 @@ export default {
       }
     });
 
-    const messageData = computed(() =>
+    const messageStatusShow = computed(() =>
       props.data.messages.data.map((item, index, arr) => {
         return {
-          ...item,
           isShowAvatar: arr[index].user.id != arr[index + 1]?.user.id,
           isShowContactName: arr[index - 1]?.user.id != arr[index].user.id,
         };
@@ -622,7 +632,7 @@ export default {
       isShowConversationParticipant,
       isShowConfirmDelete,
       conversationName,
-      messageData,
+      messageStatusShow,
       isShowAddMember,
       isShowLeaveGroup,
       currentParticipant,
@@ -711,7 +721,7 @@ async function getCurrentParticipant(data, conversationId) {
       @apply flex items-end space-x-2 w-48;
 
       &.self {
-        @apply justify-end ms-auto;
+        @apply ms-auto flex-row-reverse;
 
         .message-avatar {
           @apply hidden;
@@ -737,12 +747,39 @@ async function getCurrentParticipant(data, conversationId) {
       }
 
       .message-content {
+        @apply flex flex-col;
         .message-participant-name {
-          @apply text-11 text-gray-600 ms-2;
+          @apply text-11 text-gray-600 ms-2 inline;
         }
 
         .message-content-main {
           @apply text-15 px-3 p-1 bg-gray-100 rounded-2xl inline-block;
+        }
+      }
+
+      &:hover {
+        .message-more {
+          @apply flex;
+        }
+      }
+
+      .message-more {
+        @apply relative;
+
+        .message-more-icon {
+          @apply text-12 text-gray-500 p-2 cursor-pointer;
+        }
+
+        .message-more-list {
+          @apply absolute top-6 left-1/2 -translate-x-1/2 bg-white shadow-custom-sm rounded-lg overflow-hidden w-20 z-10 p-1;
+
+          .message-more-item {
+            @apply p-1 rounded-lg text-13 font-semibold hover:bg-gray-100 transition-all;
+          }
+        }
+
+        &.active {
+          @apply flex;
         }
       }
     }

@@ -1,0 +1,3 @@
+<template>
+  <ReportManager></ReportManager>
+</template>

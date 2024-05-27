@@ -2,7 +2,7 @@
   <footer class="relative bg-blueGray-200 pt-8 pb-6">
     <div
       class="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20 h-20"
-      style="transform: translateZ(0);"
+      style="transform: translateZ(0)"
     >
       <svg
         class="absolute bottom-0 overflow-hidden"
@@ -162,6 +162,7 @@
 </template>
 <script>
 export default {
+  name: "FooterComponent",
   data() {
     return {
       date: new Date().getFullYear(),

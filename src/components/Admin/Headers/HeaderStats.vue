@@ -12,7 +12,7 @@
               :statTitle="userStats.data.totalUser"
               statArrow="up"
               :statPercent="userStats.data.activingUser"
-              statPercentColor="text-emerald-500"
+              statPercentColor="text-primary"
               statDescripiron="Đang hoạt động"
               statIconName="far fa-chart-bar"
               statIconColor="bg-primary"
@@ -25,7 +25,7 @@
               :statTitle="postStats.data.totalPost"
               statArrow="down"
               :statPercent="postStats.data.postPerDay"
-              statPercentColor="text-red-500"
+              statPercentColor="text-orange-500"
               statDescripiron="Bài viết hôm nay"
               statIconName="fas fa-chart-pie"
               statIconColor="bg-orange-500"
@@ -38,7 +38,7 @@
               :statTitle="groupStats.data.totalGroup"
               statArrow="up"
               :statPercent="groupStats.data.publicGroup"
-              statPercentColor="text-orange-500"
+              statPercentColor="text-pink-500"
               statDescripiron="Nhóm công khai"
               statIconName="fas fa-users"
               statIconColor="bg-pink-500"
@@ -46,10 +46,12 @@
           </div>
           <div class="w-full lg:w-6/12 xl:w-3/12 px-4">
             <card-stats
-              v-if="commentStats.data"
-              statSubtitle="Bình luận"
-              :statTitle="commentStats.data.totalComment"
+              v-if="reportStats.data"
+              statSubtitle="Báo cáo"
+              :statTitle="reportStats.data.totalReport"
               statArrow="up"
+              :statPercent="reportStats.data.totalNotProcessed"
+              statDescripiron="Chưa xử lý"
               statPercentColor="text-emerald-500"
               statIconName="fas fa-percent"
               statIconColor="bg-emerald-500"
@@ -69,6 +71,7 @@ import { userService } from "@/services/user.service";
 import { groupService } from "@/services/group.service";
 import { postService } from "@/services/post.service";
 import { postCommentService } from "@/services/post-comment.service";
+import { reportService } from "@/services/report.service";
 
 export default {
   components: {
@@ -87,12 +90,16 @@ export default {
     const postStats = reactive({
       data: null,
     });
+    const reportStats = reactive({
+      data: null,
+    });
 
     onMounted(async () => {
       await getUserStat(userStats);
       await getGroupStat(groupStats);
       await getPostStat(postStats);
       await getCommentStat(commentStats);
+      await getReportStats(reportStats);
     });
 
     return {
@@ -100,6 +107,7 @@ export default {
       groupStats,
       commentStats,
       postStats,
+      reportStats,
     };
   },
 };
@@ -137,6 +145,16 @@ async function getPostStat(data) {
 async function getCommentStat(data) {
   try {
     const res = await postCommentService.getStats();
+    data.data = res.data;
+  } catch (err) {
+    console.error(err);
+    toastAlert.error("Có lỗi khi lấy dữ liệu User");
+  }
+}
+
+async function getReportStats(data) {
+  try {
+    const res = await reportService.getStats();
     data.data = res.data;
   } catch (err) {
     console.error(err);

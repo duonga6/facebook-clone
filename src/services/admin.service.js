@@ -12,4 +12,9 @@ export const adminService = {
       params: params,
     });
   },
+  getReport(params) {
+    return api.get("/Reports", {
+      params: params,
+    });
+  },
 };

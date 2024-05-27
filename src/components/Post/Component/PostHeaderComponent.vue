@@ -125,6 +125,10 @@
           <i class="post-more-icon pi pi-trash"></i>
           <p class="post-more-text">Xóa bài viết</p>
         </li>
+        <li class="post-more-item" @click="handleReportPost">
+          <!-- <i class="post-more-icon pi pi-trash"></i> -->
+          <p class="post-more-text">Báo cáo bài viết</p>
+        </li>
       </ul>
     </div>
   </div>
@@ -147,7 +151,7 @@ export default {
       default: false,
     },
   },
-  emits: ["onClickEditPost", "onClickDeletePost"],
+  emits: ["onClickEditPost", "onClickDeletePost", "onClickReport"],
   setup(_, { emit }) {
     const user = tokenService.getUser();
     const isShowPostMore = ref(false);
@@ -169,6 +173,11 @@ export default {
       emit("onClickDeletePost");
     }
 
+    function handleReportPost() {
+      isShowPostMore.value = false;
+      emit("onClickReport");
+    }
+
     return {
       isShowPostMore,
       user,
@@ -177,6 +186,7 @@ export default {
       handleShowEditPost,
       convertDatePostDisplay,
       handleDeletePost,
+      handleReportPost,
     };
   },
 };

@@ -76,7 +76,18 @@ const createModuleCursor = () => ({
 
         return Promise.resolve();
       } catch (error) {
-        toastAlert.error(error);
+        const errorMessages = error.errors;
+        if (
+          errorMessages &&
+          errorMessages[0].substring(0, 10) == "TIME_LIMIT"
+        ) {
+          toastAlert.error(
+            errorMessages[0].substring(11, errorMessages[0].length - 1)
+          );
+        } else {
+          console.error(error);
+          toastAlert.error("Có lỗi khi tạo bài viết");
+        }
       }
     },
 
@@ -240,7 +251,18 @@ const createModuleCursor = () => ({
 
         return Promise.resolve();
       } catch (error) {
-        toastAlert.error(error);
+        const errorMessages = error.errors;
+        if (
+          errorMessages &&
+          errorMessages[0].substring(0, 10) == "TIME_LIMIT"
+        ) {
+          toastAlert.error(
+            errorMessages[0].substring(11, errorMessages[0].length - 1)
+          );
+        } else {
+          console.error(error);
+          toastAlert.error("Có lỗi khi tạo bài viết");
+        }
       }
     },
 

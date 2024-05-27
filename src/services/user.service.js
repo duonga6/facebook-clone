@@ -62,4 +62,19 @@ export const userService = {
   getStats() {
     return api.get(BASE_URL + "/Stats");
   },
+  addRole(id, data) {
+    return api.post(`${BASE_URL}/${id}/Roles`, data);
+  },
+  removeRole(id, data) {
+    return api.put(`${BASE_URL}/${id}/Roles`, data);
+  },
+  lock(id) {
+    return api.post(`${BASE_URL}/${id}/Lockout`);
+  },
+  unLock(id) {
+    return api.post(`${BASE_URL}/${id}/UnLockout`);
+  },
+  confirmEmail(data) {
+    return api.post(BASE_URL + "/ConfirmEmail", data);
+  },
 };

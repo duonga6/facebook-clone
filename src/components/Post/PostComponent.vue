@@ -4,6 +4,7 @@
       :data="post"
       @onClickEditPost="handleShowEditPost"
       @onClickDeletePost="handleDeletePost"
+      @onClickReport="isShowReport = true"
     ></PostHeader>
     <PostContent :data="post.content"></PostContent>
     <PostMedia :data="post.postMedias" :postId="post.id"></PostMedia>
@@ -196,6 +197,14 @@
     @onSeletedGroup="onSeletedGroupShare"
     @onClose="() => (isShowSelectGroupShare = false)"
   ></SelectGroupShare>
+  <ReportComponent
+    v-if="isShowReport"
+    :title="'Báo cáo bài viết'"
+    :reportType="REPORT_TYPE.POST"
+    :relationId="post.id"
+    @onClose="isShowReport = false"
+    @onSubmit="isShowReport = false"
+  ></ReportComponent>
 </template>
 
 <script>
@@ -204,7 +213,7 @@ import { useStore } from "vuex";
 import tokenService from "@/services/token.service";
 import { toastAlert } from "@/utilities/toastAlert";
 import { PostUtils } from "@/store/postUtils";
-import { POST_EDITOR_TYPE } from "@/constants";
+import { POST_EDITOR_TYPE, REPORT_TYPE } from "@/constants";
 
 export default {
   props: {
@@ -228,9 +237,10 @@ export default {
     const actionPostEditor = ref(null);
     const isShowShareOptions = ref(false);
     const isShowSelectGroupShare = ref(false);
+    const isShowReport = ref(false);
 
     // Data variables
-    const groupShareId = ref(props.post.group?.id);
+    const groupShareId = ref(null);
     const commentInputEl = ref(null);
     const commentInput = ref(null);
     const commentShowOverviewCount = ref(0);
@@ -482,6 +492,8 @@ export default {
       actionPostEditor,
       isShowSelectGroupShare,
       groupShareId,
+      isShowReport,
+      REPORT_TYPE,
       onHoverReaction,
       onCloseReaction,
       onCommentChange,

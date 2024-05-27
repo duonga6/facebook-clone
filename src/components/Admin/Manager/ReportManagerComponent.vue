@@ -7,7 +7,7 @@
         <div
           class="relative w-full px-4 max-w-full flex-grow flex-1 flex items-center justify-between"
         >
-          <h3 class="font-semibold text-lg">Bài viết</h3>
+          <h3 class="font-semibold text-lg">Báo cáo</h3>
           <form class="flex items-center" @submit.prevent="submitSearch">
             <div class="text-15 me-2">Tìm kiếm</div>
             <input
@@ -30,40 +30,46 @@
             <th
               class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
             >
-              Người đăng
-            </th>
-            <th
-              class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
-            >
               Nội dung
             </th>
             <th
               class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
             >
-              Nhóm
+              Người báo cáo
             </th>
             <th
               class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
             >
-              Số bình luận
+              Loại báo cáo
             </th>
             <th
               class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
             >
-              Số bảy tỏ cảm xúc
+              Thời gian
             </th>
             <th
               class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
             >
-              Ngày đăng
+              Trạng thái
             </th>
-            <th
-              class="px-6 align-middle border border-solid py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left"
-            ></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in itemData.data" :key="item.id">
+            <td
+              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 truncate max-w-60 hover:underline"
+            >
+              <router-link
+                :to="{
+                  name: 'admin-report-detail-page',
+                  params: {
+                    id: item.id,
+                  },
+                }"
+              >
+                {{ item.content }}
+              </router-link>
+            </td>
             <td
               class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left flex items-center"
             >
@@ -85,42 +91,11 @@
               </router-link>
             </td>
             <td
-              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 truncate max-w-60 hover:underline"
-            >
-              <router-link
-                :to="{
-                  name: 'post-detail',
-                  params: {
-                    id: item.id,
-                  },
-                }"
-              >
-                {{ item.content }}
-              </router-link>
-              >
-            </td>
-            <td
               class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold"
             >
-              <router-link
-                v-if="item.group"
-                :to="{
-                  name: 'group-details-post',
-                  params: { id: item.group.id },
-                }"
-              >
-                {{ item.group.name }}
-              </router-link>
-            </td>
-            <td
-              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4"
-            >
-              {{ item.totalComment }}
-            </td>
-            <td
-              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left"
-            >
-              {{ item.totalReaction }}
+              <div>
+                {{ item.reportType }}
+              </div>
             </td>
             <td
               class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left"
@@ -128,24 +103,9 @@
               {{ converDateToDDMMYYY(item.createdAt) }}
             </td>
             <td
-              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left relative"
+              class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-left"
             >
-              <button
-                class="w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-full relative"
-                :class="{ 'bg-gray-200': item.isShowMore }"
-                @click="item.isShowMore = !item.isShowMore"
-                v-click-outside="() => (item.isShowMore = false)"
-              >
-                <i class="text-15 text-gray-500 pi pi-ellipsis-h"></i>
-                <ul
-                  class="absolute top-9 right-0 rounded-lg bg-white shadow-custom-sm"
-                  v-if="item.isShowMore"
-                >
-                  <li class="p-2" @click="showConfirmDelete(item.id)">
-                    Xóa bài viết
-                  </li>
-                </ul>
-              </button>
+              <i v-if="item.isSolved" class="pi pi-check text-green-500"></i>
             </td>
           </tr>
           <Paginator
@@ -169,7 +129,6 @@
 <script>
 import { onMounted, reactive, ref } from "vue";
 import { toastAlert } from "@/utilities/toastAlert";
-import { GROUP_TYPE } from "@/constants";
 import { adminService } from "@/services/admin.service";
 import { converDateToDDMMYYY } from "@/utilities/dateUtils";
 import { postService } from "@/services/post.service";
@@ -250,16 +209,17 @@ export default {
 async function getData(itemData, pageNumber, searchString) {
   if (itemData.pageSize * pageNumber < itemData.total || !itemData.isFetch) {
     try {
-      const res = await adminService.getPost({
+      const res = await adminService.getReport({
         pageNumber: pageNumber,
         pageSize: itemData.pageSize,
         searchString: searchString,
-        type: GROUP_TYPE.ALL,
       });
 
       itemData.data = res.data;
       itemData.pageNumber = pageNumber;
       itemData.total = res.totalItems;
+
+      console.log(res);
     } catch (error) {
       console.error(error);
       toastAlert.error("Có lỗi khi tải nhóm");

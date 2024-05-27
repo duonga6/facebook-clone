@@ -35,7 +35,7 @@
             {{ user.firstName + " " + user.lastName }}
           </p>
           <drop-down
-            v-if="!groupInfo"
+            v-if="!groupShareId"
             v-model="postData.access"
             :options="dataAccessRange"
             optionLabel="name"
@@ -174,6 +174,7 @@ export default {
   },
   emits: ["closePostEditor", "submittedForm"],
   async setup(props, { emit }) {
+    console.log(props.data);
     const store = useStore();
     const groupShareData = ref(null);
     const groupInfo = computed(() =>
@@ -222,16 +223,26 @@ export default {
       groupId: null,
       sharePostId: null,
       sharePostData: null,
-      access: computed(() => {
+      // access: computed(() => {
+      //   // if (groupInfo.value && groupInfo.value.isPublic)
+      //   //   return {
+      //   //     value: 3,
+      //   //   };
+
+      //   return props.data?.access
+      //     ? 2
+      //     : dataAccessRange.value.find((x) => x.value == props.data.access);
+      // }),
+      access: () => {
         if (groupInfo.value && groupInfo.value.isPublic)
           return {
             value: 3,
           };
 
-        return props.data?.access == null
+        return props.data?.access
           ? dataAccessRange.value[0]
           : dataAccessRange.value.find((x) => x.value == props.data.access);
-      }),
+      },
     });
 
     switch (postEditorType) {

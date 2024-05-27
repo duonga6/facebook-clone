@@ -25,7 +25,6 @@ class AuthService {
 
   register(user) {
     return api.post("/Users/Register", user).then((res) => {
-      tokenService.setUser(res.data);
       return res.data;
     });
   }
