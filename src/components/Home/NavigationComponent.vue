@@ -127,10 +127,7 @@
     </ul>
     <hr class="mt-2 mx-2" />
     <!-- Sub navigation -->
-    <!-- <div
-      @mouseover="isShowEditSubNav = true"
-      @mouseleave="isShowEditSubNav = false"
-    >
+    <div v-if="groupData.data.length">
       <div class="flex items-center justify-between mt-1">
         <span class="text-gray-500 p-2 font-semibold cursor-default text-17"
           >Lối tắt của bạn</span
@@ -162,19 +159,39 @@
           </div>
         </li>
       </ul>
-    </div> -->
+    </div>
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import tokenService from "@/services/token.service";
+import { groupService } from "@/services/group.service";
 export default {
   setup() {
     const isShowMore = ref(false);
     const isShowEditSubNav = ref(false);
 
-    return { isShowMore, isShowEditSubNav, userData: tokenService.getUser() };
+    const groupData = reactive({
+      data: [],
+    });
+
+    onMounted(async () => {
+      const groupRes = await groupService.get({
+        pageSize: 5,
+        pageNumber: 1,
+        type: 1,
+      });
+
+      groupData.data = groupRes.data;
+    });
+
+    return {
+      isShowMore,
+      isShowEditSubNav,
+      groupData,
+      userData: tokenService.getUser(),
+    };
   },
 };
 </script>

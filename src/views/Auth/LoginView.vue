@@ -319,7 +319,7 @@ export default {
           },
           (error) => {
             messagesRegister.length = 0;
-            messagesRegister.push(...error);
+            messagesRegister.push(...error.errors);
           }
         )
         .finally(() => {

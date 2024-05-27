@@ -84,6 +84,13 @@ const createModuleCursor = () => ({
           toastAlert.error(
             errorMessages[0].substring(11, errorMessages[0].length - 1)
           );
+        } else if (
+          errorMessages &&
+          errorMessages[0].substring(0, 8) == "BAD_WORD"
+        ) {
+          toastAlert.error(
+            errorMessages[0].substring(9, errorMessages[0].length - 1)
+          );
         } else {
           console.error(error);
           toastAlert.error("Có lỗi khi tạo bài viết");
@@ -258,6 +265,13 @@ const createModuleCursor = () => ({
         ) {
           toastAlert.error(
             errorMessages[0].substring(11, errorMessages[0].length - 1)
+          );
+        } else if (
+          errorMessages &&
+          errorMessages[0].substring(0, 8) == "BAD_WORD"
+        ) {
+          toastAlert.error(
+            errorMessages[0].substring(9, errorMessages[0].length - 1)
           );
         } else {
           console.error(error);

@@ -223,26 +223,20 @@ export default {
       groupId: null,
       sharePostId: null,
       sharePostData: null,
-      // access: computed(() => {
-      //   // if (groupInfo.value && groupInfo.value.isPublic)
-      //   //   return {
-      //   //     value: 3,
-      //   //   };
+      access: computed(() => {
+        // if (groupInfo.value && groupInfo.value.isPublic)
+        //   return {
+        //     value: 3,
+        //   };
 
-      //   return props.data?.access
-      //     ? 2
-      //     : dataAccessRange.value.find((x) => x.value == props.data.access);
-      // }),
-      access: () => {
-        if (groupInfo.value && groupInfo.value.isPublic)
-          return {
-            value: 3,
-          };
+        if (props.data?.access == 3) {
+          return dataAccessRange.value[0];
+        }
 
         return props.data?.access
-          ? dataAccessRange.value[0]
-          : dataAccessRange.value.find((x) => x.value == props.data.access);
-      },
+          ? dataAccessRange.value.find((x) => x.value == props.data.access)
+          : dataAccessRange.value[0];
+      }),
     });
 
     switch (postEditorType) {
