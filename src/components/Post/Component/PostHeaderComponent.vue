@@ -49,9 +49,17 @@
         </div>
       </div>
       <div class="author-info" v-else>
-        <p class="author-name">
+        <router-link
+          :to="{
+            name: 'profile',
+            params: {
+              id: data.user.id,
+            },
+          }"
+          class="author-name"
+        >
           {{ data.user.firstName + " " + data.user.lastName }}
-        </p>
+        </router-link>
         <div class="date-post">
           <div class="post-time">
             {{ convertDatePostDisplay(new Date(data.createdAt)) }}

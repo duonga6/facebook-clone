@@ -94,7 +94,18 @@
               class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold"
             >
               <div>
-                {{ item.reportType }}
+                <span v-if="item.reportType == REPORT_TYPE.POST">
+                  {{ REPORT_TYPE_NAME.POST }}
+                </span>
+                <span v-if="item.reportType == REPORT_TYPE.GROUP">
+                  {{ REPORT_TYPE_NAME.GROUP }}
+                </span>
+                <span v-if="item.reportType == REPORT_TYPE.COMMENT">
+                  {{ REPORT_TYPE_NAME.COMMENT }}
+                </span>
+                <span v-if="item.reportType == REPORT_TYPE.USER">
+                  {{ REPORT_TYPE_NAME.USER }}
+                </span>
               </div>
             </td>
             <td
@@ -132,6 +143,7 @@ import { toastAlert } from "@/utilities/toastAlert";
 import { adminService } from "@/services/admin.service";
 import { converDateToDDMMYYY } from "@/utilities/dateUtils";
 import { postService } from "@/services/post.service";
+import { REPORT_TYPE, REPORT_TYPE_NAME } from "@/constants";
 
 export default {
   setup() {
@@ -202,6 +214,8 @@ export default {
       onPageChange,
       submitSearch,
       converDateToDDMMYYY,
+      REPORT_TYPE,
+      REPORT_TYPE_NAME,
     };
   },
 };

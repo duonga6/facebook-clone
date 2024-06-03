@@ -132,31 +132,31 @@
         <span class="text-gray-500 p-2 font-semibold cursor-default text-17"
           >Lối tắt của bạn</span
         >
-        <button
+        <!-- <button
           class="text-primary text-sm hover:bg-gray-200 px-2 py-2 rounded-md transition-all"
           v-show="isShowEditSubNav"
         >
           Chỉnh sửa
-        </button>
+        </button> -->
       </div>
       <ul>
-        <li>
-          <div class="navigation-item">
+        <li v-for="group in groupData.data" :key="group.id">
+          <router-link
+            :to="{
+              name: 'group-details-post',
+              params: {
+                id: group.id,
+              },
+            }"
+            class="navigation-item"
+          >
             <div class="navigation-img">
-              <img src="" alt="" />
+              <img :src="group.coverImage" alt="" />
             </div>
             <div class="navigation-text">
-              Chia sẻ kiến thức lập trình - RHP Team
+              {{ group.name }}
             </div>
-          </div>
-        </li>
-        <li>
-          <div class="navigation-item">
-            <div class="navigation-img">
-              <img src="" alt="" />
-            </div>
-            <div class="navigation-text">K15CNTT2_FIT-HaUI</div>
-          </div>
+          </router-link>
         </li>
       </ul>
     </div>
@@ -180,7 +180,7 @@ export default {
       const groupRes = await groupService.get({
         pageSize: 5,
         pageNumber: 1,
-        type: 1,
+        type: 3,
       });
 
       groupData.data = groupRes.data;
